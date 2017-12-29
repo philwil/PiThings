@@ -183,12 +183,13 @@ int add_thing(struct thing *base, char *stuff)
 }
 
 
-int show_things(void)
+int show_things(struct thing *base)
 {
   int i;
   struct thing *item;
   item = &things[0];
-
+  if(base)
+    item = base;
   for (i=0; i< NUM_THINGS; i++)
     {
       if(item->name[0] != 0)
@@ -737,7 +738,8 @@ int main (int argc, char *argv[])
    add_thing(NULL, "ADD foo data float 2.3456");
    add_thing(NULL, "ADD foo1 data int 234");
    add_thing(NULL, "ADD foo3 data str \"val 234\"");
-   show_things();
+   show_things(NULL);
+   show_things(&t_types[0]);
 
    init_cmds();
    init_cmd("FWD", fwd_cmd);
