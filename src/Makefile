@@ -1,6 +1,8 @@
 all: pithings
 
-pithings: pithings.o
+pithings: pithings.c
+
+#pithings.o: pithings.c
 
 clean:
 	rm -f *.o

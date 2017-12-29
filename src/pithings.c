@@ -56,6 +56,8 @@ struct thing
 
 
 struct thing things[NUM_THINGS];
+struct thing t_types[NUM_THINGS];
+
 // main
 int init_things(void)
 {
@@ -71,12 +73,16 @@ int init_things(void)
     }  
   return 0;
 }
+//     name  class   type  value
+// ADD foo   data    float 2.3456
 
-struct thing *new_thing(char *name, int class, int type, int y)
+struct thing *new_thing(struct thing *base, char *name, int class, int type, int y)
 {
   int i;
   struct thing *item;
   item = &things[0];
+  if(base)
+    item = base;
 
   for (i=0; i< NUM_THINGS; i++)
     {
@@ -100,12 +106,15 @@ struct thing *new_thing(char *name, int class, int type, int y)
 
 }
 
-struct thing *get_thing(char *name, int class, int type, int y)
+struct thing *get_thing(struct thing *base, char *name, int class, int type, int y)
 {
 
   int i;
   struct thing *item;
   item = &things[0];
+
+  if(!base)
+    item = base;
 
   for (i=0; i< NUM_THINGS; i++)
     {
@@ -117,7 +126,7 @@ struct thing *get_thing(char *name, int class, int type, int y)
     }  
 
   if(i ==  NUM_THINGS)
-    item = new_thing(name,class,type,y);
+    item = new_thing(base, name, class, type, y);
   printf("get_thing name[%s] class %d item %p\n"
 	 , name
 	 , class
@@ -131,7 +140,7 @@ struct thing *get_thing(char *name, int class, int type, int y)
 // ADD foo data float 2.3456
 // add_thing("ADD foo data float 2.3456")
 
-int add_thing(char *stuff)
+int add_thing(struct thing *base, char *stuff)
 {
   int rc;
   char cmd[64];
@@ -153,9 +162,9 @@ int add_thing(char *stuff)
 	      , v5
 	      );
   printf(" cmd = [%s] rc = %d\n", cmd, rc );
-  item_1 = get_thing(v1, CLASS_VAR,0,0);
-  item_2 = get_thing(v2, CLASS_CLASS,0,0);
-  item_3 = get_thing(v3, CLASS_TYPE,0,0);
+  item_1 = get_thing(base, v1, CLASS_VAR,0,0);
+  item_2 = get_thing(base, v2, CLASS_CLASS,0,0);
+  item_3 = get_thing(&t_types[0],v3, CLASS_TYPE,0,0);
   item_1->class = item_2->idx;
   item_1->type = item_3->idx;
 
@@ -614,6 +623,7 @@ int poll_sock(int lsock)
     return rc;
 }
 
+
 #if 0
 void latch_tx(uint8_t latch_state)
 {
@@ -713,9 +723,9 @@ int main (int argc, char *argv[])
    int rc = 1;
 
    init_things();
-   add_thing("ADD foo data float 2.3456");
-   add_thing("ADD foo1 data int 234");
-   add_thing("ADD foo3 data str \"val 234\"");
+   add_thing(NULL, "ADD foo data float 2.3456");
+   add_thing(NULL, "ADD foo1 data int 234");
+   add_thing(NULL, "ADD foo3 data str \"val 234\"");
    show_things();
 
    init_cmds();
