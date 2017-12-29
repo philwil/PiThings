@@ -3,6 +3,22 @@ http://abyz.me.uk/rpi/pigpio/ex_motor_shield.html
 cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 */
 
+/*
+ for now forget the motor stuff
+ we aim to build up a repository of things
+ a thing has a name, 
+ belongs to a class 
+ has a type
+ has an id
+ has some text value int value or float value
+ things can be classes, lists or types
+ ADD foo data float 2.3456
+ ADD foo1 data string  "this is foo 1"
+ SHOW foo
+ SHOW data
+ 
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -16,6 +32,159 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 #include <arpa/inet.h>
 #include <poll.h>
 //#include <pigpio.h>
+
+#define NUM_THINGS 1024
+#define CLASS_VAR 1
+#define CLASS_CLASS 2
+#define CLASS_TYPE 3
+
+struct thing 
+{
+  char name[64];
+  char desc[64];
+  int idx;
+  int id;
+  int type;
+  int class;
+  int last_idx;
+  int next_idx;
+
+  char str[64];
+  int ival;
+  double fval;
+};
+
+
+struct thing things[NUM_THINGS];
+// main
+int init_things(void)
+{
+  int i;
+  struct thing *item;
+  item = &things[0];
+
+  for (i=0; i< NUM_THINGS; i++)
+    {
+      item->idx = i;
+      item->name[0] = 0;
+      item++;
+    }  
+  return 0;
+}
+
+struct thing *new_thing(char *name, int class, int type, int y)
+{
+  int i;
+  struct thing *item;
+  item = &things[0];
+
+  for (i=0; i< NUM_THINGS; i++)
+    {
+      if(item->name[0] == 0)
+	{
+	  strncpy(item->name,name,64);
+	  item->class = class;
+	  item->type = type;
+	  break;
+	}
+      item++;
+    }
+  if(i ==  NUM_THINGS)
+    item = NULL;
+  printf("new_thing name[%s] item %p\n"
+	 , name
+	 , item
+	 );
+
+  return item;
+
+}
+
+struct thing *get_thing(char *name, int class, int type, int y)
+{
+
+  int i;
+  struct thing *item;
+  item = &things[0];
+
+  for (i=0; i< NUM_THINGS; i++)
+    {
+      if((item->class == class ) && (strcmp(item->name,name) == 0))
+	{
+	  break;
+	}
+      item++;
+    }  
+
+  if(i ==  NUM_THINGS)
+    item = new_thing(name,class,type,y);
+  printf("get_thing name[%s] class %d item %p\n"
+	 , name
+	 , class
+	 , item
+	 );
+
+  return item;
+}
+
+
+// ADD foo data float 2.3456
+// add_thing("ADD foo data float 2.3456")
+
+int add_thing(char *stuff)
+{
+  int rc;
+  char cmd[64];
+  char v1[64];
+  char v2[64];
+  char v3[64];
+  char v4[64];
+  char v5[64];
+  struct thing *item_1;
+  struct thing *item_2;
+  struct thing *item_3;
+
+  rc = sscanf(stuff, "%s %s %s %s %s %s"
+	      , cmd
+	      , v1
+	      , v2
+	      , v3
+	      , v4
+	      , v5
+	      );
+  printf(" cmd = [%s] rc = %d\n", cmd, rc );
+  item_1 = get_thing(v1, CLASS_VAR,0,0);
+  item_2 = get_thing(v2, CLASS_CLASS,0,0);
+  item_3 = get_thing(v3, CLASS_TYPE,0,0);
+  item_1->class = item_2->idx;
+  item_1->type = item_3->idx;
+
+  return 0;
+}
+
+
+int show_things(void)
+{
+  int i;
+  struct thing *item;
+  item = &things[0];
+
+  for (i=0; i< NUM_THINGS; i++)
+    {
+      if(item->name[0] != 0)
+	{
+	  printf("idx %d item name [%s] class %d type %d \n"
+		 , item->idx
+		 , item->name
+		 , item->class
+		 , item->type
+		 );
+	}
+      item++;
+    }  
+  return 0;
+}
+
 
 /*
    This code may be used to drive the Adafruit (or clones) Motor Shield.
@@ -542,6 +711,13 @@ int main (int argc, char *argv[])
    int i;
    int lsock;
    int rc = 1;
+
+   init_things();
+   add_thing("ADD foo data float 2.3456");
+   add_thing("ADD foo1 data int 234");
+   add_thing("ADD foo3 data str \"val 234\"");
+   show_things();
+
    init_cmds();
    init_cmd("FWD", fwd_cmd);
    run_cmd ("FWD", 2, "Some data", 100, 50);
