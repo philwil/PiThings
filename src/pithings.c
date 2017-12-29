@@ -71,6 +71,14 @@ int init_things(void)
       item->name[0] = 0;
       item++;
     }  
+  item = &t_types[0];
+
+  for (i=0; i< NUM_THINGS; i++)
+    {
+      item->idx = i;
+      item->name[0] = 0;
+      item++;
+    }  
   return 0;
 }
 //     name  class   type  value
@@ -113,8 +121,10 @@ struct thing *get_thing(struct thing *base, char *name, int class, int type, int
   struct thing *item;
   item = &things[0];
 
-  if(!base)
+  if(base)
     item = base;
+  printf("get_thing 1 name[%s] class %d base%p\n", name, class, base);
+
 
   for (i=0; i< NUM_THINGS; i++)
     {
@@ -124,6 +134,7 @@ struct thing *get_thing(struct thing *base, char *name, int class, int type, int
 	}
       item++;
     }  
+  printf("get_thing 2 name[%s] class %d base%p\n", name, class, base);
 
   if(i ==  NUM_THINGS)
     item = new_thing(base, name, class, type, y);
@@ -161,8 +172,8 @@ int add_thing(struct thing *base, char *stuff)
 	      , v4
 	      , v5
 	      );
-  printf(" cmd = [%s] rc = %d\n", cmd, rc );
-  item_1 = get_thing(base, v1, CLASS_VAR,0,0);
+  printf(" cmd = [%s] v1=[%s] rc = %d\n", cmd, v1, rc );
+  item_1 = get_thing(base, v1, CLASS_VAR ,0,0);
   item_2 = get_thing(base, v2, CLASS_CLASS,0,0);
   item_3 = get_thing(&t_types[0],v3, CLASS_TYPE,0,0);
   item_1->class = item_2->idx;

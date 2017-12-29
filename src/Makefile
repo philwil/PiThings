@@ -1,6 +1,8 @@
 all: pithings
 
 pithings: pithings.c
+	cc -g pithings.c -o pithings
+
 
 #pithings.o: pithings.c
 
