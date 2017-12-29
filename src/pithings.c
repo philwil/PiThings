@@ -15,7 +15,7 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <poll.h>
-#include <pigpio.h>
+//#include <pigpio.h>
 
 /*
    This code may be used to drive the Adafruit (or clones) Motor Shield.
@@ -445,7 +445,7 @@ int poll_sock(int lsock)
     return rc;
 }
 
-
+#if 0
 void latch_tx(uint8_t latch_state)
 {
    unsigned char i;
@@ -525,6 +525,8 @@ uint8_t DCMotorRun(uint8_t motornum, uint8_t cmd, uint8_t latch_state)
    return latch_state;
 }
 
+#endif
+
 int fwd_cmd(void *key, int n, char *data, int speed, int time)
 {
     struct cmds *cmd = (struct cmds*)key;
@@ -552,6 +554,7 @@ int main (int argc, char *argv[])
        rc = poll_sock(lsock);
        //count++;
    }
+#if 0
    if(0)
      {
        if (gpioInitialise()<0) return 1;
@@ -606,4 +609,6 @@ int main (int argc, char *argv[])
        
        gpioTerminate();
      }
+#endif
+
 }
