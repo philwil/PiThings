@@ -17,6 +17,14 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
  SHOW foo
  SHOW data
  
+ well we need something called spaces
+ spaces contain lists of things
+ a space can live on a node !!
+ a space can be copied or cloned
+ a cloned space will sync with its parent
+ a parent will keep track of its clones
+ we'll make the number of spaces dynamic
+ 
 */
 
 #include <stdio.h>
@@ -34,12 +42,12 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 //#include <pigpio.h>
 
 #define NUM_THINGS 1024
+#define NUM_SPACES 32
 #define CLASS_VAR 1
 #define CLASS_CLASS 2
 #define CLASS_TYPE 3
 
-struct thing 
-{
+struct thing {
   char name[64];
   char desc[64];
   int idx;
@@ -54,9 +62,89 @@ struct thing
   double fval;
 };
 
+struct space {
+  char name[64];
+  char desc[64];
+  int idx;
+  char node[64];
+  struct thing *things;
+  int things_max;
+  int things_used;
+  struct space **clones;
+  int clones_max;
+  int clones_used;
+  struct space *next;
+  struct space *prev;
+  struct space *parent;
+
+};
+
+
+struct space *space=NULL;
+int g_space_idx = 1;
 
 struct thing things[NUM_THINGS];
 struct thing t_types[NUM_THINGS];
+
+struct space *new_space(char *name , struct space *parent, int num_things, char *node)
+{
+  int i;
+  struct space *space;
+  struct thing *item;
+  printf(" new space [%s] num_things %d\n"
+	 , name
+	 , num_things
+	 );
+  space = calloc(sizeof(struct space), 1);
+  space->parent = parent;
+  strncpy(space->name, name, sizeof(space->name) -1);
+  space->name[sizeof(space->name) -1] = 0;
+
+  space->things = calloc(sizeof(struct thing), num_things);
+  space->things_max = num_things;
+  space->things_used = 0;
+  space->idx = g_space_idx++;
+
+  if(node)
+    {
+      strncpy(space->node, node, sizeof(space->node) -1);
+      space->node[sizeof(space->node) -1] = 0;
+    }
+#if 1
+  item = space->things;
+
+  for (i=0; i< num_things; i++)
+  {
+      item->idx = i;
+      item->name[0] = 0;
+      item++;
+  }  
+#endif
+
+  return space;
+}  
+
+int show_space(struct space *base)
+{
+  printf(" space %03d name [%s] node [%s] num_things %d parent %p\n"
+	 , base->idx
+	 , base->name
+	 , base->node
+	 , base->things_max
+	 , base->parent
+	 );
+  return 0;
+}
+
+int show_spaces(struct space *base)
+{
+  printf("spaces ... \n");
+  while (base)
+    {
+      show_space(base);
+      base=base->next;
+    }
+}
 
 // main
 int init_things(void)
@@ -733,6 +821,19 @@ int main (int argc, char *argv[])
    int i;
    int lsock;
    int rc = 1;
+   //struct space * sp1 = new_space("Space1", struct space *parent, int num_things, char *node)
+   struct space *sp1;
+   struct space *sp2;
+   struct space *sp3;
+
+   sp1 = new_space("Space1", NULL, 16, "127.0.0.1");
+   sp2 = new_space("Space2", sp1, 32, "127.0.0.1");
+   sp1->next = sp2;
+   sp3= new_space("Space3", sp1, 32, "127.0.0.1");
+   sp2->next = sp3;
+   show_spaces(sp1);
+   return 0;
+
 
    init_things();
    add_thing(NULL, "ADD foo data float 2.3456");
