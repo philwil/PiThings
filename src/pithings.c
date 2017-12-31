@@ -81,6 +81,7 @@ struct space {
 
 
 struct space *space=NULL;
+struct space *g_space=NULL;
 int g_space_idx = 1;
 
 struct thing things[NUM_THINGS];
@@ -90,6 +91,7 @@ struct space *new_space(char *name , struct space *parent, int num_things, char 
 {
   int i;
   struct space *space;
+  struct space *last_space;
   struct thing *item;
   printf(" new space [%s] num_things %d\n"
 	 , name
@@ -110,7 +112,6 @@ struct space *new_space(char *name , struct space *parent, int num_things, char 
       strncpy(space->node, node, sizeof(space->node) -1);
       space->node[sizeof(space->node) -1] = 0;
     }
-#if 1
   item = space->things;
 
   for (i=0; i< num_things; i++)
@@ -119,31 +120,71 @@ struct space *new_space(char *name , struct space *parent, int num_things, char 
       item->name[0] = 0;
       item++;
   }  
-#endif
-
+  if(g_space)
+    {
+      last_space = g_space->prev;
+      last_space->next = space;
+      space->prev =  g_space->prev;
+      space->next =  g_space;
+      g_space->prev = space;
+    }
+  else
+    {
+      g_space = space;
+      space->next = space;
+      space->prev = space;
+    }
   return space;
 }  
 
 int show_space(struct space *base)
 {
-  printf(" space %03d name [%s] node [%s] num_things %d parent %p\n"
+  printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
+	 , base
 	 , base->idx
 	 , base->name
 	 , base->node
-	 , base->things_max
-	 , base->parent
+	 , base->next->name
+	 , base->prev->name
 	 );
   return 0;
 }
 
 int show_spaces(struct space *base)
 {
+  struct space *start=base;
   printf("spaces ... \n");
   while (base)
     {
       show_space(base);
-      base=base->next;
+      if(base->next != start)
+	base=base->next;
+      else
+	base =  NULL;
     }
+}
+
+struct space *find_space(char *name)
+{
+  struct space *base;
+  struct space *start;
+
+  start = g_space;
+  base = g_space;
+  printf("find space name [%s] ... \n", name);
+  while (base)
+    {
+      if(strcmp(base->name, name)==0)
+	{
+	  break;
+	}
+      
+      if(base->next != start)
+	base=base->next;
+      else
+	base =  NULL;
+    }
+  return base;
 }
 
 // main
@@ -172,13 +213,13 @@ int init_things(void)
 //     name  class   type  value
 // ADD foo   data    float 2.3456
 
-struct thing *new_thing(struct thing *base, char *name, int class, int type, int y)
+struct thing *new_thing(struct space *base, char *name, int class, int type, int y)
 {
   int i;
   struct thing *item;
   item = &things[0];
   if(base)
-    item = base;
+    item = base->things;
 
   for (i=0; i< NUM_THINGS; i++)
     {
@@ -202,15 +243,14 @@ struct thing *new_thing(struct thing *base, char *name, int class, int type, int
 
 }
 
-struct thing *get_thing(struct thing *base, char *name, int class, int type, int y)
+struct thing *get_thing(struct space *base, char *name, int class, int type, int y)
 {
 
   int i;
   struct thing *item;
-  item = &things[0];
-
+  item = &t_types[0];
   if(base)
-    item = base;
+    item = base->things;
   printf("get_thing 1 name[%s] class %d base%p\n", name, class, base);
 
 
@@ -236,10 +276,70 @@ struct thing *get_thing(struct thing *base, char *name, int class, int type, int
 }
 
 
+int run_str(char *stuff)
+{
+  char cmd[128];
+  snprintf(cmd, sizeof(cmd),"%s",stuff);
+  char vals[64][64];
+  int idx = 0;
+  int cidx = 0;
+  char *sp = cmd;
+  struct space *space=NULL;
+  int rc;
+
+  rc = 1;
+  while((rc>0) && (idx < 64))
+    {
+      rc = sscanf(sp, "%s"
+	      , vals[idx]
+		  );
+      if(rc>0)
+	{
+	  sp = strstr(sp, vals[idx]);
+	  sp += strlen(vals[idx]);
+	  while (*sp && (*sp == ' ')) sp++;
+	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  printf("sp [%s] \n", sp);
+	  idx++;
+	}
+    }
+  cidx =  0;
+  
+  if(
+     (strcmp(vals[cidx], "ADD") == 0) &&
+     (strcmp(vals[cidx+1], "thing") == 0) &&
+     (cidx + 3) < idx)
+    
+    {
+      printf(" Running the add_thing [%s] \n", vals[cidx+2]);
+      if (
+	  (strcmp(vals[cidx+3], "in") == 0) &&
+	  ((cidx + 4) < idx)
+	  )
+	{
+	  space = find_space(vals[cidx+4]);
+	}
+      if(space)
+	{
+	  printf("found space [%s] \n", space->name);
+	}  
+      if((cidx+5) < idx)
+	  printf("using class [%s] \n", vals[cidx+5]);
+      if((cidx+6) < idx)
+	  printf("using type [%s] \n", vals[cidx+6]);
+
+      // cidx+4 is class
+      // cidx+5 is type
+    
+    }
+
+  return idx;
+}
+
 // ADD foo data float 2.3456
 // add_thing("ADD foo data float 2.3456")
 
-int add_thing(struct thing *base, char *stuff)
+int add_thing(char *stuff)
 {
   int rc;
   char cmd[64];
@@ -248,6 +348,7 @@ int add_thing(struct thing *base, char *stuff)
   char v3[64];
   char v4[64];
   char v5[64];
+  struct space *space=NULL;
   struct thing *item_1;
   struct thing *item_2;
   struct thing *item_3;
@@ -261,9 +362,9 @@ int add_thing(struct thing *base, char *stuff)
 	      , v5
 	      );
   printf(" cmd = [%s] v1=[%s] rc = %d\n", cmd, v1, rc );
-  item_1 = get_thing(base, v1, CLASS_VAR ,0,0);
-  item_2 = get_thing(base, v2, CLASS_CLASS,0,0);
-  item_3 = get_thing(&t_types[0],v3, CLASS_TYPE,0,0);
+  item_1 = get_thing(space, v1, CLASS_VAR ,0,0);
+  item_2 = get_thing(space, v2, CLASS_CLASS,0,0);
+  item_3 = get_thing(NULL/*&t_types[0]*/,v3, CLASS_TYPE,0,0);
   item_1->class = item_2->idx;
   item_1->type = item_3->idx;
 
@@ -823,22 +924,31 @@ int main (int argc, char *argv[])
    int rc = 1;
    //struct space * sp1 = new_space("Space1", struct space *parent, int num_things, char *node)
    struct space *sp1;
-   struct space *sp2;
-   struct space *sp3;
+   //struct space *sp2;
+   //struct space *sp3;
 
-   sp1 = new_space("Space1", NULL, 16, "127.0.0.1");
-   sp2 = new_space("Space2", sp1, 32, "127.0.0.1");
-   sp1->next = sp2;
-   sp3= new_space("Space3", sp1, 32, "127.0.0.1");
-   sp2->next = sp3;
-   show_spaces(sp1);
+   new_space("Space1", NULL, 16, "127.0.0.1");
+   sp1 =  g_space;
+   show_space(sp1);
+   sp1 = new_space("Space2", sp1, 32, "127.0.0.1");
+   show_space(g_space);
+   show_space(sp1);
+   sp1 = new_space("Space3", sp1, 32, "127.0.0.1");
+   show_space(g_space);
+   show_space(sp1);
+
+   //   sp1 = g_space;
+   show_spaces(g_space);
+   run_str("ADD thing foo  in Space1 data float 2.3456");
+
    return 0;
 
-
+   run_str("ADD thing foo  in Space1 data float 2.3456");
+   run_str("ADD thing foo1 in Space1 data int 234");
    init_things();
-   add_thing(NULL, "ADD foo data float 2.3456");
-   add_thing(NULL, "ADD foo1 data int 234");
-   add_thing(NULL, "ADD foo3 data str \"val 234\"");
+   add_thing("ADD thing foo1 in Space1 data int 234");
+   add_thing("ADD thing foo2 in Space1 data str \"val 234\"");
+
    show_things(NULL);
    show_things(&t_types[0]);
 
