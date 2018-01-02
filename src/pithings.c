@@ -74,6 +74,7 @@ struct space {
   char name[64];
   char desc[64];
   int idx;
+  int indent;          // offset for printing
   struct space *next;
   struct space *prev;
   struct space *parent;
@@ -117,6 +118,10 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
 	 );
   space = calloc(sizeof(struct space), 1);
   space->parent = parent;
+  space->indent = 2;
+  if(parent)
+    space->indent = parent->indent+2;
+
   strncpy(space->name, name, sizeof(space->name) -1);
   space->name[sizeof(space->name) -1] = 0;
 
@@ -184,6 +189,10 @@ struct space *new_space_class(char *name , struct space *parent)
   class = parent->class;
   space = calloc(sizeof(struct space), 1);
   space->parent = parent;
+  space->indent = 2;
+  if(parent)
+    space->indent = parent->indent+2;
+
   strncpy(space->name, name, sizeof(space->name) -1);
   space->name[sizeof(space->name) -1] = 0;
 
@@ -223,6 +232,9 @@ struct space *new_space_attr(char *name , struct space *parent)
   attr = parent->attr;
   space = calloc(sizeof(struct space), 1);
   space->parent = parent;
+  space->indent = 2;
+  if(parent)
+    space->indent = parent->indent+2;
   strncpy(space->name, name, sizeof(space->name) -1);
   space->name[sizeof(space->name) -1] = 0;
 
@@ -330,7 +342,8 @@ int show_space_attr(struct space *base, int indent, char *buf, int len)
 int show_space(struct space *base, int indent, char *buf, int len)
 {
   int rc;
-  while(indent--)
+  rc =  base->indent + indent;
+  while(rc--)
     {
       if(buf)
 	{
