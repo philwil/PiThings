@@ -448,7 +448,7 @@ struct thing *get_thing(struct space *base, char *name, int class, int type, int
 
 //           attr        space  class type  value 
 //   run_str("ADD item foo in Space1 data  float 2.3456");
-int run_str(char *stuff)
+int run_str_add(char *stuff)
 {
   char cmd[128];
   snprintf(cmd, sizeof(cmd),"%s",stuff);
@@ -540,6 +540,127 @@ int run_str(char *stuff)
 
   return idx;
 }
+//           attr        space  class type  value 
+//   run_str("SET item foo in Space1 data  value 2.3456");
+int run_str_set(char *stuff)
+{
+  char cmd[128];
+  snprintf(cmd, sizeof(cmd),"%s",stuff);
+  char vals[64][64];
+  int idx = 0;
+  int cidx = 0;
+  char *sp = cmd;
+  struct space *space=NULL;
+  struct space *attr=NULL;
+  int rc;
+
+  rc = 1;
+  while((rc>0) && (idx < 64))
+    {
+      rc = sscanf(sp, "%s"
+	      , vals[idx]
+		  );
+      if(rc>0)
+	{
+	  sp = strstr(sp, vals[idx]);
+	  sp += strlen(vals[idx]);
+	  while (*sp && (*sp == ' ')) sp++;
+	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  printf("sp [%s] \n", sp);
+	  idx++;
+	}
+    }
+  cidx =  0;
+  
+  if(
+     (strcmp(vals[cidx], "SET") == 0) &&
+     (strcmp(vals[cidx+1], "item") == 0) &&
+     (cidx + 3) < idx)
+    
+    {
+      printf(" Running the add_item [%s] \n", vals[cidx+2]);
+      if (
+	  (strcmp(vals[cidx+3], "in") == 0) &&
+	  ((cidx + 4) < idx)
+	  )
+	{
+	  space = find_space(NULL, vals[cidx+4]);
+	}
+      if(!space)
+	{
+	  printf(" No space [%s]\n", vals[cidx+4]);
+          goto out;
+	}
+      if(space)
+	{
+	  printf("found space [%s] \n", space->name);
+	  attr=find_space(&space->attr, vals[cidx+2]);
+	  if(attr)
+	    {
+	      printf("   found attr [%s] \n", attr->name);
+	    }
+	  else
+	    {
+	      printf("   No attr [%s] \n", attr->name);
+	      goto out;
+	    }
+	  if(attr->type == SPACE_FLOAT)
+	    attr->fval = atof(vals[cidx+6]);
+	  else if(attr->type == SPACE_INT)
+	    attr->ival = atoi(vals[cidx+6]);
+	  else
+	    attr->cval = vals[cidx+6];
+	}
+      if((cidx+6) < idx)
+	printf("using value [%s] \n", vals[cidx+6]);
+      
+      // cidx+4 is class
+      // cidx+5 is type
+      
+    }
+ out:
+  return rc;
+}
+
+//           attr        space  class type  value 
+//   run_str("ADD item foo in Space1 data  float 2.3456");
+int run_str(char *stuff)
+{
+  char cmd[128];
+  snprintf(cmd, sizeof(cmd),"%s",stuff);
+  char vals[64][64];
+  int idx = 0;
+  int cidx = 0;
+  char *sp = cmd;
+  struct space *space=NULL;
+  struct space *attr=NULL;
+  int rc;
+
+  rc = 1;
+  while((rc>0) && (idx < 1))
+    {
+      rc = sscanf(sp, "%s"
+	      , vals[idx]
+		  );
+      if(rc>0)
+	{
+	  sp = strstr(sp, vals[idx]);
+	  sp += strlen(vals[idx]);
+	  while (*sp && (*sp == ' ')) sp++;
+	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  printf("sp [%s] \n", sp);
+	  idx++;
+	}
+    }
+  cidx =  0;
+  
+  if(strcmp(vals[cidx], "ADD") == 0)
+    return run_str_add(stuff);
+  else if(strcmp(vals[cidx], "SET") == 0)
+    return run_str_set(stuff);
+  return 0;
+}
+
 
 // ADD foo data float 2.3456
 // add_thing("ADD foo data float 2.3456")
@@ -1161,6 +1282,7 @@ int main (int argc, char *argv[])
    run_str("ADD item foo_float1 in Space4 data  float 1.233");
    run_str("ADD item foo_float2 in Space4 data  float 2.233");
    run_str("ADD item foo_str in Space4 data  str xxx2.233");
+   run_str("SET item foo_int in Space4 value 2234");
 
    show_spaces(g_space, "Global Spaces 2", 0);
 
