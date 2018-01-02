@@ -304,59 +304,113 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 
 }
 
-int show_spaces(struct space *base, char *desc, int indent);
+int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
 
-int show_space_class(struct space *base, int indent)
+int show_space_class(struct space *base, int indent, char *buf, int len)
 {
   char atname[128];
   snprintf(atname, sizeof(atname),"  %s Class", base->name); 
   if(base->class)
   {
-    show_spaces(base->class, atname, indent);
+    len -= show_spaces(base->class, atname, indent, buf , len);
   }
-  return 0;
+  return len;
 }
-int show_space_attr(struct space *base, int indent)
+int show_space_attr(struct space *base, int indent, char *buf, int len)
 {
   char atname[128];
   snprintf(atname, sizeof(atname),"  %s Attr", base->name); 
   if(base->attr)
   {
-    show_spaces(base->attr, atname, indent);
+    len -= show_spaces(base->attr, atname, indent, buf, len);
   }
-  return 0;
+  return len;
 }
 
-int show_space(struct space *base, int indent)
+int show_space(struct space *base, int indent, char *buf, int len)
 {
+  int rc;
   while(indent--)
-    printf(" ");
-  printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
-	 , base
-	 , base->idx
-	 , base->name
-	 , base->node
-	 , base->next->name
-	 , base->prev->name
-	 );
-  show_space_attr(base, indent+3);
-  show_space_class(base, indent+5);
-  return 0;
+    {
+      if(buf)
+	{
+	  if(len > 0)
+	    {
+	      *buf++ = ' ';
+	      len--;
+	    }
+	}
+      else
+	printf(" ");
+    }
+  if(buf)
+    {
+      rc = snprintf(buf,len," name [%s](%d)\n"
+	     , base->name
+	     , base->idx
+	     );
+      if(rc < len)
+	{
+	  len -= strlen(buf);
+	  buf += strlen(buf);
+	}
+    }
+  else
+    {
+      printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
+	     , base
+	     , base->idx
+	     , base->name
+	     , base->node
+	     , base->next->name
+	     , base->prev->name
+	     );
+    }
+  show_space_attr(base, indent+3, buf, len);
+
+  if(buf){
+    len -= strlen(buf);
+    buf += strlen(buf);
+  }
+  show_space_class(base, indent+5, buf, len);
+  if(buf){
+    len -= strlen(buf);
+    buf += strlen(buf);
+  }
+  return len;
 }
 
 
-int show_spaces(struct space *base, char *desc, int indent)
+int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
 {
   struct space *start=base;
-  printf("spaces ... %s\n", desc ? desc:" ");
+  int rc;
+  if(buf)
+    {
+      rc= snprintf(buf,len,">>>%s\n", desc ? desc:" ");
+      if(rc < len)
+	{
+	  len -= strlen(buf);
+	  buf += strlen(buf);
+	}
+    }
+  else
+    printf("spaces ... %s\n", desc ? desc:" ");
+
   while (base)
     {
-      show_space(base, indent);
+      rc = show_space(base, indent, buf, len);
+      if(rc < len)
+	{
+	  len -= strlen(buf);
+	  buf += strlen(buf);
+	}
       if(base->next != start)
 	base=base->next;
       else
 	base =  NULL;
     }
+  return len;
 }
 
 struct space *find_space(struct space**parent, char *name)
@@ -1305,19 +1359,20 @@ int main (int argc, char *argv[])
    struct space *sp1;
    struct space *sp2;
    //struct space *sp3;
+   char buf[2048];
 
    new_space("Space1", NULL, NULL, "127.0.0.1");
    sp1 =  g_space;
-   show_space(sp1, 0);
+   show_space(sp1, 0, NULL , 0);
    sp1 = new_space("Space2", sp1, NULL, "127.0.0.1");
-   show_space(g_space, 0);
-   show_space(sp1, 0);
+   show_space(g_space, 0, NULL , 0);
+   show_space(sp1, 0, NULL , 0);
    sp1 = new_space("Space3", sp1, NULL, "127.0.0.1");
-   show_space(g_space, 0);
-   show_space(sp1, 0);
+   show_space(g_space, 0, NULL , 0);
+   show_space(sp1, 0, NULL , 0);
 
    //   sp1 = g_space;
-   show_spaces(g_space, "Global Spaces 1", 0);
+   show_spaces(g_space, "Global Spaces 1", 0, NULL , 0);
    //           attr        space  class type  value 
 
    sp1 = g_space;
@@ -1327,7 +1382,7 @@ int main (int argc, char *argv[])
    sp2 = new_space_attr_int("foo_int", sp1, 2345);
    sp2 = new_space_attr_str("foo_str", sp1, "x2345");
 
-   show_spaces(sp1->attr, "Sp1 attr", 0);
+   show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
 
 
    run_str("ADD item foo_float in Space1 data  float 2.3456");
@@ -1337,8 +1392,9 @@ int main (int argc, char *argv[])
    run_str("ADD item foo_str in Space4 data  str xxx2.233");
    run_str("SET item foo_int in Space4 data value 2234");
 
-   show_spaces(g_space, "Global Spaces 2", 0);
-
+   show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
+   rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
+   printf("rc %d buf [%s]\n",rc, buf);
    return 0;
 
    run_str("ADD item foo  in Space1 data float 2.3456");
