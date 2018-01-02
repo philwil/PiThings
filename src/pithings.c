@@ -47,6 +47,11 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 #define CLASS_CLASS 2
 #define CLASS_TYPE 3
 
+#define SPACE_ROOT 0
+#define SPACE_FLOAT 1
+#define SPACE_INT 2
+#define SPACE_STR 3
+
 struct thing {
   char name[64];
   char desc[64];
@@ -62,10 +67,23 @@ struct thing {
   double fval;
 };
 
+// OK the space becomes the real thing
+// A space can have kids and attributes
+// both or which are spaces  
 struct space {
   char name[64];
   char desc[64];
   int idx;
+  struct space *next;
+  struct space *prev;
+  struct space *parent;
+  struct space *attr;  // here are things about this item 
+  struct space *clone; // here are copies of this item
+  int ival;
+  float fval;
+  char *cval;
+  int type;
+  // we'll get rid of this stuff soon
   char node[64];
   struct thing *things;
   int things_max;
@@ -73,9 +91,7 @@ struct space {
   struct space **clones;
   int clones_max;
   int clones_used;
-  struct space *next;
-  struct space *prev;
-  struct space *parent;
+
 
 };
 
@@ -87,55 +103,167 @@ int g_space_idx = 1;
 struct thing things[NUM_THINGS];
 struct thing t_types[NUM_THINGS];
 
-struct space *new_space(char *name , struct space *parent, int num_things, char *node)
+struct space *new_space(char *name , struct space *parent, struct space **root_space,char *node)
 {
-  int i;
+  //int i;
   struct space *space;
+  struct space *root = NULL;
   struct space *last_space;
-  struct thing *item;
-  printf(" new space [%s] num_things %d\n"
+  //struct thing *item;
+  printf(" new space [%s] root %p\n"
 	 , name
-	 , num_things
+	 , root_space
 	 );
   space = calloc(sizeof(struct space), 1);
   space->parent = parent;
   strncpy(space->name, name, sizeof(space->name) -1);
   space->name[sizeof(space->name) -1] = 0;
 
-  space->things = calloc(sizeof(struct thing), num_things);
-  space->things_max = num_things;
-  space->things_used = 0;
   space->idx = g_space_idx++;
-
+  space->attr = NULL;
+  space->clone = NULL;
+  space->type = SPACE_ROOT;
+ 
   if(node)
     {
       strncpy(space->node, node, sizeof(space->node) -1);
       space->node[sizeof(space->node) -1] = 0;
     }
-  item = space->things;
 
-  for (i=0; i< num_things; i++)
-  {
-      item->idx = i;
-      item->name[0] = 0;
-      item++;
-  }  
-  if(g_space)
+  //space->things = calloc(sizeof(struct thing), num_things);
+  //space->things_max = num_things;
+  //space->things_used = 0;
+  //item = space->things;
+
+  //for (i=0; i< num_things; i++)
+  //{
+  //    item->idx = i;
+  //    item->name[0] = 0;
+  //    item++;
+  //}  
+
+  // insert in parent list
+  if(parent)
     {
-      last_space = g_space->prev;
-      last_space->next = space;
-      space->prev =  g_space->prev;
-      space->next =  g_space;
-      g_space->prev = space;
+	  last_space = parent->prev;
+	  last_space->next = space;
+	  space->prev =  parent->prev;
+	  space->next =  parent;
+	  parent->prev = space;
     }
   else
     {
-      g_space = space;
-      space->next = space;
-      space->prev = space;
+      if(root_space)
+	{
+	  root = *root_space;
+	  if(root)
+	    {
+	      last_space = root->prev;
+	      last_space->next = space;
+	      space->prev =  root->prev;
+	      space->next =  root;
+	      root->prev = space;
+	    }
+	  else
+	    {
+	      *root_space = space;
+	      space->next = space;
+	      space->prev = space;
+	    }
+	}
+      else
+	{
+	  g_space = space;
+	  space->next = space;
+	  space->prev = space;
+	}
     }
   return space;
 }  
+
+struct space *new_space_attr(char *name , struct space *parent)
+{
+  int i;
+  struct space *space;
+  struct space *last_space;
+  printf(" new space attr [%s]\n"
+	 , name
+	 );
+  space = calloc(sizeof(struct space), 1);
+  space->parent = parent;
+  strncpy(space->name, name, sizeof(space->name) -1);
+  space->name[sizeof(space->name) -1] = 0;
+
+  space->idx = g_space_idx++;
+  space->attr = NULL;
+  space->clone = NULL;
+
+  //space->things = NULL;
+  //space->things_max = 0;
+  //space->things_used = 0;
+  //item = space->things;
+
+  //for (i=0; i< num_things; i++)
+  //{
+  //  item->idx = i;
+  //  item->name[0] = 0;
+  //  item++;
+  //}  
+
+  // insert in parent list
+  space->prev = space;
+  space->next = space;
+
+  if(parent)
+    {
+	  last_space = parent->prev;
+	  last_space->next = space;
+	  space->prev =  parent->prev;
+	  space->next =  parent;
+	  parent->prev = space;
+    }
+  return space;
+}  
+
+struct space *new_space_attr_str(char *name, struct space *parent, char *val)
+{
+
+  struct space *space = new_space_attr(name, parent);
+  if(space)
+    {
+      space->cval = val;
+      space->type = SPACE_STR;
+
+    }
+  return space;
+}
+
+struct space *new_space_attr_float(char *name, struct space *parent, float val)
+{
+
+  struct space * space = new_space_attr(name, parent);
+  if(space)
+    {
+      space->fval = val;
+      space->type = SPACE_FLOAT;
+
+    }
+  return space;
+}
+
+struct space *new_space_attr_int(char *name, struct space *parent, int val)
+{
+
+  struct space * space = new_space_attr(name, parent);
+  if(space)
+    {
+      space->ival = val;
+      space->type = SPACE_INT;
+
+    }
+
+}
+
 
 int show_space(struct space *base)
 {
@@ -164,13 +292,18 @@ int show_spaces(struct space *base)
     }
 }
 
-struct space *find_space(char *name)
+struct space *find_space(struct space**parent, char *name)
 {
   struct space *base;
   struct space *start;
 
   start = g_space;
   base = g_space;
+  if(parent)
+    {
+      start = *parent;
+      base = *parent;
+    }
   printf("find space name [%s] ... \n", name);
   while (base)
     {
@@ -275,7 +408,8 @@ struct thing *get_thing(struct space *base, char *name, int class, int type, int
   return item;
 }
 
-
+//           attr        space  class type  value 
+//   run_str("ADD item foo in Space1 data  float 2.3456");
 int run_str(char *stuff)
 {
   char cmd[128];
@@ -307,17 +441,17 @@ int run_str(char *stuff)
   
   if(
      (strcmp(vals[cidx], "ADD") == 0) &&
-     (strcmp(vals[cidx+1], "thing") == 0) &&
+     (strcmp(vals[cidx+1], "item") == 0) &&
      (cidx + 3) < idx)
     
     {
-      printf(" Running the add_thing [%s] \n", vals[cidx+2]);
+      printf(" Running the add_item [%s] \n", vals[cidx+2]);
       if (
 	  (strcmp(vals[cidx+3], "in") == 0) &&
 	  ((cidx + 4) < idx)
 	  )
 	{
-	  space = find_space(vals[cidx+4]);
+	  space = find_space(NULL, vals[cidx+4]);
 	}
       if(space)
 	{
@@ -327,6 +461,8 @@ int run_str(char *stuff)
 	  printf("using class [%s] \n", vals[cidx+5]);
       if((cidx+6) < idx)
 	  printf("using type [%s] \n", vals[cidx+6]);
+      if((cidx+7) < idx)
+	  printf("using value [%s] \n", vals[cidx+7]);
 
       // cidx+4 is class
       // cidx+5 is type
@@ -922,24 +1058,38 @@ int main (int argc, char *argv[])
    int i;
    int lsock;
    int rc = 1;
-   //struct space * sp1 = new_space("Space1", struct space *parent, int num_things, char *node)
+   //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
    struct space *sp1;
-   //struct space *sp2;
+   struct space *sp2;
    //struct space *sp3;
 
-   new_space("Space1", NULL, 16, "127.0.0.1");
+   new_space("Space1", NULL, NULL, "127.0.0.1");
    sp1 =  g_space;
    show_space(sp1);
-   sp1 = new_space("Space2", sp1, 32, "127.0.0.1");
+   sp1 = new_space("Space2", sp1, NULL, "127.0.0.1");
    show_space(g_space);
    show_space(sp1);
-   sp1 = new_space("Space3", sp1, 32, "127.0.0.1");
+   sp1 = new_space("Space3", sp1, NULL, "127.0.0.1");
    show_space(g_space);
    show_space(sp1);
 
    //   sp1 = g_space;
    show_spaces(g_space);
-   run_str("ADD thing foo  in Space1 data float 2.3456");
+   //           attr        space  class type  value 
+
+   sp1 = g_space;
+   //struct space *new_space_attr_float(char *name , struct space *parent,1.234)
+
+   sp2 = new_space_attr_float("foo_float", sp1->attr, 1.2345);
+   if(!sp1->attr)
+     sp1->attr = sp2;
+
+   sp2 = new_space_attr_int("foo_int", sp1->attr, 2345);
+   sp2 = new_space_attr_str("foo_str", sp1->attr, "x2345");
+
+   show_spaces(sp1->attr);
+
+   run_str("ADD item foo in Space1 data  float 2.3456");
 
    return 0;
 
