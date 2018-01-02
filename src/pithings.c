@@ -78,6 +78,7 @@ struct space {
   struct space *prev;
   struct space *parent;
   struct space *attr;  // here are things about this item 
+  struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
   int ival;
   float fval;
@@ -121,6 +122,7 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
 
   space->idx = g_space_idx++;
   space->attr = NULL;
+  space->class = NULL;
   space->clone = NULL;
   space->type = SPACE_ROOT;
  
@@ -129,18 +131,6 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
       strncpy(space->node, node, sizeof(space->node) -1);
       space->node[sizeof(space->node) -1] = 0;
     }
-
-  //space->things = calloc(sizeof(struct thing), num_things);
-  //space->things_max = num_things;
-  //space->things_used = 0;
-  //item = space->things;
-
-  //for (i=0; i< num_things; i++)
-  //{
-  //    item->idx = i;
-  //    item->name[0] = 0;
-  //    item++;
-  //}  
 
   // insert in parent list
   if(parent)
@@ -181,6 +171,45 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
   return space;
 }  
 
+struct space *new_space_class(char *name , struct space *parent)
+{
+  int i;
+  struct space *space;
+  struct space *class;
+  struct space *last_space;
+  printf(" new space class [%s] parent [%s]\n"
+	 , name
+	 , parent?parent->name:"no parent"
+	 );
+  class = parent->class;
+  space = calloc(sizeof(struct space), 1);
+  space->parent = parent;
+  strncpy(space->name, name, sizeof(space->name) -1);
+  space->name[sizeof(space->name) -1] = 0;
+
+  space->idx = g_space_idx++;
+  space->attr = NULL;
+  space->class = NULL;
+  space->clone = NULL;
+
+  space->prev = space;
+  space->next = space;
+
+  if(class)
+    {
+	  last_space = class->prev;
+	  last_space->next = space;
+	  space->prev =  class->prev;
+	  space->next =  class;
+	  class->prev = space;
+    }
+  else
+    {
+      parent->class = space;
+    }
+  return space;
+}  
+
 struct space *new_space_attr(char *name , struct space *parent)
 {
   int i;
@@ -200,18 +229,7 @@ struct space *new_space_attr(char *name , struct space *parent)
   space->idx = g_space_idx++;
   space->attr = NULL;
   space->clone = NULL;
-
-  //space->things = NULL;
-  //space->things_max = 0;
-  //space->things_used = 0;
-  //item = space->things;
-
-  //for (i=0; i< num_things; i++)
-  //{
-  //  item->idx = i;
-  //  item->name[0] = 0;
-  //  item++;
-  //}  
+  space->class = NULL;
 
   // insert in parent list
   space->prev = space;
@@ -288,6 +306,16 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 
 int show_spaces(struct space *base, char *desc, int indent);
 
+int show_space_class(struct space *base, int indent)
+{
+  char atname[128];
+  snprintf(atname, sizeof(atname),"  %s Class", base->name); 
+  if(base->class)
+  {
+    show_spaces(base->class, atname, indent);
+  }
+  return 0;
+}
 int show_space_attr(struct space *base, int indent)
 {
   char atname[128];
@@ -312,6 +340,7 @@ int show_space(struct space *base, int indent)
 	 , base->prev->name
 	 );
   show_space_attr(base, indent+3);
+  show_space_class(base, indent+5);
   return 0;
 }
 
@@ -457,6 +486,7 @@ int run_str_add(char *stuff)
   int cidx = 0;
   char *sp = cmd;
   struct space *space=NULL;
+  struct space *class=NULL;
   struct space *attr=NULL;
   int rc;
 
@@ -479,7 +509,6 @@ int run_str_add(char *stuff)
   cidx =  0;
   
   if(
-     (strcmp(vals[cidx], "ADD") == 0) &&
      (strcmp(vals[cidx+1], "item") == 0) &&
      (cidx + 3) < idx)
     
@@ -500,7 +529,23 @@ int run_str_add(char *stuff)
       if(space)
 	{
 	  printf("found space [%s] \n", space->name);
-	  attr=find_space(&space->attr, vals[cidx+2]);
+	  class=find_space(&space->class, vals[cidx+5]);
+	  if(class)
+	    {
+	      printf("   found class [%s] \n", class->name);
+	    }
+	  else
+	    {
+	      printf("   adding class  [%s] to [%s]\n"
+		     , vals[cidx+5]
+		     , vals[cidx+4]
+		     );
+	      //class =  new_space_attr_float(vals[cidx+2], space, atof(vals[cidx+7]));
+	      class =  new_space_class(vals[cidx+5], space);
+
+	    }
+	  if(!class) class =  space;
+	  attr=find_space(&class->attr, vals[cidx+2]);
 	  if(attr)
 	    {
 	      printf("   found attr [%s] \n", attr->name);
@@ -513,15 +558,15 @@ int run_str_add(char *stuff)
 		     );
 	      if(strcmp(vals[cidx+6],"float") ==0)
 		{
-		  new_space_attr_float(vals[cidx+2], space, atof(vals[cidx+7]));
+		  new_space_attr_float(vals[cidx+2], class, atof(vals[cidx+7]));
 		}
 	      else if(strcmp(vals[cidx+6],"int") ==0)
 		{
-		  new_space_attr_int(vals[cidx+2], space, atoi(vals[cidx+7]));
+		  new_space_attr_int(vals[cidx+2], class, atoi(vals[cidx+7]));
 		}
 	      else
 		{
-		  new_space_attr_str(vals[cidx+2], space, vals[cidx+7]);
+		  new_space_attr_str(vals[cidx+2], class, vals[cidx+7]);
 		}
 
 	    }
@@ -552,6 +597,7 @@ int run_str_set(char *stuff)
   char *sp = cmd;
   struct space *space=NULL;
   struct space *attr=NULL;
+  struct space *class=NULL;
   int rc;
 
   rc = 1;
@@ -573,12 +619,11 @@ int run_str_set(char *stuff)
   cidx =  0;
   
   if(
-     (strcmp(vals[cidx], "SET") == 0) &&
      (strcmp(vals[cidx+1], "item") == 0) &&
      (cidx + 3) < idx)
     
     {
-      printf(" Running the add_item [%s] \n", vals[cidx+2]);
+      printf(" Running the set_item [%s] \n", vals[cidx+2]);
       if (
 	  (strcmp(vals[cidx+3], "in") == 0) &&
 	  ((cidx + 4) < idx)
@@ -594,7 +639,15 @@ int run_str_set(char *stuff)
       if(space)
 	{
 	  printf("found space [%s] \n", space->name);
-	  attr=find_space(&space->attr, vals[cidx+2]);
+
+	  class=find_space(&space->class, vals[cidx+5]);
+	  if(!class)
+	    {
+	      printf(" No space [%s]\n", vals[cidx+5]);
+	      goto out;
+	    }
+	  printf("found class [%s] \n", class->name);
+	  attr=find_space(&class->attr, vals[cidx+2]);
 	  if(attr)
 	    {
 	      printf("   found attr [%s] \n", attr->name);
@@ -1282,7 +1335,7 @@ int main (int argc, char *argv[])
    run_str("ADD item foo_float1 in Space4 data  float 1.233");
    run_str("ADD item foo_float2 in Space4 data  float 2.233");
    run_str("ADD item foo_str in Space4 data  str xxx2.233");
-   run_str("SET item foo_int in Space4 value 2234");
+   run_str("SET item foo_int in Space4 data value 2234");
 
    show_spaces(g_space, "Global Spaces 2", 0);
 
