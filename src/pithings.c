@@ -25,6 +25,8 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
  a parent will keep track of its clones
  we'll make the number of spaces dynamic
  
+Big jump now  make multi/space/possible 
+
 */
 
 #include <stdio.h>
@@ -78,6 +80,7 @@ struct space {
   struct space *next;
   struct space *prev;
   struct space *parent;
+  struct space *child;  // multispace
   struct space *attr;  // here are things about this item 
   struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
@@ -105,18 +108,9 @@ int g_space_idx = 1;
 struct thing things[NUM_THINGS];
 struct thing t_types[NUM_THINGS];
 
-struct space *new_space(char *name , struct space *parent, struct space **root_space,char *node)
+int setup_space(char *name, struct space * space,struct space*parent)
 {
-  //int i;
-  struct space *space;
-  struct space *root = NULL;
-  struct space *last_space;
-  //struct thing *item;
-  printf(" new space [%s] root %p\n"
-	 , name
-	 , root_space
-	 );
-  space = calloc(sizeof(struct space), 1);
+  space->idx = g_space_idx++;
   space->parent = parent;
   space->indent = 2;
   if(parent)
@@ -125,12 +119,30 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
   strncpy(space->name, name, sizeof(space->name) -1);
   space->name[sizeof(space->name) -1] = 0;
 
-  space->idx = g_space_idx++;
   space->attr = NULL;
   space->class = NULL;
   space->clone = NULL;
+  space->child = NULL;
+
+  space->prev = space;
+  space->next = space;
+
   space->type = SPACE_ROOT;
- 
+  return 0;
+}
+
+struct space *new_space(char *name , struct space *parent, struct space **root_space,char *node)
+{
+  struct space *space;
+  struct space *root = NULL;
+  struct space *last_space;
+  printf(" new space [%s] root %p\n"
+	 , name
+	 , root_space
+	 );
+  space = calloc(sizeof(struct space), 1);
+  setup_space(name, space, parent);
+
   if(node)
     {
       strncpy(space->node, node, sizeof(space->node) -1);
@@ -148,6 +160,7 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
     }
   else
     {
+#if 0
       if(root_space)
 	{
 	  root = *root_space;
@@ -172,6 +185,7 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
 	  space->next = space;
 	  space->prev = space;
 	}
+#endif
     }
   return space;
 }  
@@ -188,21 +202,8 @@ struct space *new_space_class(char *name , struct space *parent)
 	 );
   class = parent->class;
   space = calloc(sizeof(struct space), 1);
-  space->parent = parent;
-  space->indent = 2;
-  if(parent)
-    space->indent = parent->indent+2;
+  setup_space(name, space, parent);
 
-  strncpy(space->name, name, sizeof(space->name) -1);
-  space->name[sizeof(space->name) -1] = 0;
-
-  space->idx = g_space_idx++;
-  space->attr = NULL;
-  space->class = NULL;
-  space->clone = NULL;
-
-  space->prev = space;
-  space->next = space;
 
   if(class)
     {
@@ -231,21 +232,8 @@ struct space *new_space_attr(char *name , struct space *parent)
 	 );
   attr = parent->attr;
   space = calloc(sizeof(struct space), 1);
-  space->parent = parent;
-  space->indent = 2;
-  if(parent)
-    space->indent = parent->indent+2;
-  strncpy(space->name, name, sizeof(space->name) -1);
-  space->name[sizeof(space->name) -1] = 0;
+  setup_space(name, space, parent);
 
-  space->idx = g_space_idx++;
-  space->attr = NULL;
-  space->clone = NULL;
-  space->class = NULL;
-
-  // insert in parent list
-  space->prev = space;
-  space->next = space;
 
   if(attr)
     {
@@ -341,7 +329,10 @@ int show_space_attr(struct space *base, int indent, char *buf, int len)
 
 int show_space(struct space *base, int indent, char *buf, int len)
 {
-  int rc;
+  int rc=-1;
+
+  if(!base)return rc;
+ 
   rc =  base->indent + indent;
   while(rc--)
     {
@@ -437,8 +428,14 @@ struct space *find_space(struct space**parent, char *name)
     {
       start = *parent;
       base = *parent;
+      printf(" >>> find space [%s] parent name [%s] ... \n", name
+	     ,start->name);
+
     }
-  printf("find space name [%s] ... \n", name);
+  else
+    {
+      printf(" >>> find space name [%s] ... \n", name);
+    }
   while (base)
     {
       if(strcmp(base->name, name)==0)
@@ -451,6 +448,7 @@ struct space *find_space(struct space**parent, char *name)
       else
 	base =  NULL;
     }
+  printf(" >>> find space name [%s] space %p... \n", name, base);
   return base;
 }
 
@@ -541,9 +539,136 @@ struct thing *get_thing(struct space *base, char *name, int class, int type, int
 
   return item;
 }
+/*
+before any s0->p = s0 s0->n=s0
+after add s1 s0->p = s1 s0->n = s1 s1->p = s0 s1->n=s0
+after add s2 s0->p = s2 s0->n = s1 s1->p = s0 s1->n=s2 s2->p = s1 s2->n=s0
+ */
+
+int add_space(struct space *parent, struct space *space)
+{
+
+  struct space *last_space;
+
+  last_space = parent->prev;
+
+  printf( " add_space  parent [%s] pprev [%s] next [%s]\n"
+	  , parent->name
+	  , last_space->name
+	  , space->name
+	  );
+
+
+  if(parent->next == parent) 
+    {
+      parent->next = space;
+      parent->prev = space;
+      space->next = parent;
+      space->prev = parent;
+    }
+  else
+    {
+      
+      last_space->next = space;
+      space->prev = last_space;
+      space->next =  parent;
+      parent->prev = space;
+
+    }
+  return 0;
+}
+
+// split up multi/space/name
+// look for children of the same name 
+// return found name or new space object
+struct space *get_space(struct space **root, char *name, struct space *parent)
+{
+  struct space *space=NULL;
+  char vals[64][64];
+  int idx = 0;
+  int idv = 0;
+  int cidx = 0;
+  char *sp = name;
+  int rc;
+  int i;
+  rc = 1;
+
+  while(*sp && (rc>0) && (idx < 64))
+    {
+      rc = 0;
+      idv = 0;
+      while (*sp && *sp != '/')
+	{
+	  vals[idx][idv] = *sp;
+	  rc++;
+	  sp++;
+	  if(idv < sizeof(vals[idx]-1))
+	    {
+	      idv++;
+	    }
+	}
+      if(*sp)sp++;
+
+	
+      if(rc>0)
+	{
+	  vals[idx][idv] = 0;
+	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  printf("sp [%s] \n", sp);
+	  idx++;
+	}
+    }
+  for (i = 0 ; i < idx-1 ; i++)
+    {
+      space = NULL;
+      if(parent)
+	{
+	  space = find_space(&parent->child, vals[i]);
+	}
+      else
+	{
+	  space = find_space(root, vals[i]);
+	}
+      if (!space)
+	{
+	  if(parent)
+	    {
+	      printf(" New Space for [%s] parent->name [%s]\n", vals[i], parent->name);
+	      space = new_space(vals[i], parent->child, &parent->child, NULL); 
+	      if(parent->child == NULL) parent->child = space;
+	    }
+	  else
+	    {
+	      printf(" New Space for [%s] at root\n", vals[i]);
+	      space = new_space(vals[i], NULL, &g_space, NULL); 
+	    }
+	}
+      else
+	{
+	  printf(" Space found [%s]\n", vals[i]);
+	}
+      if(i == 0)
+	{
+	  if (*root == NULL)
+	    {
+	      *root = space;
+	    }
+	  else
+	    {
+	      add_space(*root, space);
+	    }
+	}
+      parent = space;
+    }
+    
+  printf("[%s] found %d spaces\n",name, idx);
+
+  return space;
+}
+
 
 //           attr        space  class type  value 
-//   run_str("ADD item foo in Space1 data  float 2.3456");
+//   run_str("ADD item foo in Space1/multi/option data  float 2.3456");
 int run_str_add(char *stuff, char *buf, int len)
 {
   char cmd[128];
@@ -552,10 +677,11 @@ int run_str_add(char *stuff, char *buf, int len)
   int idx = 0;
   int cidx = 0;
   char *sp = cmd;
+  int rc;
   struct space *space=NULL;
   struct space *class=NULL;
   struct space *attr=NULL;
-  int rc;
+
 
   rc = 1;
   while((rc>0) && (idx < 64))
@@ -1480,6 +1606,17 @@ int main (int argc, char *argv[])
    struct space *sp2;
    //struct space *sp3;
    char buf[2048];
+
+   sp1 = get_space(&g_space, "uav1/motor1/speed", NULL);
+   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+   sp1 = get_space(&g_space, "uav1/motor2/speed", NULL);
+   show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
+   sp1 = get_space(&g_space, "uav2/motor2/speed", NULL);
+   show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
+   sp1 = get_space(&g_space, "uav3/motor2/speed", NULL);
+   show_spaces(g_space, "All Spaces 4 ", 0, NULL , 0);
+
+   return 0;
 
    new_space("Space1", NULL, NULL, "127.0.0.1");
    sp1 =  g_space;
