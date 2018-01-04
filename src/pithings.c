@@ -409,6 +409,10 @@ int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
 	  len -= strlen(buf);
 	  buf += strlen(buf);
 	}
+      if(base->child) 
+	{
+	  rc =  show_spaces(base->child,"child",indent+2, buf,len);
+	}
       if(base->next != start)
 	base=base->next;
       else
@@ -618,7 +622,7 @@ struct space *get_space(struct space **root, char *name, struct space *parent)
 	  idx++;
 	}
     }
-  for (i = 0 ; i < idx-1 ; i++)
+  for (i = 0 ; i < idx; i++)
     {
       space = NULL;
       if(parent)
@@ -635,29 +639,36 @@ struct space *get_space(struct space **root, char *name, struct space *parent)
 	    {
 	      printf(" New Space for [%s] parent->name [%s]\n", vals[i], parent->name);
 	      space = new_space(vals[i], parent->child, &parent->child, NULL); 
-	      if(parent->child == NULL) parent->child = space;
+	      if(parent->child == NULL) {
+		parent->child = space;
+	      }
+	      else
+		{
+		  add_space(parent->child, space);
+		}
 	    }
 	  else
 	    {
 	      printf(" New Space for [%s] at root\n", vals[i]);
 	      space = new_space(vals[i], NULL, &g_space, NULL); 
 	    }
+	  if(i == 0)
+	    {
+	      if (*root == NULL)
+		{
+		  *root = space;
+		}
+	      else
+		{
+		  add_space(*root, space);
+		}
+	    }
 	}
       else
 	{
 	  printf(" Space found [%s]\n", vals[i]);
 	}
-      if(i == 0)
-	{
-	  if (*root == NULL)
-	    {
-	      *root = space;
-	    }
-	  else
-	    {
-	      add_space(*root, space);
-	    }
-	}
+
       parent = space;
     }
     
@@ -1608,6 +1619,8 @@ int main (int argc, char *argv[])
    char buf[2048];
 
    sp1 = get_space(&g_space, "uav1/motor1/speed", NULL);
+   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+   sp1 = get_space(&g_space, "uav1/motor1/size", NULL);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
    sp1 = get_space(&g_space, "uav1/motor2/speed", NULL);
    show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
