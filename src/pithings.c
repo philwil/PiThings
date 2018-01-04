@@ -421,6 +421,79 @@ int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
   return len;
 }
 
+
+
+int show_space_desc(struct space *base, char *desc, int len, char *buf)
+{
+  struct space *start=base;
+  struct space *child=NULL;
+  int ret;
+  int rc=-1;
+  char *sp = desc;
+  int slen = len;
+
+  if(!base)return rc;
+  if(!desc)return rc;
+  if(len == 0)return rc;
+
+  child = base->child;
+  if(child == NULL)
+    {
+      snprintf(sp, slen,
+	       "/%s => %d"
+	       , base->name
+	       , base->idx
+	       );
+    }
+  else
+    {
+      snprintf(sp, slen,
+	       "/%s"
+	       , base->name
+	       );
+    }
+  if(child == NULL)
+    {
+      printf(" >> [%s]\n", buf);
+      return 0;
+    }
+  // foreach child do the same
+  slen -= strlen(sp);
+  sp += strlen(sp);
+  while (child != NULL)
+    {
+
+      show_space_desc(child, sp, slen, buf);
+      child = child->next;
+      if (child == base->child) 
+	child= NULL;
+    }
+  ret =  strlen(buf);
+  return ret;
+}
+
+int show_spaces_desc(struct space *base, char *desc, int len, char *buf)
+{
+  int rc  = -1;
+  struct space *start=base;
+  struct space *xstart=NULL;
+  while (start)
+    {
+      show_space_desc(start, desc, len, buf);
+      xstart = start->next;
+      start = start->next;
+
+      if(start == base) 
+	start =  NULL;
+      //start =  NULL;
+    }
+  //printf(" base [%s] %d @ %p \n", base->name, base->idx, base);
+  //if(xstart)
+  //printf(" next [%s] %d @ %p \n", xstart->name, xstart->idx, xstart);
+
+ return rc;
+}
+
 struct space *find_space(struct space**parent, char *name)
 {
   struct space *base;
@@ -1612,6 +1685,7 @@ int main (int argc, char *argv[])
    int i;
    int lsock;
    int rc = 1;
+   int depth=0;
    //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
    struct space *sp1;
    struct space *sp2;
@@ -1627,7 +1701,7 @@ int main (int argc, char *argv[])
    sp1 = get_space(&g_space, "uav2/motor2/speed", NULL);
    show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
    sp1 = get_space(&g_space, "uav3/motor2/speed", NULL);
-   show_spaces(g_space, "All Spaces 4 ", 0, NULL , 0);
+   show_spaces_desc(g_space, buf, 2048, buf);
 
    return 0;
 
