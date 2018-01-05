@@ -109,6 +109,11 @@ struct space *g_spaces[NUM_IDX];
 struct thing things[NUM_THINGS];
 struct thing t_types[NUM_THINGS];
 
+
+char *get_space(struct space * base, char *name, char *buf, int len);
+int set_space(struct space * base, char *name, char *value, char *buf, int len);
+struct space *make_space(struct space **root, char *name, char *buf, int len);
+
 struct space * setup_space(char *name, struct space*parent)
 {
   struct space *space = calloc(sizeof(struct space), 1);
@@ -766,9 +771,11 @@ int add_space(struct space *parent, struct space *space)
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
-struct space *make_space(struct space **root, char *name, struct space *parent)
+struct space *make_space(struct space **root, char *name, char *buf, int len)
 {
+  struct space *parent=NULL;
   struct space *space=NULL;
+  char sps[3][64];
   char vals[64][64];
   int idx = 0;
   int idv = 0;
@@ -777,6 +784,13 @@ struct space *make_space(struct space **root, char *name, struct space *parent)
   int rc;
   int i;
   rc = 1;
+
+  sps[0][0] = 0;
+  sps[1][0] = 0;
+
+  rc = sscanf(name,"%s %s",sps[0], sps[1]);
+  if(rc == 1)sp = sps[0];
+  if(rc == 2)sp = sps[1];
 
   while(*sp && (rc>0) && (idx < 64))
     {
@@ -1193,11 +1207,29 @@ int run_str(char *stuff, char *buf, int len)
   cidx =  0;
   
   if(strcmp(vals[cidx], "ADD") == 0)
-    return run_str_add(stuff,buf,len);
+    {
+      make_space(&g_space, stuff, buf, len);
+      return 0;
+    }
+  //return run_str_add(stuff,buf,len);
   else if(strcmp(vals[cidx], "SET") == 0)
-    return run_str_set(stuff, buf,len);
+    {
+      rc = set_space(g_space, stuff, NULL, buf, len);
+      return rc ; 
+    }
   else if(strcmp(vals[cidx], "GET") == 0)
-    return run_str_get(stuff, buf, len);
+    {
+      rc = 0;
+      sp = get_space(g_space, stuff, buf, len);
+      if(buf)
+	{
+	  snprintf(buf,len,"%s",sp);
+	  rc = strlen(buf);
+	}
+      return rc;
+    }
+
+  //   return run_str_get(stuff, buf, len);
   return 0;
 }
 
@@ -1791,25 +1823,44 @@ int init_g_spaces(void)
 
 }
 
-int set_space(struct space * base, char *name, char *value)
+int set_space(struct space * base, char *name, char *value, char *buf, int len)
 {
   int rc = -1;
   struct space *sp1;
-  sp1 = find_space_new(base, name);
+  char sname[2][128];  // TODO
+  char * spv;
+  sname[0][0]=0;
+  sname[1][0]=0;
+  sname[2][0]=0;
+  rc = sscanf(name,"%s %s %s", sname[0], sname[1], sname[2]);
+  sp1 = find_space_new(base, sname[1]);
   if(sp1)
     {
+      spv = sname[2];
+      if(value)
+	spv =  value;
       if(sp1->value) free(sp1->value);
-      sp1->value = strdup(value);
+      sp1->value = NULL;
+      if(spv && (strlen(spv) > 0))
+	sp1->value = strdup(spv);
       rc = 0;
     }
   return rc;
 }
 
-char *get_space(struct space * base, char *name)
+char *get_space(struct space * base, char *name, char *buf, int len)
 {
   char * sret=NULL;
   struct space *sp1;
-  sp1 = find_space_new(base, name);
+  char *sp;
+  char spv[2][128];
+  int rc;
+  spv[0][0]=0;
+  spv[1][0]=0;
+  rc = sscanf(name,"%s %s", spv[0], spv[1]);
+  sp = spv[0];
+  if( rc == 2 ) sp = spv[1];
+  sp1 = find_space_new(base, sp);
   if(sp1)
     {
       sret = sp1->value;
@@ -1832,23 +1883,23 @@ int main (int argc, char *argv[])
    char * sp;
    init_g_spaces();
 
-   sp1 = make_space(&g_space, "uav1/motor1/speed", NULL);
+   sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "uav1/motor1/size", NULL);
+   sp1 = make_space(&g_space, "ADD uav1/motor1/size", NULL, 0);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "uav1/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "ADD uav1/motor2/speed", NULL, 0);
    show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "uav2/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "ADD uav2/motor2/speed", NULL, 0);
    show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL, 0);
    show_spaces_new(g_space, buf, 2048, buf);
    sp1 = find_space_new(g_space, "uav1/motor3");
    printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
    sp1 = find_space_new(g_space, "uav1/motor1");
    printf(" found %s \n", sp1?sp1->name:"no uav1/motor1");
    sp2  = copy_space_new(sp1, "new_motor1");
-   rc  = set_space(g_space, "uav3/motor2/speed", "3500");
-   sp =  get_space(g_space,"uav3/motor2/speed");
+   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
+   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
    printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 
    show_spaces_new(sp2, buf, 2048, buf);
@@ -1878,16 +1929,30 @@ int main (int argc, char *argv[])
 
    show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
 
+#endif
 
-   run_str("ADD item foo_float in Space1 data  float 2.3456", buf, sizeof(buf));
-   run_str("ADD item foo_int in Space4 data  int 2233", buf, sizeof(buf));
-   run_str("ADD item foo_float1 in Space4 data  float 1.233", buf, sizeof(buf));
-   run_str("ADD item foo_float2 in Space4 data  float 2.233", buf, sizeof(buf));
-   run_str("ADD item foo_str in Space4 data  str xxx2.233", buf, sizeof(buf));
-   run_str("SET item foo_int in Space4 data value 2234", buf, sizeof(buf));
-   rc = run_str("GET item foo_int in Space4 data value", buf, sizeof(buf));
+   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
+   run_str("ADD uavx/led1/on", buf, sizeof(buf));
+   run_str("ADD uavx/led1/color", buf, sizeof(buf));
+   run_str("ADD uavx/motor1/speed", buf, sizeof(buf));
+   run_str("ADD uavx/motor1/size", buf, sizeof(buf));
+   run_str("ADD uavx/motor2/speed", buf, sizeof(buf));
+   run_str("ADD uavx/motor2/size", buf, sizeof(buf));
+   //run_str("ADD item foo_float in Space1 data  float 2.3456", buf, sizeof(buf));
+   //run_str("ADD item foo_int in Space4 data  int 2233", buf, sizeof(buf));
+   //run_str("ADD item foo_float1 in Space4 data  float 1.233", buf, sizeof(buf));
+   //run_str("ADD item foo_float2 in Space4 data  float 2.233", buf, sizeof(buf));
+   //run_str("ADD item foo_str in Space4 data  str xxx2.233", buf, sizeof(buf));
+
+   run_str("SET uavx/led1/on 1", buf, sizeof(buf));
+   run_str("SET uavx/led1/color red", buf, sizeof(buf));
+
+   //run_str("SET item foo_int in Space4 data value 2234", buf, sizeof(buf));
+   rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
+
    printf("GET rc %d buf [%s]\n",rc, buf);
 
+#if 0
    show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
    rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
    printf("rc %d buf [%s]\n",rc, buf);
