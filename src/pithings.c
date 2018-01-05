@@ -73,10 +73,9 @@ struct thing {
 // A space can have kids and attributes
 // both or which are spaces  
 struct space {
-  char name[64];
-  char desc[64];
+  char *name;
+  char *desc;
   int idx;
-  int indent;          // offset for printing
   struct space *next;
   struct space *prev;
   struct space *parent;
@@ -84,51 +83,57 @@ struct space {
   struct space *attr;  // here are things about this item 
   struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
+  char *value;
   int ival;
   float fval;
   char *cval;
   int type;
+  char *node;
   // we'll get rid of this stuff soon
-  char node[64];
-  struct thing *things;
-  int things_max;
-  int things_used;
-  struct space **clones;
-  int clones_max;
-  int clones_used;
+  //struct thing *things;
+  //int things_max;
+  //int things_used;
+  //struct space **clones;
+  //int clones_max;
+  //int clones_used;
 
 
 };
 
-
+#define NUM_IDX 1024
 struct space *space=NULL;
 struct space *g_space=NULL;
 int g_space_idx = 1;
+struct space *g_spaces[NUM_IDX];
 
 struct thing things[NUM_THINGS];
 struct thing t_types[NUM_THINGS];
 
-int setup_space(char *name, struct space * space,struct space*parent)
+struct space * setup_space(char *name, struct space*parent)
 {
+  struct space *space = calloc(sizeof(struct space), 1);
+
   space->idx = g_space_idx++;
   space->parent = parent;
-  space->indent = 2;
-  if(parent)
-    space->indent = parent->indent+2;
 
-  strncpy(space->name, name, sizeof(space->name) -1);
-  space->name[sizeof(space->name) -1] = 0;
+  space->name = strdup(name);
 
   space->attr = NULL;
   space->class = NULL;
   space->clone = NULL;
   space->child = NULL;
+  space->desc = NULL;
+  space->value = NULL;
 
   space->prev = space;
   space->next = space;
 
   space->type = SPACE_ROOT;
-  return 0;
+  if(space->idx < NUM_IDX)
+    {
+      g_spaces[space->idx] = space;
+    }
+  return space;
 }
 
 struct space *new_space(char *name , struct space *parent, struct space **root_space,char *node)
@@ -140,13 +145,11 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
 	 , name
 	 , root_space
 	 );
-  space = calloc(sizeof(struct space), 1);
-  setup_space(name, space, parent);
+  space = setup_space(name, parent);
 
   if(node)
     {
-      strncpy(space->node, node, sizeof(space->node) -1);
-      space->node[sizeof(space->node) -1] = 0;
+      space->node = strdup(node);
     }
 
   // insert in parent list
@@ -201,9 +204,7 @@ struct space *new_space_class(char *name , struct space *parent)
 	 , parent?parent->name:"no parent"
 	 );
   class = parent->class;
-  space = calloc(sizeof(struct space), 1);
-  setup_space(name, space, parent);
-
+  space = setup_space(name, parent);
 
   if(class)
     {
@@ -231,8 +232,7 @@ struct space *new_space_attr(char *name , struct space *parent)
 	 , parent?parent->name:"no parent"
 	 );
   attr = parent->attr;
-  space = calloc(sizeof(struct space), 1);
-  setup_space(name, space, parent);
+  space = setup_space(name, parent);
 
 
   if(attr)
@@ -333,7 +333,7 @@ int show_space(struct space *base, int indent, char *buf, int len)
 
   if(!base)return rc;
  
-  rc =  base->indent + indent;
+  rc =  indent;
   while(rc--)
     {
       if(buf)
@@ -568,6 +568,16 @@ struct space *find_space_new(struct space *base, char *name)
   return base;
 }
 
+
+int add_child(struct space *base, struct space *child)
+{
+  if(base->child == NULL)
+    base->child = child;
+  else
+    add_space(base->child, child);
+  return 0;
+}
+
 // create a copy of the space if any at name
 //  base = find_space_new(base, name);
 struct space *copy_space_new(struct space *base, char *new_name)
@@ -577,19 +587,14 @@ struct space *copy_space_new(struct space *base, char *new_name)
   struct space *sp2;
   struct space *space= NULL;
 
-  space = calloc(sizeof(struct space), 1);
-  setup_space(new_name, space, NULL);
+  space = setup_space(new_name, NULL);
 
   start = base->child;
   sp1 = base->child;
   while(sp1)
     {
       sp2 = copy_space_new(sp1, sp1->name);
-      if(space->child == NULL)
-	space->child = sp2;
-      else
-	add_space(space->child, sp2);
-
+      add_child(space, sp2);
       sp1=sp1->next;
       if (sp1 == start)
 	sp1 = NULL;
@@ -609,7 +614,7 @@ struct space *find_space(struct space**parent, char *name)
       start = *parent;
       base = *parent;
       printf(" >>> find space [%s] parent name [%s] ... \n", name
-	     ,start->name);
+	     ,start?start->name ? start->name:"No name":"No start");
 
     }
   else
@@ -663,8 +668,8 @@ struct thing *new_thing(struct space *base, char *name, int class, int type, int
   int i;
   struct thing *item;
   item = &things[0];
-  if(base)
-    item = base->things;
+  //  if(base)
+  //item = base->things;
 
   for (i=0; i< NUM_THINGS; i++)
     {
@@ -694,8 +699,8 @@ struct thing *get_thing(struct space *base, char *name, int class, int type, int
   int i;
   struct thing *item;
   item = &t_types[0];
-  if(base)
-    item = base->things;
+  //  if(base)
+  //  item = base->things;
   printf("get_thing 1 name[%s] class %d base%p\n", name, class, base);
 
 
@@ -761,7 +766,7 @@ int add_space(struct space *parent, struct space *space)
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
-struct space *get_space(struct space **root, char *name, struct space *parent)
+struct space *make_space(struct space **root, char *name, struct space *parent)
 {
   struct space *space=NULL;
   char vals[64][64];
@@ -815,13 +820,8 @@ struct space *get_space(struct space **root, char *name, struct space *parent)
 	    {
 	      printf(" New Space for [%s] parent->name [%s]\n", vals[i], parent->name);
 	      space = new_space(vals[i], parent->child, &parent->child, NULL); 
-	      if(parent->child == NULL) {
-		parent->child = space;
-	      }
-	      else
-		{
-		  add_space(parent->child, space);
-		}
+	      add_child(parent,space);
+
 	    }
 	  else
 	    {
@@ -1782,6 +1782,41 @@ int fwd_cmd(void *key, int n, char *data, int speed, int time)
     return 0;
 }
 
+int init_g_spaces(void)
+{
+  int i;
+  for (i=0 ; i< NUM_IDX; i++)
+    g_spaces[i]=NULL;
+  return 0;
+
+}
+
+int set_space(struct space * base, char *name, char *value)
+{
+  int rc = -1;
+  struct space *sp1;
+  sp1 = find_space_new(base, name);
+  if(sp1)
+    {
+      if(sp1->value) free(sp1->value);
+      sp1->value = strdup(value);
+      rc = 0;
+    }
+  return rc;
+}
+
+char *get_space(struct space * base, char *name)
+{
+  char * sret=NULL;
+  struct space *sp1;
+  sp1 = find_space_new(base, name);
+  if(sp1)
+    {
+      sret = sp1->value;
+    }
+  return sret;
+}
+
 int count = 0;
 int main (int argc, char *argv[])
 {
@@ -1794,27 +1829,32 @@ int main (int argc, char *argv[])
    struct space *sp2;
    //struct space *sp3;
    char buf[2048];
+   char * sp;
+   init_g_spaces();
 
-   sp1 = get_space(&g_space, "uav1/motor1/speed", NULL);
+   sp1 = make_space(&g_space, "uav1/motor1/speed", NULL);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-   sp1 = get_space(&g_space, "uav1/motor1/size", NULL);
+   sp1 = make_space(&g_space, "uav1/motor1/size", NULL);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-   sp1 = get_space(&g_space, "uav1/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "uav1/motor2/speed", NULL);
    show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
-   sp1 = get_space(&g_space, "uav2/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "uav2/motor2/speed", NULL);
    show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
-   sp1 = get_space(&g_space, "uav3/motor2/speed", NULL);
+   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL);
    show_spaces_new(g_space, buf, 2048, buf);
    sp1 = find_space_new(g_space, "uav1/motor3");
    printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
    sp1 = find_space_new(g_space, "uav1/motor1");
    printf(" found %s \n", sp1?sp1->name:"no uav1/motor1");
    sp2  = copy_space_new(sp1, "new_motor1");
+   rc  = set_space(g_space, "uav3/motor2/speed", "3500");
+   sp =  get_space(g_space,"uav3/motor2/speed");
+   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 
    show_spaces_new(sp2, buf, 2048, buf);
 
-   return 0;
-
+   //   return 0;
+#if 0
    new_space("Space1", NULL, NULL, "127.0.0.1");
    sp1 =  g_space;
    show_space(sp1, 0, NULL , 0);
@@ -1865,15 +1905,18 @@ int main (int argc, char *argv[])
    init_cmds();
    init_cmd("FWD", fwd_cmd);
    run_cmd ("FWD", 2, "Some data", 100, 50);
+#endif
 
    init_insocks();
    accept_socket(STDIN_FILENO);
    lsock = listen_socket(5432);
+   rc = 1;
    while(rc>0 && count < 10)
    {
        rc = poll_sock(lsock);
        //count++;
    }
+
 #if 0
    if(0)
      {
