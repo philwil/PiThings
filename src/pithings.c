@@ -423,7 +423,7 @@ int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
 
 
 
-int show_space_desc(struct space *base, char *desc, int len, char *buf)
+int show_space_new(struct space *base, char *desc, int len, char *buf)
 {
   struct space *start=base;
   struct space *child=NULL;
@@ -463,7 +463,7 @@ int show_space_desc(struct space *base, char *desc, int len, char *buf)
   while (child != NULL)
     {
 
-      show_space_desc(child, sp, slen, buf);
+      show_space_new(child, sp, slen, buf);
       child = child->next;
       if (child == base->child) 
 	child= NULL;
@@ -472,14 +472,14 @@ int show_space_desc(struct space *base, char *desc, int len, char *buf)
   return ret;
 }
 
-int show_spaces_desc(struct space *base, char *desc, int len, char *buf)
+int show_spaces_new(struct space *base, char *desc, int len, char *buf)
 {
   int rc  = -1;
   struct space *start=base;
   struct space *xstart=NULL;
   while (start)
     {
-      show_space_desc(start, desc, len, buf);
+      show_space_new(start, desc, len, buf);
       xstart = start->next;
       start = start->next;
 
@@ -492,6 +492,109 @@ int show_spaces_desc(struct space *base, char *desc, int len, char *buf)
   //printf(" next [%s] %d @ %p \n", xstart->name, xstart->idx, xstart);
 
  return rc;
+}
+
+
+struct space *find_space_new(struct space *base, char *name)
+{
+  struct space *start;
+  char vals[64][64];
+  int idx = 0;
+  int idv = 0;
+  char *sp = name;
+  int rc;
+  int i;
+  rc = 1;
+
+  while(*sp && (rc>0) && (idx < 64))
+    {
+      rc = 0;
+      idv = 0;
+      while (*sp && *sp != '/')
+	{
+	  vals[idx][idv] = *sp;
+	  rc++;
+	  sp++;
+	  if(idv < sizeof(vals[idx]-1))
+	    {
+	      idv++;
+	    }
+	}
+      if(*sp)sp++;
+
+	
+      if(rc>0)
+	{
+	  vals[idx][idv] = 0;
+	  if(0)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  if(0)printf("sp [%s] \n", sp);
+	  idx++;
+	}
+    }
+  // now find the space at each step
+  i = 0;
+  start = base;
+  while (base)
+    {
+      if(0)printf(" looking for [%s] found [%s] i %d idx %d\n"
+		  , vals[i], base->name
+		  , i
+		  , idx
+		  );
+      if(strcmp(base->name, vals[i])==0)
+	{
+
+          if(i < idx) i++;
+	  if(i == idx)
+	    return base;
+	  base =  base->child;
+	  start = base;
+	  //break;
+	}
+      else
+	{
+	  if(base->next != start)
+	    base=base->next;
+	  else
+	    {
+	      if(i < idx) i++;
+	      if(i == idx)
+		return NULL;
+	      base =  base->child;
+	      start = base;
+	    }
+	}
+    }
+  return base;
+}
+
+// create a copy of the space if any at name
+//  base = find_space_new(base, name);
+struct space *copy_space_new(struct space *base, char *new_name)
+{
+  struct space *start;
+  struct space *sp1;
+  struct space *sp2;
+  struct space *space= NULL;
+
+  space = calloc(sizeof(struct space), 1);
+  setup_space(new_name, space, NULL);
+
+  start = base->child;
+  sp1 = base->child;
+  while(sp1)
+    {
+      sp2 = copy_space_new(sp1, sp1->name);
+      if(space->child == NULL)
+	space->child = sp2;
+      else
+	add_space(space->child, sp2);
+
+      sp1=sp1->next;
+      if (sp1 == start)
+	sp1 = NULL;
+    }
+  return space;
 }
 
 struct space *find_space(struct space**parent, char *name)
@@ -1701,7 +1804,14 @@ int main (int argc, char *argv[])
    sp1 = get_space(&g_space, "uav2/motor2/speed", NULL);
    show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
    sp1 = get_space(&g_space, "uav3/motor2/speed", NULL);
-   show_spaces_desc(g_space, buf, 2048, buf);
+   show_spaces_new(g_space, buf, 2048, buf);
+   sp1 = find_space_new(g_space, "uav1/motor3");
+   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
+   sp1 = find_space_new(g_space, "uav1/motor1");
+   printf(" found %s \n", sp1?sp1->name:"no uav1/motor1");
+   sp2  = copy_space_new(sp1, "new_motor1");
+
+   show_spaces_new(sp2, buf, 2048, buf);
 
    return 0;
 
