@@ -5,11 +5,9 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
 
 /*
  for now forget the motor stuff
- we aim to build up a repository of things
- a thing has a name, 
- belongs to a class 
- has a type
- has an id
+ we aim to build up a repository of spaces
+ a space has a name, 
+
  has some text value int value or float value
  things can be classes, lists or types
  ADD foo data float 2.3456
@@ -27,6 +25,56 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
  
 Big jump now  make multi/space/possible 
 
+
+API thoughts
+basic 
+lreg /me/
+greg /me/
+add foo/boo/fum
+find foo/boo/fum
+show foo/boo/fum
+set foo/boo/fum value
+onget foo/boo/fum <function>
+onset foo/boo/fum <function>
+show foo/boo/fum
+showall foo/boo/fum
+
+notes
+   in all cases the address foo/ refers to the local node
+   and  the /node/foo will refer the request to a remote node
+
+lreg /me/
+   this is my root am on the local node
+   just for this app
+   i can talk to ant other apps
+
+greg /me/ <node>  
+   this is who I am on the system based on node re report in to the server
+
+add foo/boo/fum
+   add this item to my local list
+
+find foo/boo/fum
+   find this item on my local list
+
+get foo/boo/fum
+   get the value of foo/boo/fum locally
+
+set foo/boo/fum value
+   set the value of foo/boo/fum locally
+
+onget foo/boo/fum <function>
+   run this function when getting the value
+
+onset foo/boo/fum <function>
+   run this function when setting the value
+
+show foo/boo/fum
+   shows details of the variable
+
+showall foo/boo/fum
+   shows details of all the child variables
+
 */
 
 #include <stdio.h>
@@ -43,7 +91,6 @@ Big jump now  make multi/space/possible
 #include <poll.h>
 //#include <pigpio.h>
 
-#define NUM_THINGS 1024
 #define NUM_SPACES 32
 #define CLASS_VAR 1
 #define CLASS_CLASS 2
@@ -54,20 +101,6 @@ Big jump now  make multi/space/possible
 #define SPACE_INT 2
 #define SPACE_STR 3
 
-struct thing {
-  char name[64];
-  char desc[64];
-  int idx;
-  int id;
-  int type;
-  int class;
-  int last_idx;
-  int next_idx;
-
-  char str[64];
-  int ival;
-  double fval;
-};
 
 // OK the space becomes the real thing
 // A space can have kids and attributes
@@ -89,14 +122,8 @@ struct space {
   char *cval;
   int type;
   char *node;
-  // we'll get rid of this stuff soon
-  //struct thing *things;
-  //int things_max;
-  //int things_used;
-  //struct space **clones;
-  //int clones_max;
-  //int clones_used;
-
+  int (*onset)(struct space *this, int idx, char *name, char * value, char *buf, int len);
+  int (*onget)(struct space *this, int idx, char *name, char *buf, int len);
 
 };
 
@@ -106,13 +133,13 @@ struct space *g_space=NULL;
 int g_space_idx = 1;
 struct space *g_spaces[NUM_IDX];
 
-struct thing things[NUM_THINGS];
-struct thing t_types[NUM_THINGS];
 
 
 char *get_space(struct space * base, char *name, char *buf, int len);
 int set_space(struct space * base, char *name, char *value, char *buf, int len);
 struct space *make_space(struct space **root, char *name, char *buf, int len);
+int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
+int parse_stuff(char delim, int num, char **vals, char *stuff);
 
 struct space * setup_space(char *name, struct space*parent)
 {
@@ -132,6 +159,8 @@ struct space * setup_space(char *name, struct space*parent)
 
   space->prev = space;
   space->next = space;
+  space->onset = NULL;
+  space->onget = NULL;
 
   space->type = SPACE_ROOT;
   if(space->idx < NUM_IDX)
@@ -309,8 +338,6 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 
 }
 
-int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
-
 int show_space_class(struct space *base, int indent, char *buf, int len)
 {
   char atname[128];
@@ -321,6 +348,7 @@ int show_space_class(struct space *base, int indent, char *buf, int len)
   }
   return len;
 }
+
 int show_space_attr(struct space *base, int indent, char *buf, int len)
 {
   char atname[128];
@@ -503,55 +531,43 @@ int show_spaces_new(struct space *base, char *desc, int len, char *buf)
 struct space *find_space_new(struct space *base, char *name)
 {
   struct space *start;
-  char vals[64][64];
+  //  char vals[64][64];
+  //int idx = 0;
+  //int idv = 0;
+  char *sp = name;
+  //int rc;
+  int i;
+  //rc = 1;
+
+  int rc;
   int idx = 0;
   int idv = 0;
-  char *sp = name;
-  int rc;
-  int i;
-  rc = 1;
+  char *valv[64];
+  char *valx[64];
 
-  while(*sp && (rc>0) && (idx < 64))
-    {
-      rc = 0;
-      idv = 0;
-      while (*sp && *sp != '/')
-	{
-	  vals[idx][idv] = *sp;
-	  rc++;
-	  sp++;
-	  if(idv < sizeof(vals[idx]-1))
-	    {
-	      idv++;
-	    }
-	}
-      if(*sp)sp++;
+  rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
 
-	
-      if(rc>0)
-	{
-	  vals[idx][idv] = 0;
-	  if(0)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  if(0)printf("sp [%s] \n", sp);
-	  idx++;
-	}
-    }
   // now find the space at each step
   i = 0;
   start = base;
   while (base)
     {
       if(0)printf(" looking for [%s] found [%s] i %d idx %d\n"
-		  , vals[i], base->name
+		  , valv[i], base->name
 		  , i
 		  , idx
 		  );
-      if(strcmp(base->name, vals[i])==0)
+      if(strcmp(base->name, valv[i])==0)
 	{
 
-          if(i < idx) i++;
-	  if(i == idx)
-	    return base;
+          if(i < idv) i++;
+	  if(i == idv)
+	    {
+	      free_stuff(idv, valv);
+	      free_stuff(idx, valx);
+	      
+	      return base;
+	    }
 	  base =  base->child;
 	  start = base;
 	  //break;
@@ -562,9 +578,13 @@ struct space *find_space_new(struct space *base, char *name)
 	    base=base->next;
 	  else
 	    {
-	      if(i < idx) i++;
-	      if(i == idx)
-		return NULL;
+	      if(i < idv) i++;
+	      if(i == idv)
+		{
+		  free_stuff(idv, valv);
+		  free_stuff(idx, valx);
+		  return NULL;
+		}
 	      base =  base->child;
 	      start = base;
 	    }
@@ -642,93 +662,8 @@ struct space *find_space(struct space**parent, char *name)
   return base;
 }
 
-// main
-int init_things(void)
-{
-  int i;
-  struct thing *item;
-  item = &things[0];
-
-  for (i=0; i< NUM_THINGS; i++)
-    {
-      item->idx = i;
-      item->name[0] = 0;
-      item++;
-    }  
-  item = &t_types[0];
-
-  for (i=0; i< NUM_THINGS; i++)
-    {
-      item->idx = i;
-      item->name[0] = 0;
-      item++;
-    }  
-  return 0;
-}
-//     name  class   type  value
-// ADD foo   data    float 2.3456
-
-struct thing *new_thing(struct space *base, char *name, int class, int type, int y)
-{
-  int i;
-  struct thing *item;
-  item = &things[0];
-  //  if(base)
-  //item = base->things;
-
-  for (i=0; i< NUM_THINGS; i++)
-    {
-      if(item->name[0] == 0)
-	{
-	  strncpy(item->name,name,64);
-	  item->class = class;
-	  item->type = type;
-	  break;
-	}
-      item++;
-    }
-  if(i ==  NUM_THINGS)
-    item = NULL;
-  printf("new_thing name[%s] item %p\n"
-	 , name
-	 , item
-	 );
-
-  return item;
-
-}
-
-struct thing *get_thing(struct space *base, char *name, int class, int type, int y)
-{
-
-  int i;
-  struct thing *item;
-  item = &t_types[0];
-  //  if(base)
-  //  item = base->things;
-  printf("get_thing 1 name[%s] class %d base%p\n", name, class, base);
 
 
-  for (i=0; i< NUM_THINGS; i++)
-    {
-      if((item->class == class ) && (strcmp(item->name,name) == 0))
-	{
-	  break;
-	}
-      item++;
-    }  
-  printf("get_thing 2 name[%s] class %d base%p\n", name, class, base);
-
-  if(i ==  NUM_THINGS)
-    item = new_thing(base, name, class, type, y);
-  printf("get_thing name[%s] class %d item %p\n"
-	 , name
-	 , class
-	 , item
-	 );
-
-  return item;
-}
 /*
 before any s0->p = s0 s0->n=s0
 after add s1 s0->p = s1 s0->n = s1 s1->p = s0 s1->n=s0
@@ -768,79 +703,68 @@ int add_space(struct space *parent, struct space *space)
   return 0;
 }
 
+//   idx = parse_stuff(' ', 64, (char **)valx, name);
+//   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
+int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char * name)
+{
+
+  int  rc = 1;
+  char *sp;
+  *idx = parse_stuff(' ', size, (char **)valx, name);
+
+  sp = valx[0];
+  if(*idx >= 2)sp = valx[1];
+  *idy = parse_stuff('/', size, (char **)valy, sp);
+  return rc;
+}
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
+//    sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
+
 struct space *make_space(struct space **root, char *name, char *buf, int len)
 {
   struct space *parent=NULL;
   struct space *space=NULL;
-  char sps[3][64];
-  char vals[64][64];
-  int idx = 0;
-  int idv = 0;
+  //char sps[3][64];
+  //char vals[64][64];
   int cidx = 0;
   char *sp = name;
-  int rc;
+ 
   int i;
-  rc = 1;
 
-  sps[0][0] = 0;
-  sps[1][0] = 0;
+  int rc;
+  int idx = 0;
+  int idv = 0;
+  char *valv[64];
+  char *valx[64];
 
-  rc = sscanf(name,"%s %s",sps[0], sps[1]);
-  if(rc == 1)sp = sps[0];
-  if(rc == 2)sp = sps[1];
+  rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
 
-  while(*sp && (rc>0) && (idx < 64))
-    {
-      rc = 0;
-      idv = 0;
-      while (*sp && *sp != '/')
-	{
-	  vals[idx][idv] = *sp;
-	  rc++;
-	  sp++;
-	  if(idv < sizeof(vals[idx]-1))
-	    {
-	      idv++;
-	    }
-	}
-      if(*sp)sp++;
-
-	
-      if(rc>0)
-	{
-	  vals[idx][idv] = 0;
-	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  printf("sp [%s] \n", sp);
-	  idx++;
-	}
-    }
-  for (i = 0 ; i < idx; i++)
+  for (i = 0 ; i < idv; i++)
     {
       space = NULL;
       if(parent)
 	{
-	  space = find_space(&parent->child, vals[i]);
+	  space = find_space(&parent->child, valv[i]);
 	}
       else
 	{
-	  space = find_space(root, vals[i]);
+	  space = find_space(root, valv[i]);
 	}
       if (!space)
 	{
 	  if(parent)
 	    {
-	      printf(" New Space for [%s] parent->name [%s]\n", vals[i], parent->name);
-	      space = new_space(vals[i], parent->child, &parent->child, NULL); 
+	      printf(" New Space for [%s] parent->name [%s]\n", valv[i], parent->name);
+	      space = new_space(valv[i], parent->child, &parent->child, NULL); 
 	      add_child(parent,space);
 
 	    }
 	  else
 	    {
-	      printf(" New Space for [%s] at root\n", vals[i]);
-	      space = new_space(vals[i], NULL, &g_space, NULL); 
+	      printf(" New Space for [%s] at root\n", valv[i]);
+	      space = new_space(valv[i], NULL, &g_space, NULL); 
 	    }
 	  if(i == 0)
 	    {
@@ -856,326 +780,76 @@ struct space *make_space(struct space **root, char *name, char *buf, int len)
 	}
       else
 	{
-	  printf(" Space found [%s]\n", vals[i]);
+	  printf(" Space found [%s]\n", valv[i]);
 	}
-
       parent = space;
     }
     
   printf("[%s] found %d spaces\n",name, idx);
-
+  free_stuff(idv, valv);
+  free_stuff(idx, valx);
   return space;
 }
 
-
-//           attr        space  class type  value 
-//   run_str("ADD item foo in Space1/multi/option data  float 2.3456");
-int run_str_add(char *stuff, char *buf, int len)
+int free_stuff(int num, char **vals)
 {
-  char cmd[128];
-  snprintf(cmd, sizeof(cmd),"%s",stuff);
-  char vals[64][64];
-  int idx = 0;
-  int cidx = 0;
-  char *sp = cmd;
-  int rc;
-  struct space *space=NULL;
-  struct space *class=NULL;
-  struct space *attr=NULL;
-
-
-  rc = 1;
-  while((rc>0) && (idx < 64))
+  int i;
+  for(i = 0 ; i< num; i++)
     {
-      rc = sscanf(sp, "%s"
-	      , vals[idx]
-		  );
+      if(vals[i])
+	free(vals[i]);
+      vals[i] = 0;
+    }
+  return 0;
+}
+
+// This will do for now
+// TODO dynamic sizing
+//      allow escape
+//
+int parse_stuff(char delim, int num, char **vals, char *stuff)
+{
+  int idx = 0;
+  char *sp = stuff;
+  char *sp1 = stuff;
+  int rc = 1;
+  char *val;
+  char  *spv;
+  int val_size;
+
+  val_size = 64;
+  val = malloc(64);
+  val[0]=0;
+
+  printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
+  //vals[idx] = strdup(sp);
+  //idx++;
+  while(*sp && (rc>0) && (idx < num))
+    {
+      rc = 0;
+      spv = val;
+      while (*sp && *sp != delim && (rc < (val_size-1)))
+	{
+          *spv++ = *sp++;
+	  rc++;
+	}
+      if(*sp)sp++;
+      *spv = 0;
+	
       if(rc>0)
 	{
-	  sp = strstr(sp, vals[idx]);
-	  sp += strlen(vals[idx]);
-	  while (*sp && (*sp == ' ')) sp++;
+	  vals[idx] = strdup(val);
 	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
 	  printf("sp [%s] \n", sp);
 	  idx++;
 	}
     }
-  cidx =  0;
-  
-  if(
-     (strcmp(vals[cidx+1], "item") == 0) &&
-     (cidx + 3) < idx)
-    
-    {
-      printf(" Running the add_item [%s] \n", vals[cidx+2]);
-      if (
-	  (strcmp(vals[cidx+3], "in") == 0) &&
-	  ((cidx + 4) < idx)
-	  )
-	{
-	  space = find_space(NULL, vals[cidx+4]);
-	}
-      if(!space)
-	{
-	  printf(" Adding space [%s]\n", vals[cidx+4]);
-	  space = new_space(vals[cidx+4], NULL, &g_space, NULL);
-	}
-      if(space)
-	{
-	  printf("found space [%s] \n", space->name);
-	  class=find_space(&space->class, vals[cidx+5]);
-	  if(class)
-	    {
-	      printf("   found class [%s] \n", class->name);
-	    }
-	  else
-	    {
-	      printf("   adding class  [%s] to [%s]\n"
-		     , vals[cidx+5]
-		     , vals[cidx+4]
-		     );
-	      //class =  new_space_attr_float(vals[cidx+2], space, atof(vals[cidx+7]));
-	      class =  new_space_class(vals[cidx+5], space);
-
-	    }
-	  if(!class) class =  space;
-	  attr=find_space(&class->attr, vals[cidx+2]);
-	  if(attr)
-	    {
-	      printf("   found attr [%s] \n", attr->name);
-	    }
-	  else
-	    {
-	      printf("   adding attr  [%s] type [%s]\n"
-		     , vals[cidx+2]
-		     , vals[cidx+6]
-		     );
-	      if(strcmp(vals[cidx+6],"float") ==0)
-		{
-		  new_space_attr_float(vals[cidx+2], class, atof(vals[cidx+7]));
-		}
-	      else if(strcmp(vals[cidx+6],"int") ==0)
-		{
-		  new_space_attr_int(vals[cidx+2], class, atoi(vals[cidx+7]));
-		}
-	      else
-		{
-		  new_space_attr_str(vals[cidx+2], class, vals[cidx+7]);
-		}
-
-	    }
-	}  
-      if((cidx+5) < idx)
-	  printf("using class [%s] \n", vals[cidx+5]);
-      if((cidx+6) < idx)
-	  printf("using type [%s] \n", vals[cidx+6]);
-      if((cidx+7) < idx)
-	  printf("using value [%s] \n", vals[cidx+7]);
-
-      // cidx+4 is class
-      // cidx+5 is type
-    
-    }
+  printf("%s done idx %d\n", __FUNCTION__, idx);
+  free(val);
 
   return idx;
 }
-//           attr        space  class type  value 
-//   run_str("SET item foo in Space1 data  value 2.3456");
-int run_str_set(char *stuff, char *buf, int len)
-{
-  char cmd[128];
-  snprintf(cmd, sizeof(cmd),"%s",stuff);
-  char vals[64][64];
-  int idx = 0;
-  int cidx = 0;
-  char *sp = cmd;
-  struct space *space=NULL;
-  struct space *attr=NULL;
-  struct space *class=NULL;
-  int rc;
 
-  rc = 1;
-  while((rc>0) && (idx < 64))
-    {
-      rc = sscanf(sp, "%s"
-	      , vals[idx]
-		  );
-      if(rc>0)
-	{
-	  sp = strstr(sp, vals[idx]);
-	  sp += strlen(vals[idx]);
-	  while (*sp && (*sp == ' ')) sp++;
-	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  printf("sp [%s] \n", sp);
-	  idx++;
-	}
-    }
-  cidx =  0;
-  
-  if(
-     (strcmp(vals[cidx+1], "item") == 0) &&
-     (cidx + 3) < idx)
-    
-    {
-      printf(" Running the set_item [%s] \n", vals[cidx+2]);
-      if (
-	  (strcmp(vals[cidx+3], "in") == 0) &&
-	  ((cidx + 4) < idx)
-	  )
-	{
-	  space = find_space(NULL, vals[cidx+4]);
-	}
-      if(!space)
-	{
-	  printf(" No space [%s]\n", vals[cidx+4]);
-          goto out;
-	}
-      if(space)
-	{
-	  printf("found space [%s] \n", space->name);
-
-	  class=find_space(&space->class, vals[cidx+5]);
-	  if(!class)
-	    {
-	      printf(" No space [%s]\n", vals[cidx+5]);
-	      goto out;
-	    }
-	  printf("found class [%s] \n", class->name);
-	  attr=find_space(&class->attr, vals[cidx+2]);
-	  if(attr)
-	    {
-	      printf("   found attr [%s] \n", attr->name);
-	    }
-	  else
-	    {
-	      printf("   No attr [%s] \n", attr->name);
-	      goto out;
-	    }
-	  if(attr->type == SPACE_FLOAT)
-	    attr->fval = atof(vals[cidx+6]);
-	  else if(attr->type == SPACE_INT)
-	    attr->ival = atoi(vals[cidx+6]);
-	  else
-	    attr->cval = vals[cidx+6];
-	}
-      if((cidx+6) < idx)
-	printf("using value [%s] \n", vals[cidx+6]);
-      
-      // cidx+4 is class
-      // cidx+5 is type
-      
-    }
- out:
-  return rc;
-}
-//           attr        space  class type  value 
-//   run_str("GET item foo in Space1 data  value");
-int run_str_get(char *stuff, char *buf, int len)
-{
-  char cmd[128];
-  snprintf(cmd, sizeof(cmd),"%s",stuff);
-  char vals[64][64];
-  int idx = 0;
-  int cidx = 0;
-  char *sp = cmd;
-  struct space *space=NULL;
-  struct space *attr=NULL;
-  struct space *class=NULL;
-  int rc=-1;
-  if (!buf) return rc;
-  buf[0]=0;
-
-  rc = 1;
-  while((rc>0) && (idx < 64))
-    {
-      rc = sscanf(sp, "%s"
-	      , vals[idx]
-		  );
-      if(rc>0)
-	{
-	  sp = strstr(sp, vals[idx]);
-	  sp += strlen(vals[idx]);
-	  while (*sp && (*sp == ' ')) sp++;
-	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  printf("sp [%s] \n", sp);
-	  idx++;
-	}
-    }
-  cidx =  0;
-  
-  if(
-     (strcmp(vals[cidx+1], "item") == 0) &&
-     (cidx + 3) < idx)
-    
-    {
-      printf(" Running the get_item [%s] \n", vals[cidx+2]);
-      if (
-	  (strcmp(vals[cidx+3], "in") == 0) &&
-	  ((cidx + 4) < idx)
-	  )
-	{
-	  space = find_space(NULL, vals[cidx+4]);
-	}
-      if(!space)
-	{
-	  printf(" No space [%s]\n", vals[cidx+4]);
-          goto out;
-	}
-      if(space)
-	{
-	  printf("found space [%s] \n", space->name);
-
-	  class=find_space(&space->class, vals[cidx+5]);
-	  if(!class)
-	    {
-	      printf(" No space [%s]\n", vals[cidx+5]);
-	      goto out;
-	    }
-	  printf("found class [%s] \n", class->name);
-	  attr=find_space(&class->attr, vals[cidx+2]);
-	  if(attr)
-	    {
-	      printf("   found attr [%s] type %d\n"
-		     , attr->name
-		     , attr->type
-		     );
-	    }
-	  else
-	    {
-	      printf("   No attr [%s] \n", attr->name);
-	      goto out;
-	    }
-	  if(attr->type == SPACE_FLOAT)
-	    {
-	      snprintf(buf, len, "%f", attr->fval);
-	    }
-	  else if(attr->type == SPACE_INT)
-	    {
-	      snprintf(buf, len, "%d", attr->ival);
-	      printf("   int buf set  [%s] \n", buf);
-
-	    }
-
-	  //attr->ival = atoi(vals[cidx+6]);
-	  else
-	    {
-	      snprintf(buf, len, "%s", attr->cval);
-	    }
-	    printf("   buf set  [%s] \n", buf);
-
-	  //attr->cval = vals[cidx+6];
-	}
-      rc =  strlen(buf);
-      // cidx+4 is class
-      // cidx+5 is type
-      
-    }
- out:
-  return rc;
-}
-
-//           attr        space  class type  value 
-//   run_str("ADD item foo in Space1 data  float 2.3456");
 int run_str(char *stuff, char *buf, int len)
 {
   char cmd[128];
@@ -1189,7 +863,7 @@ int run_str(char *stuff, char *buf, int len)
   int rc;
 
   rc = 1;
-  while((rc>0) && (idx < 1))
+  while((rc>0) && (idx < 64))
     {
       rc = sscanf(sp, "%s"
 	      , vals[idx]
@@ -1208,6 +882,7 @@ int run_str(char *stuff, char *buf, int len)
   
   if(strcmp(vals[cidx], "ADD") == 0)
     {
+      //make_space(&g_space, idx, vals, stuff, buf, len);
       make_space(&g_space, stuff, buf, len);
       return 0;
     }
@@ -1228,70 +903,10 @@ int run_str(char *stuff, char *buf, int len)
 	}
       return rc;
     }
-
-  //   return run_str_get(stuff, buf, len);
   return 0;
 }
 
 
-// ADD foo data float 2.3456
-// add_thing("ADD foo data float 2.3456")
-
-int add_thing(char *stuff)
-{
-  int rc;
-  char cmd[64];
-  char v1[64];
-  char v2[64];
-  char v3[64];
-  char v4[64];
-  char v5[64];
-  struct space *space=NULL;
-  struct thing *item_1;
-  struct thing *item_2;
-  struct thing *item_3;
-
-  rc = sscanf(stuff, "%s %s %s %s %s %s"
-	      , cmd
-	      , v1
-	      , v2
-	      , v3
-	      , v4
-	      , v5
-	      );
-  printf(" cmd = [%s] v1=[%s] rc = %d\n", cmd, v1, rc );
-  item_1 = get_thing(space, v1, CLASS_VAR ,0,0);
-  item_2 = get_thing(space, v2, CLASS_CLASS,0,0);
-  item_3 = get_thing(NULL/*&t_types[0]*/,v3, CLASS_TYPE,0,0);
-  item_1->class = item_2->idx;
-  item_1->type = item_3->idx;
-
-  return 0;
-}
-
-
-int show_things(struct thing *base)
-{
-  int i;
-  struct thing *item;
-  item = &things[0];
-  if(base)
-    item = base;
-  for (i=0; i< NUM_THINGS; i++)
-    {
-      if(item->name[0] != 0)
-	{
-	  printf("idx %d item name [%s] class %d type %d \n"
-		 , item->idx
-		 , item->name
-		 , item->class
-		 , item->type
-		 );
-	}
-      item++;
-    }  
-  return 0;
-}
 
 
 /*
@@ -1822,7 +1437,7 @@ int init_g_spaces(void)
   return 0;
 
 }
-
+//rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
 int set_space(struct space * base, char *name, char *value, char *buf, int len)
 {
   int rc = -1;
@@ -1843,12 +1458,14 @@ int set_space(struct space * base, char *name, char *value, char *buf, int len)
       sp1->value = NULL;
       if(spv && (strlen(spv) > 0))
 	sp1->value = strdup(spv);
+      if(sp1->onset)
+	sp1->onset(sp1, sp1->idx, name, spv, buf, len);
       rc = 0;
     }
   return rc;
 }
 
-char *get_space(struct space * base, char *name, char *buf, int len)
+char *get_space(struct space *base, char *name, char *buf, int len)
 {
   char * sret=NULL;
   struct space *sp1;
@@ -1863,12 +1480,54 @@ char *get_space(struct space * base, char *name, char *buf, int len)
   sp1 = find_space_new(base, sp);
   if(sp1)
     {
+      if(sp1->onget)
+	sp1->onget(sp1, sp1->idx, name, buf, len);
       sret = sp1->value;
     }
   return sret;
 }
 
 int count = 0;
+
+int show_stuff(int rc, char **vals)
+{
+  int i;
+   for (i = 0 ; i < rc; i++)
+     {
+       printf (" %s: val[%d] = [%s]\n",__FUNCTION__,  i, vals[i] );
+
+     }
+   return 0;
+}
+
+int motor_onset(struct space *this, int idx, char *name, char * value, char *buf, int len)
+{
+  printf(" running %s for space [%s] %d with value [%s]\n"
+	 , __FUNCTION__, this->name, idx, value);
+  return 0;
+
+}
+int motor_onget(struct space *this, int idx, char *name, char *buf, int len)
+{
+  printf(" running %s for space [%s] %d \n"
+	 , __FUNCTION__, this->name, idx);
+  return 0;
+
+}
+int speed_onset(struct space *this, int idx, char *name, char * value, char *buf, int len)
+{
+  printf(" running %s for space [%s] %d with value [%s]\n"
+	 , __FUNCTION__, this->name, idx, value);
+  return 0;
+
+}
+int speed_onget(struct space *this, int idx, char *name, char *buf, int len)
+{
+  printf(" running %s for space [%s] %d \n"
+	 , __FUNCTION__, this->name, idx);
+  return 0;
+
+}
 int main (int argc, char *argv[])
 {
    int i;
@@ -1880,11 +1539,25 @@ int main (int argc, char *argv[])
    struct space *sp2;
    //struct space *sp3;
    char buf[2048];
-   char * sp;
+   char *sp;
+   char *vals[64];
    init_g_spaces();
+
+   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse");
+   printf (" rc = %d\n", rc );
+   show_stuff(rc, vals);
 
    sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+
+   sp1 = make_space(&g_space, "ADD uav3/motor2/speed", NULL, 0);
+   sp1->onset = speed_onset;
+   sp1->onget = speed_onget;
+   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
+   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
+   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
+   return 0;
+
    sp1 = make_space(&g_space, "ADD uav1/motor1/size", NULL, 0);
    show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
    sp1 = make_space(&g_space, "ADD uav1/motor2/speed", NULL, 0);
@@ -1892,6 +1565,11 @@ int main (int argc, char *argv[])
    sp1 = make_space(&g_space, "ADD uav2/motor2/speed", NULL, 0);
    show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
    sp1 = make_space(&g_space, "uav3/motor2/speed", NULL, 0);
+
+   sp1 = find_space_new(g_space, "uav3/motor2");
+   sp1->onset = motor_onset;
+   sp1->onget = motor_onget;
+
    show_spaces_new(g_space, buf, 2048, buf);
    sp1 = find_space_new(g_space, "uav1/motor3");
    printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
@@ -1938,16 +1616,10 @@ int main (int argc, char *argv[])
    run_str("ADD uavx/motor1/size", buf, sizeof(buf));
    run_str("ADD uavx/motor2/speed", buf, sizeof(buf));
    run_str("ADD uavx/motor2/size", buf, sizeof(buf));
-   //run_str("ADD item foo_float in Space1 data  float 2.3456", buf, sizeof(buf));
-   //run_str("ADD item foo_int in Space4 data  int 2233", buf, sizeof(buf));
-   //run_str("ADD item foo_float1 in Space4 data  float 1.233", buf, sizeof(buf));
-   //run_str("ADD item foo_float2 in Space4 data  float 2.233", buf, sizeof(buf));
-   //run_str("ADD item foo_str in Space4 data  str xxx2.233", buf, sizeof(buf));
 
    run_str("SET uavx/led1/on 1", buf, sizeof(buf));
    run_str("SET uavx/led1/color red", buf, sizeof(buf));
 
-   //run_str("SET item foo_int in Space4 data value 2234", buf, sizeof(buf));
    rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
 
    printf("GET rc %d buf [%s]\n",rc, buf);
@@ -1957,15 +1629,6 @@ int main (int argc, char *argv[])
    rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
    printf("rc %d buf [%s]\n",rc, buf);
    return 0;
-
-   run_str("ADD item foo  in Space1 data float 2.3456", buf, sizeof(buf));
-   run_str("ADD item foo1 in Space1 data int 234", buf, sizeof(buf));
-   init_things();
-   add_thing("ADD item foo1 in Space1 data int 234");
-   add_thing("ADD item  foo2 in Space1 data str \"val 234\"");
-
-   show_things(NULL);
-   show_things(&t_types[0]);
 
    init_cmds();
    init_cmd("FWD", fwd_cmd);
