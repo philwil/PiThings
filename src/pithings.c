@@ -176,7 +176,7 @@ int g_space_idx = 1;
 struct space *g_spaces[NUM_IDX];
 
 
-
+int init_insock(struct insock *in);
 char *get_space(struct space * base, char *name, char **buf, int *len);
 int set_space(struct space * base, char *name, char *value, char **buf, int *len);
 struct space *make_space(struct space **root, char *name, char **buf, int *len);
@@ -1084,19 +1084,29 @@ int run_cmd (char *key, int n, char *data, int speed, int time)
 }
 
 
+int init_insock(struct insock *in)
+{
+
+  in->fd = -1;
+  in->inptr = 0;
+  in->inlen = 0;
+  in->insize = INSIZE;
+  in->outsize = OUTSIZE;
+  in->outptr = 0;
+  in->outlen = 0;
+  in->iobuf = NULL;
+  return 0;
+}
+
 int init_insocks(void)
 {
   int i;
+  struct insock *in;
   for (i = 0; i< NUM_SOCKS; i++)
   {
-      insock[i].fd = -1;
-      insock[i].inptr = 0;
-      insock[i].inlen = 0;
-      insock[i].insize = INSIZE;
-      insock[i].outsize = OUTSIZE;
-      insock[i].outptr = 0;
-      insock[i].outlen = 0;
-      insock[i].iobuf = NULL;
+
+      in = &insock[i];
+      init_insock(in);
   }
   return i;
 }
@@ -1113,7 +1123,7 @@ int init_insocks(void)
 struct iobuf *new_iobuf(char *buf, int len)
 {
   struct iobuf *iob = (struct iobuf *)malloc(sizeof (struct iobuf));
-  int xlen = len+64;
+  int xlen = len+5;
   iob->outptr=len;
   iob->outlen=xlen;
   iob->outbuf = (char *)malloc(xlen);
@@ -1151,8 +1161,9 @@ int add_iobuf(struct insock *in, char *buf, int len)
       ciob = in->iobuf;
       niob = ciob->next;
       piob = ciob->prev;
-      if (piob == niob)
+      if ((piob == niob) && (piob == ciob))
 	{
+	  if(0)printf("zero insert iob %p ciob %p\n", iob , ciob); 
 	  ciob->next = iob;
 	  ciob->prev = iob;
 	  iob->next = ciob;
@@ -1160,10 +1171,12 @@ int add_iobuf(struct insock *in, char *buf, int len)
 	}
       else
 	{
+	  if(0)printf("before ciob insert iob %p ciob %p\n", iob , ciob); 
 	  iob->next = ciob;
+	  iob->prev = piob;
 	  ciob->prev = iob;
 	  piob->next = iob;
-	  iob->prev = piob;
+
 	}
     }
   else
@@ -1177,31 +1190,108 @@ int pull_iob(struct insock *in, char **bufp, int *lenp)
 {
   struct iobuf *piob = NULL;
   struct iobuf *niob = NULL;
-  struct iobuf *iob = NULL;
+  struct iobuf *ciob = NULL;
   int rc = -1;
-  if (in->iobuf != NULL)
+  if(lenp) *lenp = 0;
+  ciob = in->iobuf;
+  if (ciob != NULL)
     {
-     iob = in->iobuf;
-     if(bufp) *bufp = iob->outbuf;
-     if(lenp) *lenp = iob->outptr;
-     if (iob->prev == iob->next)
+
+     if(bufp) *bufp = ciob->outbuf;
+     if(lenp) *lenp = ciob->outptr;
+     if ((ciob->prev == ciob->next) && (ciob->prev == ciob))
        {
+	 if(0)printf(" pull last iob %p\n", ciob);
 	 in->iobuf = NULL;
-	 free(iob);
+	 free(ciob);
 	 return 0;
        }
      else
        {
-	 niob = iob->next;
-	 piob = iob->prev;
+	 if(0)printf(" pull this iob 1  ciob %p niob %p piob %p\n"
+		, ciob, ciob->next, ciob->prev);
+	 niob = ciob->next;
+	 piob = ciob->prev;
 	 in->iobuf = niob;
          niob->prev = piob;
-	 free(iob);
+	 piob->next = niob;
+	 free(ciob);
+	 if(0)printf(" pull this iob 2  ciob %p next %p prev %p\n"
+		, niob, niob->next,niob->prev);
+
 	 return 1;
        }
     }
   return rc;
 }
+
+int print_iobs(struct insock *in)
+{
+  int rc = 0;
+  struct iobuf *iob = NULL;
+  struct iobuf *siob = NULL;
+  siob = in->iobuf;
+  iob = in->iobuf;
+
+  while(iob)
+    {
+      rc++;
+      printf("@%p next %p  len %d [%s]\n"
+	     , iob
+	     , iob->next
+	     , iob->outptr
+	     , iob->outbuf
+	     );
+      
+      iob = iob->next;
+      if(iob == siob) iob = NULL;
+    }
+  return rc;
+}
+
+int test_iob(void)
+{
+  struct insock inx;
+  struct insock *in = &inx;
+  char *sp;
+  int len;
+  init_insock(in);
+  printf(" After init :-\n");
+  print_iobs(in);
+  sp = "1 first inblock\n";
+  add_iobuf(in, sp, strlen(sp));
+  printf(" After 1 :-\n");
+  print_iobs(in);
+  sp = "2 next inblock\n";
+  add_iobuf(in, sp, strlen(sp));
+  printf(" After 2 :-\n");
+  print_iobs(in);
+
+  sp = "3 lastst inblock\n";
+  add_iobuf(in, sp, strlen(sp));
+  printf(" After last :-\n");
+  print_iobs(in);
+  pull_iob(in, &sp, &len);
+  printf(" After pull 1 [%s] len %d:-\n", sp, len);
+  print_iobs(in);
+  printf("\n\n");
+
+  pull_iob(in, &sp, &len);
+  printf(" After pull 2 [%s] len %d:-\n", sp, len);
+  print_iobs(in);
+  printf("\n\n");
+  pull_iob(in, &sp, &len);
+  printf(" After pull 3 [%s] len %d:-\n", sp, len);
+  print_iobs(in);
+  printf("\n\n");
+  pull_iob(in, &sp, &len);
+  printf(" After pull 4 [%s] len %d:-\n", sp, len);
+  print_iobs(in);
+  printf("\n\n");
+
+
+}
+
 int connect_socket(int portno, char *addr)
 {
      int sockfd, newsockfd, clilen;
@@ -1722,6 +1812,9 @@ int main (int argc, char *argv[])
    char *vals[64];
    init_g_spaces();
    init_insocks();
+
+   test_iob();
+   return 0;
 
    if(argc > 1)
      {
