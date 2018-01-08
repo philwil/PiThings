@@ -1075,6 +1075,52 @@ int init_insocks(void)
   return i;
 }
 
+int connect_socket(int portno, char * addr)
+{
+     int sockfd, newsockfd, clilen;
+     char buffer[256];
+     struct sockaddr_in serv_addr, cli_addr;
+     int n;
+     int data;
+     char *sp;
+
+     printf( "using port #%d\n", portno );
+    
+     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     if (sockfd < 0)
+     {
+	 printf("ERROR opening socket");
+	 return -1;
+     }
+     bzero((char *) &serv_addr, sizeof(serv_addr));
+
+     serv_addr.sin_family = AF_INET;
+     if(addr)
+       {
+	 sp =  addr;
+       }
+     else
+       {
+	 sp = "127.0.0.1";
+       }
+     if(inet_pton(AF_INET, sp, &serv_addr.sin_addr)<=0)
+       {
+	 printf("\n inet_pton error occured\n");
+	 return 1;
+       }
+
+     serv_addr.sin_port = htons( portno );
+     if (connect(sockfd, (struct sockaddr *) &serv_addr,
+              sizeof(serv_addr)) < 0) 
+     {
+	 printf("ERROR on connect");
+	 close(sockfd);
+	 return -1;
+     }
+     printf( "connect sock #%d\n", sockfd );
+     return sockfd;
+} 
+
 int listen_socket(int portno)
 {
      int sockfd, newsockfd, clilen;
@@ -1255,11 +1301,13 @@ int poll_sock(int lsock)
     //fds[idx].events = POLLIN;
     //fds[idx].revents = 0;
     //idx++;
-    
-    fds[idx].fd = lsock;
-    fds[idx].events = POLLIN;
-    fds[idx].revents = 0;
-    idx++;
+    if(lsock>0)
+      {
+	fds[idx].fd = lsock;
+	fds[idx].events = POLLIN;
+	fds[idx].revents = 0;
+	idx++;
+      }
     
     for (i = 0; i< NUM_SOCKS; i++)
       {
@@ -1437,6 +1485,7 @@ int init_g_spaces(void)
   return 0;
 
 }
+
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
 int set_space(struct space * base, char *name, char *value, char *buf, int len)
 {
@@ -1531,7 +1580,8 @@ int speed_onget(struct space *this, int idx, char *name, char *buf, int len)
 int main (int argc, char *argv[])
 {
    int i;
-   int lsock;
+   int lsock = 0;
+   int csock;
    int rc = 1;
    int depth=0;
    //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
@@ -1542,102 +1592,137 @@ int main (int argc, char *argv[])
    char *sp;
    char *vals[64];
    init_g_spaces();
-
-   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse");
-   printf (" rc = %d\n", rc );
-   show_stuff(rc, vals);
-
-   sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
-   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-
-   sp1 = make_space(&g_space, "ADD uav3/motor2/speed", NULL, 0);
-   sp1->onset = speed_onset;
-   sp1->onget = speed_onget;
-   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
-   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
-   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
-   return 0;
-
-   sp1 = make_space(&g_space, "ADD uav1/motor1/size", NULL, 0);
-   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "ADD uav1/motor2/speed", NULL, 0);
-   show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "ADD uav2/motor2/speed", NULL, 0);
-   show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
-   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL, 0);
-
-   sp1 = find_space_new(g_space, "uav3/motor2");
-   sp1->onset = motor_onset;
-   sp1->onget = motor_onget;
-
-   show_spaces_new(g_space, buf, 2048, buf);
-   sp1 = find_space_new(g_space, "uav1/motor3");
-   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
-   sp1 = find_space_new(g_space, "uav1/motor1");
-   printf(" found %s \n", sp1?sp1->name:"no uav1/motor1");
-   sp2  = copy_space_new(sp1, "new_motor1");
-   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
-   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
-   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
-
-   show_spaces_new(sp2, buf, 2048, buf);
-
-   //   return 0;
-#if 0
-   new_space("Space1", NULL, NULL, "127.0.0.1");
-   sp1 =  g_space;
-   show_space(sp1, 0, NULL , 0);
-   sp1 = new_space("Space2", sp1, NULL, "127.0.0.1");
-   show_space(g_space, 0, NULL , 0);
-   show_space(sp1, 0, NULL , 0);
-   sp1 = new_space("Space3", sp1, NULL, "127.0.0.1");
-   show_space(g_space, 0, NULL , 0);
-   show_space(sp1, 0, NULL , 0);
-
-   //   sp1 = g_space;
-   show_spaces(g_space, "Global Spaces 1", 0, NULL , 0);
-   //           attr        space  class type  value 
-
-   sp1 = g_space;
-   //struct space *new_space_attr_float(char *name , struct space *parent,1.234)
-
-   sp2 = new_space_attr_float("foo_float", sp1, 1.2345);
-   sp2 = new_space_attr_int("foo_int", sp1, 2345);
-   sp2 = new_space_attr_str("foo_str", sp1, "x2345");
-
-   show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
-
-#endif
-
-   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
-   run_str("ADD uavx/led1/on", buf, sizeof(buf));
-   run_str("ADD uavx/led1/color", buf, sizeof(buf));
-   run_str("ADD uavx/motor1/speed", buf, sizeof(buf));
-   run_str("ADD uavx/motor1/size", buf, sizeof(buf));
-   run_str("ADD uavx/motor2/speed", buf, sizeof(buf));
-   run_str("ADD uavx/motor2/size", buf, sizeof(buf));
-
-   run_str("SET uavx/led1/on 1", buf, sizeof(buf));
-   run_str("SET uavx/led1/color red", buf, sizeof(buf));
-
-   rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
-
-   printf("GET rc %d buf [%s]\n",rc, buf);
-
-#if 0
-   show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
-   rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
-   printf("rc %d buf [%s]\n",rc, buf);
-   return 0;
-
-   init_cmds();
-   init_cmd("FWD", fwd_cmd);
-   run_cmd ("FWD", 2, "Some data", 100, 50);
-#endif
-
    init_insocks();
+
+   if(argc > 1)
+     {
+       if (strcmp(argv[1], "send") == 0)
+	 {
+	   // send arg 2 3 and maybe 4  to local port and listen for reply
+	   if(argc <4 )
+	     {
+	       snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+	     }
+	   else
+	     {
+	       snprintf(buf, sizeof(buf),"%s %s %s", argv[2], argv[3], argv[4]);
+	     }	       
+	   csock = connect_socket(5432, NULL);
+	   printf ("sending [%s] to server %d \n", buf, csock);
+	   if(csock> 0)
+	     {
+	       accept_socket(csock);
+	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
+	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
+	       rc = write(csock, buf, strlen(buf)); 
+	       lsock = -1;
+
+	     }
+
+	 }
+     
+       else if (strcmp(argv[1], "test") == 0)
+	 {
+
+	   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse");
+	   printf (" rc = %d\n", rc );
+	   show_stuff(rc, vals);
+	   
+	   sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
+	   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+	   
+	   sp1 = make_space(&g_space, "ADD uav3/motor2/speed", NULL, 0);
+	   sp1->onset = speed_onset;
+	   sp1->onget = speed_onget;
+	   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
+	   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
+	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
+	   return 0;
+	   
+	   sp1 = make_space(&g_space, "ADD uav1/motor1/size", NULL, 0);
+	   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+	   sp1 = make_space(&g_space, "ADD uav1/motor2/speed", NULL, 0);
+	   show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
+	   sp1 = make_space(&g_space, "ADD uav2/motor2/speed", NULL, 0);
+	   show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
+	   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL, 0);
+	   
+	   sp1 = find_space_new(g_space, "uav3/motor2");
+	   sp1->onset = motor_onset;
+	   sp1->onget = motor_onget;
+	   
+	   show_spaces_new(g_space, buf, 2048, buf);
+	   sp1 = find_space_new(g_space, "uav1/motor3");
+	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
+	   sp1 = find_space_new(g_space, "uav1/motor1");
+	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor1");
+	   sp2  = copy_space_new(sp1, "new_motor1");
+	   rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
+	   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
+	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
+	   
+	   show_spaces_new(sp2, buf, 2048, buf);
+	   
+	   //   return 0;
+#if 0
+	   new_space("Space1", NULL, NULL, "127.0.0.1");
+	   sp1 =  g_space;
+	   show_space(sp1, 0, NULL , 0);
+	   sp1 = new_space("Space2", sp1, NULL, "127.0.0.1");
+	   show_space(g_space, 0, NULL , 0);
+	   show_space(sp1, 0, NULL , 0);
+	   sp1 = new_space("Space3", sp1, NULL, "127.0.0.1");
+	   show_space(g_space, 0, NULL , 0);
+	   show_space(sp1, 0, NULL , 0);
+	   
+	   //   sp1 = g_space;
+	   show_spaces(g_space, "Global Spaces 1", 0, NULL , 0);
+	   //           attr        space  class type  value 
+	   
+	   sp1 = g_space;
+	   //struct space *new_space_attr_float(char *name , struct space *parent,1.234)
+	   
+	   sp2 = new_space_attr_float("foo_float", sp1, 1.2345);
+	   sp2 = new_space_attr_int("foo_int", sp1, 2345);
+	   sp2 = new_space_attr_str("foo_str", sp1, "x2345");
+	   
+	   show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
+	   
+#endif
+	   
+	   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
+	   run_str("ADD uavx/led1/on", buf, sizeof(buf));
+	   run_str("ADD uavx/led1/color", buf, sizeof(buf));
+	   run_str("ADD uavx/motor1/speed", buf, sizeof(buf));
+	   run_str("ADD uavx/motor1/size", buf, sizeof(buf));
+	   run_str("ADD uavx/motor2/speed", buf, sizeof(buf));
+	   run_str("ADD uavx/motor2/size", buf, sizeof(buf));
+	   
+	   run_str("SET uavx/led1/on 1", buf, sizeof(buf));
+	   run_str("SET uavx/led1/color red", buf, sizeof(buf));
+	   
+	   rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
+	   
+	   printf("GET rc %d buf [%s]\n",rc, buf);
+	   
+#if 0
+	   show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
+	   rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
+	   printf("rc %d buf [%s]\n",rc, buf);
+	   return 0;
+	   
+	   init_cmds();
+	   init_cmd("FWD", fwd_cmd);
+	   run_cmd ("FWD", 2, "Some data", 100, 50);
+#endif
+	 }
+     }
+   
    accept_socket(STDIN_FILENO);
-   lsock = listen_socket(5432);
+   if(lsock == 0)
+     {
+       lsock = listen_socket(5432);
+     }
    rc = 1;
    while(rc>0 && count < 10)
    {
