@@ -906,7 +906,14 @@ int run_str(char *stuff, char *buf, int len)
   return 0;
 }
 
+struct insock;
 
+int run_str_in(struct insock *in, char *str, char *buf, int len)
+{
+  int rc;
+  rc =  run_str(str, buf,len);
+  return rc;
+}
 
 
 /*
@@ -1233,6 +1240,8 @@ int close_fds(int fsock)
   left [speed] [time]
 */
 
+
+
 int handle_input(struct insock *in)
 {
     int rc;
@@ -1240,8 +1249,7 @@ int handle_input(struct insock *in)
     int n;
     char cmd[64];
     char *sp;
-    int speed=0;
-    int time=0;
+    char buf[1024];
 
     len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
 
@@ -1250,17 +1258,17 @@ int handle_input(struct insock *in)
 	in->inlen += len;
 	in->inbuf[in->inlen] = 0;
 	sp = &in->inbuf[in->inptr];
-	n = sscanf(sp,"%s %d %d", cmd, &speed, &time);
+	n = sscanf(sp,"%s ", cmd);
 	rc = snprintf(&in->outbuf[in->outlen], in->outsize-in->outptr
 		      ," message received [%s] ->"
-		      " n %d cmd [%s] speed %d time %d\n"
+		      " n %d cmd [%s]\n"
 		      , &in->inbuf[in->inptr]
-		      , n, cmd , speed, time);
+		      , n, cmd );
 	in->outlen =+ rc;
-	run_cmd (cmd, n, sp, speed, time);
-
-	printf(" rc %d n %d cmd [%s] speed %d time %d\n"
-	       , rc, n, cmd , speed, time);
+	//run_cmd (cmd, n, sp, speed, time);
+	run_str_in(in, sp, buf, 1024);
+	printf(" rc %d n %d cmd [%s]\n"
+	       , rc, n, cmd );
 	in->outlen =+ rc;
 	in->inptr= 0;
 	in->inlen= 0;
@@ -1353,7 +1361,7 @@ int poll_sock(int lsock)
 	    }
 	    if (fds[i].revents & POLLIN) 
 	    {
-		if(fds[i].fd == lsock)
+	      if((lsock > 0)&& (fds[i].fd == lsock))
 		{ 
 		    ret = accept_socket(lsock);
 		    printf("accept ret = %d \n", ret);
