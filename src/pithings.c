@@ -127,6 +127,48 @@ struct space {
 
 };
 
+#define NUM_SOCKS 16
+#define NUM_CMDS 16
+#define INSIZE 1024
+#define OUTSIZE 1024
+
+int num_socks=0;
+
+struct iobuf;
+
+struct iobuf
+{
+  struct iobuf *prev;
+  struct iobuf *next;
+  char *outbuf;
+  int outlen;
+  int outptr;
+};
+
+struct insock
+{
+  int fd;
+  char inbuf[INSIZE];
+  int inptr;
+  int inlen;
+  int insize;
+  char outbuf[OUTSIZE];
+  int outptr;
+  int outlen;
+  int outsize;
+  struct iobuf *iobuf;
+};
+
+struct cmds
+{
+  char *key;
+  char *cmd;
+  int (*handler)(void *key, int n, char *cmd, int speed, int time);
+};
+  
+
+struct insock insock[NUM_SOCKS];
+struct cmds cmds[NUM_CMDS];
 #define NUM_IDX 1024
 struct space *space=NULL;
 struct space *g_space=NULL;
@@ -914,7 +956,6 @@ int run_str(char *stuff, char **bufp, int *len)
   return 0;
 }
 
-struct insock;
 
 int run_str_in(struct insock *in, char *str, char **bufp, int *len)
 {
@@ -997,38 +1038,7 @@ typedef unsigned char uint8_t;
 
 static uint8_t latch_st;
 
-#define NUM_SOCKS 16
-#define NUM_CMDS 16
-#define INSIZE 1024
-#define OUTSIZE 1024
 
-int num_socks=0;
-
-struct insock
-{
-  int fd;
-  char inbuf[INSIZE];
-  int inptr;
-  int inlen;
-  int insize;
-  char outbuf[OUTSIZE];
-  int outptr;
-  int outlen;
-  int outsize;
-};
-
-struct cmds
-{
-  char *key;
-  char *cmd;
-  int (*handler)(void *key, int n, char *cmd, int speed, int time);
-};
-  
-
-
-
-struct insock insock[NUM_SOCKS];
-struct cmds cmds[NUM_CMDS];
 
 int init_cmds(void)
 {
@@ -1086,11 +1096,113 @@ int init_insocks(void)
       insock[i].outsize = OUTSIZE;
       insock[i].outptr = 0;
       insock[i].outlen = 0;
+      insock[i].iobuf = NULL;
   }
   return i;
 }
 
-int connect_socket(int portno, char * addr)
+//struct iobuf/
+//{
+//struct iobuf *prev;
+//struct iobuf *next;
+//char *outbuf;
+//int outlen;
+//int outptr;
+//};
+
+struct iobuf *new_iobuf(char *buf, int len)
+{
+  struct iobuf *iob = (struct iobuf *)malloc(sizeof (struct iobuf));
+  int xlen = len+64;
+  iob->outptr=len;
+  iob->outlen=xlen;
+  iob->outbuf = (char *)malloc(xlen);
+  memcpy(iob->outbuf,buf,len);
+  iob->prev = iob;
+  iob->next = iob;
+  return iob;
+}
+
+int extend_iobuf(struct iobuf * iob,char *buf, int len)
+{
+  memcpy(iob->outbuf+iob->outptr,buf,len);
+  iob->outptr+=len;
+}
+
+int add_iobuf(struct insock *in, char *buf, int len)
+{
+  struct iobuf *iob = NULL;
+  struct iobuf *ciob = NULL;
+  struct iobuf *piob = NULL;
+  struct iobuf *niob = NULL;
+  if (in->iobuf != NULL)
+    {
+     iob = in->iobuf;
+    }
+  else
+    {
+      iob = new_iobuf(buf, len);
+      in->iobuf = iob;
+      return 0;
+    }
+  if (iob->outptr+len > iob->outlen)
+    {
+      iob = new_iobuf(buf, len);
+      ciob = in->iobuf;
+      niob = ciob->next;
+      piob = ciob->prev;
+      if (piob == niob)
+	{
+	  ciob->next = iob;
+	  ciob->prev = iob;
+	  iob->next = ciob;
+	  iob->prev = ciob;
+	}
+      else
+	{
+	  iob->next = ciob;
+	  ciob->prev = iob;
+	  piob->next = iob;
+	  iob->prev = piob;
+	}
+    }
+  else
+    {
+      extend_iobuf(iob,buf, len);
+    }
+  return 0;
+}
+
+int pull_iob(struct insock *in, char **bufp, int *lenp)
+{
+  struct iobuf *piob = NULL;
+  struct iobuf *niob = NULL;
+  struct iobuf *iob = NULL;
+  int rc = -1;
+  if (in->iobuf != NULL)
+    {
+     iob = in->iobuf;
+     if(bufp) *bufp = iob->outbuf;
+     if(lenp) *lenp = iob->outptr;
+     if (iob->prev == iob->next)
+       {
+	 in->iobuf = NULL;
+	 free(iob);
+	 return 0;
+       }
+     else
+       {
+	 niob = iob->next;
+	 piob = iob->prev;
+	 in->iobuf = niob;
+         niob->prev = piob;
+	 free(iob);
+	 return 1;
+       }
+    }
+  return rc;
+}
+int connect_socket(int portno, char *addr)
 {
      int sockfd, newsockfd, clilen;
      char buffer[256];
