@@ -122,8 +122,8 @@ struct space {
   char *cval;
   int type;
   char *node;
-  int (*onset)(struct space *this, int idx, char *name, char * value, char *buf, int len);
-  int (*onget)(struct space *this, int idx, char *name, char *buf, int len);
+  int (*onset)(struct space *this, int idx, char *name, char * value, char **buf, int *len);
+  int (*onget)(struct space *this, int idx, char *name, char **buf, int *len);
 
 };
 
@@ -135,9 +135,9 @@ struct space *g_spaces[NUM_IDX];
 
 
 
-char *get_space(struct space * base, char *name, char *buf, int len);
-int set_space(struct space * base, char *name, char *value, char *buf, int len);
-struct space *make_space(struct space **root, char *name, char *buf, int len);
+char *get_space(struct space * base, char *name, char **buf, int *len);
+int set_space(struct space * base, char *name, char *value, char **buf, int *len);
+struct space *make_space(struct space **root, char *name, char **buf, int *len);
 int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
 int parse_stuff(char delim, int num, char **vals, char *stuff);
 
@@ -456,7 +456,7 @@ int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
 
 
 
-int show_space_new(struct space *base, char *desc, int len, char *buf)
+int show_space_new(struct space *base, char *desc, int len, char **bufp, int *lenp)
 {
   struct space *start=base;
   struct space *child=NULL;
@@ -473,7 +473,7 @@ int show_space_new(struct space *base, char *desc, int len, char *buf)
   if(child == NULL)
     {
       snprintf(sp, slen,
-	       "/%s => %d"
+	       "/%s => %d\n"
 	       , base->name
 	       , base->idx
 	       );
@@ -487,7 +487,7 @@ int show_space_new(struct space *base, char *desc, int len, char *buf)
     }
   if(child == NULL)
     {
-      printf(" >> [%s]\n", buf);
+      //printf(" >> [%s]\n", buf);
       return 0;
     }
   // foreach child do the same
@@ -496,23 +496,26 @@ int show_space_new(struct space *base, char *desc, int len, char *buf)
   while (child != NULL)
     {
 
-      show_space_new(child, sp, slen, buf);
+      slen += show_space_new(child, sp, slen, bufp, lenp);
       child = child->next;
       if (child == base->child) 
 	child= NULL;
     }
-  ret =  strlen(buf);
+  //  ret =  strlen(buf);
+  ret =  slen;
   return ret;
 }
 
-int show_spaces_new(struct space *base, char *desc, int len, char *buf)
+int show_spaces_new(struct space *base, char *desc, int len, char **bufp, int *lenp)
 {
   int rc  = -1;
   struct space *start=base;
   struct space *xstart=NULL;
   while (start)
     {
-      show_space_new(start, desc, len, buf);
+      rc = show_space_new(start, desc, len, bufp, lenp);
+      printf(" >> [%s]\n", desc);
+
       xstart = start->next;
       start = start->next;
 
@@ -722,7 +725,7 @@ int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char 
 // return found name or new space object
 //    sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
 
-struct space *make_space(struct space **root, char *name, char *buf, int len)
+struct space *make_space(struct space **root, char *name, char **buf, int *len)
 {
   struct space *parent=NULL;
   struct space *space=NULL;
@@ -850,7 +853,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   return idx;
 }
 
-int run_str(char *stuff, char *buf, int len)
+int run_str(char *stuff, char **bufp, int *len)
 {
   char cmd[128];
   snprintf(cmd, sizeof(cmd),"%s",stuff);
@@ -883,23 +886,28 @@ int run_str(char *stuff, char *buf, int len)
   if(strcmp(vals[cidx], "ADD") == 0)
     {
       //make_space(&g_space, idx, vals, stuff, buf, len);
-      make_space(&g_space, stuff, buf, len);
+      make_space(&g_space, stuff, bufp, len);
       return 0;
     }
   //return run_str_add(stuff,buf,len);
   else if(strcmp(vals[cidx], "SET") == 0)
     {
-      rc = set_space(g_space, stuff, NULL, buf, len);
+      rc = set_space(g_space, stuff, NULL, bufp, len);
       return rc ; 
     }
   else if(strcmp(vals[cidx], "GET") == 0)
     {
       rc = 0;
-      sp = get_space(g_space, stuff, buf, len);
-      if(buf)
+      sp = get_space(g_space, stuff, bufp, len);
+      if(bufp)
 	{
-	  snprintf(buf,len,"%s",sp);
+	  int xlen = strlen(sp) +1;
+	  char *buf = malloc(xlen);
+	  snprintf(buf,xlen,"%s",sp);
 	  rc = strlen(buf);
+	  *bufp = buf;
+	  *len = rc;
+
 	}
       return rc;
     }
@@ -908,10 +916,10 @@ int run_str(char *stuff, char *buf, int len)
 
 struct insock;
 
-int run_str_in(struct insock *in, char *str, char *buf, int len)
+int run_str_in(struct insock *in, char *str, char **bufp, int *len)
 {
   int rc;
-  rc =  run_str(str, buf,len);
+  rc =  run_str(str, bufp,len);
   return rc;
 }
 
@@ -1240,8 +1248,6 @@ int close_fds(int fsock)
   left [speed] [time]
 */
 
-
-
 int handle_input(struct insock *in)
 {
     int rc;
@@ -1250,6 +1256,9 @@ int handle_input(struct insock *in)
     char cmd[64];
     char *sp;
     char buf[1024];
+    char *bres;
+    int lres;
+    char * bufp;
 
     len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
 
@@ -1266,7 +1275,7 @@ int handle_input(struct insock *in)
 		      , n, cmd );
 	in->outlen =+ rc;
 	//run_cmd (cmd, n, sp, speed, time);
-	run_str_in(in, sp, buf, 1024);
+	run_str_in(in, sp, &bufp, &lres);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
 	in->outlen =+ rc;
@@ -1495,7 +1504,7 @@ int init_g_spaces(void)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500", NULL, NULL, 0);
-int set_space(struct space * base, char *name, char *value, char *buf, int len)
+int set_space(struct space * base, char *name, char *value, char **buf, int *len)
 {
   int rc = -1;
   struct space *sp1;
@@ -1522,7 +1531,7 @@ int set_space(struct space * base, char *name, char *value, char *buf, int len)
   return rc;
 }
 
-char *get_space(struct space *base, char *name, char *buf, int len)
+char *get_space(struct space *base, char *name, char **buf, int *len)
 {
   char * sret=NULL;
   struct space *sp1;
@@ -1557,28 +1566,28 @@ int show_stuff(int rc, char **vals)
    return 0;
 }
 
-int motor_onset(struct space *this, int idx, char *name, char * value, char *buf, int len)
+int motor_onset(struct space *this, int idx, char *name, char *value, char **buf, int *len)
 {
   printf(" running %s for space [%s] %d with value [%s]\n"
 	 , __FUNCTION__, this->name, idx, value);
   return 0;
 
 }
-int motor_onget(struct space *this, int idx, char *name, char *buf, int len)
+int motor_onget(struct space *this, int idx, char *name, char **buf, int *len)
 {
   printf(" running %s for space [%s] %d \n"
 	 , __FUNCTION__, this->name, idx);
   return 0;
 
 }
-int speed_onset(struct space *this, int idx, char *name, char * value, char *buf, int len)
+int speed_onset(struct space *this, int idx, char *name, char * value, char **buf, int *len)
 {
   printf(" running %s for space [%s] %d with value [%s]\n"
 	 , __FUNCTION__, this->name, idx, value);
   return 0;
 
 }
-int speed_onget(struct space *this, int idx, char *name, char *buf, int len)
+int speed_onget(struct space *this, int idx, char *name, char **buf, int *len)
 {
   printf(" running %s for space [%s] %d \n"
 	 , __FUNCTION__, this->name, idx);
@@ -1632,6 +1641,8 @@ int main (int argc, char *argv[])
        else if (strcmp(argv[1], "test") == 0)
 	 {
 
+	   char sbuf[4096];
+
 	   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse");
 	   printf (" rc = %d\n", rc );
 	   show_stuff(rc, vals);
@@ -1659,7 +1670,7 @@ int main (int argc, char *argv[])
 	   sp1->onset = motor_onset;
 	   sp1->onget = motor_onget;
 	   
-	   show_spaces_new(g_space, buf, 2048, buf);
+	   show_spaces_new(g_space, sbuf, 4096, NULL, 0);
 	   sp1 = find_space_new(g_space, "uav1/motor3");
 	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
 	   sp1 = find_space_new(g_space, "uav1/motor1");
@@ -1669,7 +1680,7 @@ int main (int argc, char *argv[])
 	   sp =  get_space(g_space,"GET uav3/motor2/speed", NULL,0);
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   
-	   show_spaces_new(sp2, buf, 2048, buf);
+	   show_spaces_new(sp2, sbuf, 4096, NULL, 0);
 	   
 	   //   return 0;
 #if 0
@@ -1697,7 +1708,7 @@ int main (int argc, char *argv[])
 	   show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
 	   
 #endif
-	   
+#if 0	   
 	   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
 	   run_str("ADD uavx/led1/on", buf, sizeof(buf));
 	   run_str("ADD uavx/led1/color", buf, sizeof(buf));
@@ -1712,6 +1723,8 @@ int main (int argc, char *argv[])
 	   rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
 	   
 	   printf("GET rc %d buf [%s]\n",rc, buf);
+
+#endif
 	   
 #if 0
 	   show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
