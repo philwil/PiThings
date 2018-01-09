@@ -202,6 +202,7 @@ Design Status
 =========================================================================
 
 Story so far
+
    Many things work but curently testing the flexible, resusable  io buffers to hold io data. Once thee work we will be able to send lists ot things to connections
    
   Next feature will be to add remote nodes
