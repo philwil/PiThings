@@ -196,7 +196,9 @@ for each room
       DBSAVE [room1/]sensor/temp1 [room1/]heater/mode [room1/]heater/mode_led /room1_temps/
 
 =========================================================================
+
 Design Status
+
 =========================================================================
 
 Story so far
