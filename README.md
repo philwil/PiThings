@@ -1,15 +1,23 @@
 # PiThings
 
-This project the result of many years trying to find a novel way to let things talk to each other.
+This project is the result of many years trying to find a novel way to let things talk to each other.
 
-You set up a server which can talk to other servers on internet connected things
+With the availbility of low cost wireless interfaces on pizeros and other sustems my need for this sort of project has got greater.
+
+To use it  set up one or more  servers on each thing. These servers can talk to other servers on a local or global internet.
 When you connect to the server you can get the value of things that the server knows about.
-At the start the server's list of things is blank.
-All can be restored from a database or one or more files.
-When you connect you "ADD" things to the server.
-You can use telnet to connect to the default port (5432) and then issue the following command
+
+A object on the server is defined by a uri this/is/an/example/of/a/uri
+Each object has a value (nominally in text form)
+
+At the start the server's list of objects is blank.
+
+They can  be restored from a database or one or more files or added fron scripts at start up.
 
 The main function will also connect to the server allowing command line operation.
+
+You can also use telnet to connect to the default port (5432) and then issue the following command
+
 
 Some typical commands include :-
 
