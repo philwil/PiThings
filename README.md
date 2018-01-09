@@ -2,7 +2,7 @@
 
 This project is the result of many years trying to find a novel way to let things talk to each other.
 
-With the availbility of low cost wireless interfaces on pizeros and other sustems my need for this sort of project has got greater.
+With the availbility of low cost wireless interfaces on pizeros and other systems my need for this sort of project has got greater.
 
 To use it  set up one or more  servers on each thing. These servers can talk to other servers on a local or global internet.
 When you connect to the server you can get the value of things that the server knows about.
