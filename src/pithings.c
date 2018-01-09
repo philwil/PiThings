@@ -190,6 +190,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff);
 int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
 int free_stuff(int num, char **vals);
 
+struct iobuf *new_iobuf(int len);
 
 
 struct space * setup_space(char *name, struct space*parent)
@@ -1130,6 +1131,36 @@ int init_insocks(void)
 //};
 struct iobuf *pull_iob(struct iobuf **inp, char **bufp, int *lenp);
 struct iobuf *pull_ciob(struct iobuf **inp, struct iobuf *ciob, char **bufp, int *lenp);
+int push_ciob(struct iobuf **iobp, struct iobuf *ciob, struct iobuf *iob);
+
+//      push_iob(&in->iobuf, iob);
+//pull_iob
+//pull_ciob
+int iob_snprintf(struct iobuf *iob, int buffer, const char *fmt, ...)
+{
+    int size;
+    char *sp = NULL;
+    va_list args;
+    struct iobuf *ciob;
+    if (iob)
+    {
+        va_start(args, fmt);
+        size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
+        va_end(args);
+
+        if(iob->outptr+ size > iob->outlen)
+        {
+	  ciob = iob;
+	  iob = new_iobuf(ciob->outlen+size);
+	  push_ciob(NULL, ciob, iob);
+	}
+	va_start(args, fmt);
+	size = vsnprintf(iob->outbuf, iob->outlen, fmt, args);
+	va_end(args);
+    }
+    return size;
+}
+
 
 struct iobuf *seek_iob(struct iobuf **inp, int len)
 {
@@ -1171,18 +1202,19 @@ struct iobuf *new_iobuf(int len)
   return iob;
 }
 
+
 int extend_iobuf(struct iobuf * iob,char *buf, int len)
 {
   memcpy(iob->outbuf+iob->outptr,buf,len);
   iob->outptr+=len;
 }
 
-int push_iob(struct iobuf **iobp ,  struct iobuf *iob)
+int push_ciob(struct iobuf **iobp, struct iobuf *ciob, struct iobuf *iob)
 {
-  struct iobuf *ciob = NULL;
+
   struct iobuf *piob = NULL;
   struct iobuf *niob = NULL;
-  if(iobp)ciob= *iobp;
+  //if(iobp)ciob= *iobp;
   if(ciob)
     {
       niob = ciob->next;
@@ -1210,6 +1242,13 @@ int push_iob(struct iobuf **iobp ,  struct iobuf *iob)
       if(iobp)*iobp=iob;
     }
   return 0;
+}
+
+int push_iob(struct iobuf **iobp ,  struct iobuf *iob)
+{
+  struct iobuf *ciob = NULL;
+  if(iobp)ciob= *iobp;
+  return push_ciob(iobp, ciob, iob);
 }
 
 int store_iob(struct iobuf **iobp ,  struct iobuf *iob)
