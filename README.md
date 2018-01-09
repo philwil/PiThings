@@ -2,11 +2,17 @@
 
 This project the result of many years trying to find a novel way to let things talk to each other.
 
-You set up server which can talk to internet things
+You set up a server which can talk to other servers on internet connected things
 When you connect to the server you can get the value of things that the server knows about.
-At the start the server knows nothing.
+At the start the server its list of things is blank
+All can be restored from a database or one or more files
+.
 When you connect you "ADD" things to the server.
 You can use telnet to connect to the default port (5432) and then issue the following command
+
+THe main function will also connect to the server allowing command line operation.
+
+Some typical commands include :-
 
 ADD system/status/cpu/temp
 => OK ADDED system/status/cpu/temp
