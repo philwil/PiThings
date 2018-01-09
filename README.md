@@ -71,6 +71,10 @@ Nodes can be set up as follows
 
 NODE /10.1.2.3:5432/ /some_node/
 
+(use NODES) to list nodes 
+The NODE command will also set up and maintain  a link to the remote node 
+
+
 Database interface ( to do ) using names or ids
 
 DBSAVE system/disk1/space  system/cpu/temp /db_name/
@@ -105,6 +109,7 @@ One each room at set up
 ADD sensors/temp1
 
 And set up the master node
+
 NODE /10.1.2.3:5432/ /master/
 
 
@@ -138,3 +143,13 @@ else
    SET [room1/]heater/mode_led green
 
 DBSAVE [room1/]sensor/temp1 [room1/]heater/mode [room1/]heater/mode_led /room1_temps/
+
+Status
+
+Story so far
+   Many things work but curently testing the flexible, resusable  io buffers to hold io data. Once thee work we will be able to send lists ot things to connections
+   
+  Next feature will be to add remote nodes
+  
+
+   
