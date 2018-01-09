@@ -174,7 +174,8 @@ for each room
 
 if (GETS [room1/]sensor/temp1 < GETS [room1/]sensor/low_temp)
 
-   SET [room1/]heater/mode heat
+     
+    SET [room1/]heater/mode heat
 
     SET [room1/]heater/mode_led red
 
