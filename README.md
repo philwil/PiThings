@@ -4,7 +4,8 @@ This project is the result of many years trying to find a novel way to let thing
 
 With the availbility of low cost wireless interfaces on pizeros and other systems my need for this sort of project has got greater.
 
-To use it  set up one or more  servers on each thing. These servers can talk to other servers on a local or global internet.
+To use it, set up one or more  servers on each thing. These servers can talk to other servers on a local or global internet.
+
 When you connect to the server you can get the value of things that the server knows about.
 
 A object on the server is defined by a uri this/is/an/example/of/a/uri
@@ -16,7 +17,7 @@ They can  be restored from a database or one or more files or added fron scripts
 
 The main function will also connect to the server allowing command line operation.
 
-You can also use telnet to connect to the default port (5432) and then issue the following command
+You can also use telnet to connect to the default port (5432) and then issue some of the following commands. 
 
 
 Some typical commands include :-
