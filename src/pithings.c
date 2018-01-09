@@ -180,9 +180,17 @@ struct iobuf *g_iob_store = NULL;
 int init_insock(struct insock *in);
 char *get_space(struct space * base, char *name, char **buf, int *len);
 int set_space(struct space * base, char *name, char *value, char **buf, int *len);
+int add_space(struct space *parent, struct space *space);
 struct space *make_space(struct space **root, char *name, char **buf, int *len);
+int add_child(struct space *base, struct space *child);
+
 int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
 int parse_stuff(char delim, int num, char **vals, char *stuff);
+
+int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
+int free_stuff(int num, char **vals);
+
+
 
 struct space * setup_space(char *name, struct space*parent)
 {
