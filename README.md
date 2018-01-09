@@ -187,16 +187,17 @@ for each room
       SET [room1/]heater/mode_led blue
    
 
-else
+     else
 
-   SET [room1/]heater/mode off
+      SET [room1/]heater/mode off
 
-SET [room1/]heater/mode_led green
+      SET [room1/]heater/mode_led green
 
-DBSAVE [room1/]sensor/temp1 [room1/]heater/mode [room1/]heater/mode_led /room1_temps/
+      DBSAVE [room1/]sensor/temp1 [room1/]heater/mode [room1/]heater/mode_led /room1_temps/
 
-
+=========================================================================
 Design Status
+=========================================================================
 
 Story so far
    Many things work but curently testing the flexible, resusable  io buffers to hold io data. Once thee work we will be able to send lists ot things to connections
