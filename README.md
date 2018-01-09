@@ -172,25 +172,14 @@ On the Master system we can run pseudo code as follows
 
 for each room
       
-     if (GETS [room1/]sensor/temp1 < GETS [room1/]sensor/low_temp)
-
-     
-    SET [room1/]heater/mode heat
-
-    SET [room1/]heater/mode_led red
-
-    
+     if (GETS [room1/]sensor/temp1 < GETS [room1/]sensor/low_temp)     
+       SET [room1/]heater/mode heat
+       SET [room1/]heater/mode_led red
      else if (GETS [room1/]sensor/temp1 > GETS [room1/]sensor/hi_temp)
-    
       SET [room1/]heater/mode cool
-
       SET [room1/]heater/mode_led blue
-   
-
-     else
-
+    else
       SET [room1/]heater/mode off
-
       SET [room1/]heater/mode_led green
 
       DBSAVE [room1/]sensor/temp1 [room1/]heater/mode [room1/]heater/mode_led /room1_temps/
