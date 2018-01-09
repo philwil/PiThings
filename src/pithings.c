@@ -1133,10 +1133,7 @@ struct iobuf *pull_iob(struct iobuf **inp, char **bufp, int *lenp);
 struct iobuf *pull_ciob(struct iobuf **inp, struct iobuf *ciob, char **bufp, int *lenp);
 int push_ciob(struct iobuf **iobp, struct iobuf *ciob, struct iobuf *iob);
 
-//      push_iob(&in->iobuf, iob);
-//pull_iob
-//pull_ciob
-int iob_snprintf(struct iobuf *iob, int buffer, const char *fmt, ...)
+int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
 {
     int size;
     char *sp = NULL;
@@ -1147,7 +1144,10 @@ int iob_snprintf(struct iobuf *iob, int buffer, const char *fmt, ...)
         va_start(args, fmt);
         size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
         va_end(args);
-
+	printf(" size found %d len %d\n"
+	       , size
+	       , iob->outlen);
+	
         if(iob->outptr+ size > iob->outlen)
         {
 	  ciob = iob;
@@ -1155,12 +1155,11 @@ int iob_snprintf(struct iobuf *iob, int buffer, const char *fmt, ...)
 	  push_ciob(NULL, ciob, iob);
 	}
 	va_start(args, fmt);
-	size = vsnprintf(iob->outbuf, iob->outlen, fmt, args);
+	size = vsnprintf(&iob->outbuf[iob->outptr], iob->outlen-iob->outptr, fmt, args);
 	va_end(args);
     }
     return size;
 }
-
 
 struct iobuf *seek_iob(struct iobuf **inp, int len)
 {
@@ -1360,6 +1359,30 @@ int print_iobs(struct iobuf *in)
   return rc;
 }
 
+int remove_iobs(struct iobuf **in)
+{
+  int rc = 0;
+  struct iobuf *iob = NULL;
+  struct iobuf *liob = NULL;
+  struct iobuf *siob = NULL;
+
+  siob = *in;//in->iobuf;
+  iob = *in;//in->iobuf;
+
+  while(iob)
+    {
+      rc++;
+      if(iob->outbuf)free(iob->outbuf);
+      
+      liob = iob;
+      iob = iob->next;
+      if(iob == siob) iob = NULL;
+      if(liob)free(liob);
+    }
+  *in = NULL;
+  return rc;
+}
+
 
 
 int test_iob(void)
@@ -1369,6 +1392,9 @@ int test_iob(void)
   char *sp;
   int len;
   struct iobuf *iob= NULL;
+  struct iobuf *iob1= NULL;
+  struct iobuf *iob2= NULL;
+  struct iobuf *iob3= NULL;
 
   init_insock(in);
 
@@ -1422,6 +1448,31 @@ int test_iob(void)
   if(iob) store_iob(&g_iob_store, iob);
   printf("\n\n iobstore after store %p\n", iob);
   print_iobs(g_iob_store);
+  remove_iobs(&g_iob_store);
+  iob1 = new_iobuf(12);
+  iob1->outbuf[0]=0;
+  iob_snprintf(iob1, "the name [%s] value is %d ", "some_name", 22);
+  iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
+  printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
+	 , iob1
+	 , iob1->outbuf
+	 , iob1->next
+	 , iob1->prev
+	 );
+  iob2 = iob1->next;
+  printf("\n\n iob 2 %p after snprintf  [%s] prev %p next %p \n"
+	 , iob2
+	 , iob2->outbuf
+	 , iob2->next
+	 , iob2->prev
+	 );
+  iob3 = iob2->next;
+  printf("\n\n iob 3 %p after snprintf  [%s] prev %p next %p \n"
+	 , iob3
+	 , iob3->outbuf
+	 , iob3->next
+	 , iob3->prev
+	 );
 
 }
 
