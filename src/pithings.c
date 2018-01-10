@@ -888,7 +888,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   char *val;
   char  *spv;
   int val_size;
-
+  int skip = 0;
   val_size = 64;
   val = malloc(64);
   val[0]=0;
@@ -898,8 +898,10 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   //idx++;
   // TODO special case where *sp == delim at the start
   if(*sp && *sp == delim )
-    sp++;
-      
+    {
+      sp++;
+      skip = 1;
+    }
   while(*sp && (rc>0) && (idx < num))
     {
       rc = 0;
@@ -928,7 +930,8 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
 		 , vals[idx][1]
 		 );
 	  printf("sp [%s] \n", sp);
-	  idx++;
+	  if(!skip)idx++;
+	  skip = 0;
 	}
     }
   printf("%s done idx %d\n", __FUNCTION__, idx);
