@@ -197,7 +197,7 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 int free_stuff(int num, char **vals);
 
 struct iobuf *new_iobuf(int len);
-int in_snprintf(struct insock *in, const char *fmt, ...);
+int in_snprintf(struct insock *in, struct iobuf *iob,const char *fmt, ...);
 int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
 
 
@@ -854,9 +854,9 @@ struct space *make_space_in(struct space **root, char *name,
   //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
 
   if(new)
-    in_snprintf(in,"[%s] added  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in, NULL, "[%s] added  space [%s] %d\n",name, space->name, idx);
   else
-    in_snprintf(in, "[%s] found  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in, NULL, "[%s] found  space [%s] %d\n",name, space->name, idx);
   
   free_stuff(idv, valv);
   free_stuff(idx, valx);
@@ -1208,34 +1208,19 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     return size;
 }
 //in
-int in_snprintf(struct insock *in, const char *fmt, ...)
+int in_snprintf(struct insock *in, struct iobuf *xiob, const char *fmt, ...)
 {
   int size;
-  struct iobuf *iob;
+  struct iobuf *iob = NULL;
   struct iobuf *ciob;
   va_list args;
-#if 0
-  char outbuf[128];
-  
-  va_start(args, fmt);
-  size = vsnprintf(outbuf, 0, fmt, args) +1;
-  va_end(args);
-  printf(" size found %lu len %lu\n"
-	 , size
-	 , sizeof(outbuf));
-  va_end(args);
 
-  va_start(args, fmt);
-  vsnprintf(outbuf, size, fmt, args);
-  va_end(args);
-  printf(" buf [%s]\n"
-	 , outbuf);
-  va_end(args);
-  return size;  
-#endif
-  
-  if(!in || !in->iobuf)
+  if(xiob)
+    iob = xiob;
+      
+  if((!in || !in->iobuf) && !xiob)
     iob = new_iobuf(128);
+
   if(in)
     {
       if(in->iobuf)
@@ -1263,7 +1248,7 @@ int in_snprintf(struct insock *in, const char *fmt, ...)
 	va_end(args);
 	iob->outlen+= size;
     }
-  in->outblen += size;
+  if(in)in->outblen += size;
   return size;
   
 }
@@ -1370,7 +1355,7 @@ int store_iob(struct iobuf **iobp ,  struct iobuf *iob)
 
 }
 
-int add_iob(struct insock *in, char *buf, int len)
+int xadd_iob(struct insock *in, char *buf, int len)
 {
   int need_push = 0;
   struct iobuf *iob = NULL;
@@ -1514,16 +1499,21 @@ int test_iob(void)
   printf(" After init :-\n");
   print_iobs(in->iobuf);
   sp = "1 first inblock\n";
-  add_iob(in, sp, strlen(sp));
+  in_snprintf(in, NULL, "%s", sp);
+
+  //add_iob(in, sp, strlen(sp));
   printf(" After 1 :-\n");
   print_iobs(in->iobuf);
   sp = "2 next inblock\n";
-  add_iob(in, sp, strlen(sp));
+  in_snprintf(in, NULL, "%s", sp);
+
+  //add_iob(in, sp, strlen(sp));
   printf(" After 2 :-\n");
   print_iobs(in->iobuf);
 
   sp = "3 lastst inblock\n";
-  add_iob(in, sp, strlen(sp));
+  in_snprintf(in, NULL, "%s", sp);
+  //add_iob(in, sp, strlen(sp));
   printf(" After last :-\n");
   print_iobs(in->iobuf);
   //ciob = in->iobuf;
@@ -1563,8 +1553,8 @@ int test_iob(void)
   print_iobs(g_iob_store);
   remove_iobs(&g_iob_store);
   iob1 = new_iobuf(12);
-  iob_snprintf(iob1, "the name [%s] value is %d ", "some_name", 22);
-  iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
+  in_snprintf(NULL, iob1, "the name [%s] value is %d ", "some_name", 22);
+  in_snprintf(NULL, iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
   printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
 	 , iob1
 	 , iob1->outbuf
@@ -1789,7 +1779,7 @@ int handle_output(struct insock *in)
   // old way
   if(in->outptr != in->outlen)
     {
-      printf(" %s running the old way\n", __FUNCTION__);
+      if(0)printf(" %s running the old way\n", __FUNCTION__);
       rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
       if(rc >0)
 	{
@@ -1806,11 +1796,11 @@ int handle_output(struct insock *in)
       {
 	len = 0;
 	iob = pull_iob(&in->iobuf, &sp, &len);
-	printf(" %s running the new way iob %p len %d sp [%s]\n"
-	       , __FUNCTION__, iob, len, sp);
+	if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
+		    , __FUNCTION__, iob, len, sp);
 	if(iob)
 	  {
-	    print_iob(iob);
+	    if(0)print_iob(iob);
 	  }
 	else
 	  {
@@ -2150,14 +2140,23 @@ int test_iob_out(void)
   rc = write(in->fd, sp, strlen(sp));
   printf(" sent %d chars\n", rc);	     
 
-  sp = "using  inblock and in_snprintf\n";
-  in_snprintf(in, " This is using in_sprintf [%s] num %d\n", "a string",21);
+  sp = "** first string**";
+  in_snprintf(in, NULL, " in_sprintf 1 sp [%s] num %d\n", sp,21);
   //add_iob(in, sp, strlen(sp));
-  printf(" after in_snprintf\n");
+  printf(" after in_snprintf 1\n");
   print_iobs(in->iobuf);
   printf(" in->outblen %u\n", in->outblen);
   printf(" in->outbptr %u\n", in->outbptr);
-  printf(" ===================\n\n");
+  
+  sp = " ** adding a much longer second string  twice **";
+  in_snprintf(in, NULL, " in_sprintf 2 sp [%s] [%s] num %d\n", sp,sp, 22);
+
+  //add_iob(in, sp, strlen(sp));
+  printf(" after in_snprintf 2\n");
+  print_iobs(in->iobuf);
+  printf(" in->outblen %u\n", in->outblen);
+  printf(" in->outbptr %u\n", in->outbptr);
+  printf(" ===================\n");
   handle_output(in);
   printf(" ===================\n\n");
   printf(" after handle_output\n\n");
@@ -2183,16 +2182,21 @@ int main (int argc, char *argv[])
    char *vals[64];
    init_g_spaces();
    init_insocks();
-   test_iob_out();
-   return 0;
+
 
    if(argc > 1)
      {
+       if (strcmp(argv[1], "test_iob_out") == 0)
+	 {
+	   test_iob_out();
+	   return 0;
+	 }
        if (strcmp(argv[1], "test_iob") == 0)
 	 {
 	      test_iob();
 	      return 0;
 	 }
+
        if (strcmp(argv[1], "send") == 0)
 	 {
 	   // send arg 2 3 and maybe 4  to local port and listen for reply
