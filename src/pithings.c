@@ -133,6 +133,7 @@ struct space {
 #define OUTSIZE 1024
 
 int num_socks=0;
+int g_debug = 1;
 
 struct iobuf;
 
@@ -191,6 +192,8 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 int free_stuff(int num, char **vals);
 
 struct iobuf *new_iobuf(int len);
+struct iobuf *in_snprintf(struct insock *in, const char *fmt, ...);
+int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
 
 
 struct space * setup_space(char *name, struct space*parent)
@@ -777,15 +780,18 @@ int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char 
 // return found name or new space object
 //    sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
 
-struct space *make_space(struct space **root, char *name, char **buf, int *len)
+struct space *make_space_in(struct space **root, char *name,
+			    struct insock *in, char **buf, int *len)
 {
   struct space *parent=NULL;
   struct space *space=NULL;
   //char sps[3][64];
   //char vals[64][64];
+  struct iobuf * iob;
   int cidx = 0;
   char *sp = name;
- 
+  int new = 0;
+  
   int i;
 
   int rc;
@@ -799,26 +805,26 @@ struct space *make_space(struct space **root, char *name, char **buf, int *len)
   for (i = 0 ; i < idv; i++)
     {
       space = NULL;
-      if(parent)
-	{
-	  space = find_space(&parent->child, valv[i]);
-	}
-      else
-	{
-	  space = find_space(root, valv[i]);
-	}
+      space = find_space(parent?&parent->child:root, valv[i]);
+      //if(parent)
+      //	  space = find_space(&parent->child, valv[i]);
+      //else
+      //  space = find_space(root, valv[i]);
       if (!space)
 	{
+	  new = 1;
 	  if(parent)
 	    {
-	      printf(" New Space for [%s] parent->name [%s]\n", valv[i], parent->name);
+	      if(g_debug)
+		printf(" New Space for [%s] parent->name [%s]\n", valv[i], parent->name);
 	      space = new_space(valv[i], parent->child, &parent->child, NULL); 
 	      add_child(parent,space);
 
 	    }
 	  else
 	    {
-	      printf(" New Space for [%s] at root\n", valv[i]);
+	      if(g_debug)
+		printf(" New Space for [%s] at root\n", valv[i]);
 	      space = new_space(valv[i], NULL, &g_space, NULL); 
 	    }
 	  if(i == 0)
@@ -835,17 +841,28 @@ struct space *make_space(struct space **root, char *name, char **buf, int *len)
 	}
       else
 	{
-	  printf(" Space found [%s]\n", valv[i]);
+	  if(g_debug)
+	    printf(" Space found [%s]\n", valv[i]);
 	}
       parent = space;
     }
-    
-  printf("[%s] found %d spaces\n",name, idx);
+  //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
+
+  if(new)
+    iob = in_snprintf(in,"[%s] added  space [%s] %d\n",name, space->name, idx);
+  else
+    iob = in_snprintf(in, "[%s] found  space [%s] %d\n",name, space->name, idx);
+  
   free_stuff(idv, valv);
   free_stuff(idx, valx);
   return space;
 }
 
+struct space *make_space(struct space **root, char *name, char **buf, int *len)
+{
+  return make_space_in(root, name, NULL,buf,len);
+}
+  
 int free_stuff(int num, char **vals)
 {
   int i;
@@ -905,11 +922,12 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   return idx;
 }
 
-int run_str(char *stuff, char **bufp, int *len)
+int run_str_in(struct insock *in, char *stuff, char **bufp, int *len)
+//int run_str_in(char *stuff, char **bufp, int *len)
 {
-  char cmd[128];
+  char cmd[128];  // TODO remove this
   snprintf(cmd, sizeof(cmd),"%s",stuff);
-  char vals[64][64];
+  char vals[64][64];   // TODO remove all this
   int idx = 0;
   int cidx = 0;
   char *sp = cmd;
@@ -928,8 +946,8 @@ int run_str(char *stuff, char **bufp, int *len)
 	  sp = strstr(sp, vals[idx]);
 	  sp += strlen(vals[idx]);
 	  while (*sp && (*sp == ' ')) sp++;
-	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  printf("sp [%s] \n", sp);
+	  if(g_debug)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  if(g_debug)printf("sp [%s] \n", sp);
 	  idx++;
 	}
     }
@@ -938,7 +956,7 @@ int run_str(char *stuff, char **bufp, int *len)
   if(strcmp(vals[cidx], "ADD") == 0)
     {
       //make_space(&g_space, idx, vals, stuff, buf, len);
-      make_space(&g_space, stuff, bufp, len);
+      make_space_in(&g_space, stuff, in, bufp, len);
       return 0;
     }
   //return run_str_add(stuff,buf,len);
@@ -966,13 +984,16 @@ int run_str(char *stuff, char **bufp, int *len)
   return 0;
 }
 
-
-int run_str_in(struct insock *in, char *str, char **bufp, int *len)
+int run_str(char *stuff, char **bufp, int *len)
 {
-  int rc;
-  rc =  run_str(str, bufp,len);
-  return rc;
+  return run_str_in(NULL, stuff, bufp, len);
 }
+//int run_str_in(struct insock *in, char *str, char **bufp, int *len)
+//{
+//  int rc;
+//  rc =  run_str(str, bufp, len);
+//  return rc;
+//}
 
 
 /*
@@ -1160,6 +1181,27 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     }
     return size;
 }
+//in
+struct iobuf *in_snprintf(struct insock *in, const char *fmt, ...)
+{
+  struct iobuf *iob;
+  va_list args;
+
+  if(!in || !in->iobuf)
+    iob = new_iobuf(128);
+  if(in)
+    {
+      if(in->iobuf)
+	iob = in->iobuf;
+      else
+	in->iobuf=iob;
+    }
+  va_start(args, fmt);
+  iob_snprintf(iob, fmt, args);
+  va_end(args);
+  return iob;
+  
+}
 
 struct iobuf *seek_iob(struct iobuf **inp, int len)
 {
@@ -1194,7 +1236,8 @@ struct iobuf *new_iobuf(int len)
   int xlen = len+5;
 
   iob->outbuf = (char *)malloc(xlen);
-  iob->outlen=xlen;
+  iob->outbuf[0] = 0;
+    iob->outlen=xlen;
   iob->outptr=0;
   iob->prev = iob;
   iob->next = iob;
@@ -1384,7 +1427,7 @@ int remove_iobs(struct iobuf **in)
 }
 
 
-
+//
 int test_iob(void)
 {
   struct insock inx;
@@ -1450,7 +1493,6 @@ int test_iob(void)
   print_iobs(g_iob_store);
   remove_iobs(&g_iob_store);
   iob1 = new_iobuf(12);
-  iob1->outbuf[0]=0;
   iob_snprintf(iob1, "the name [%s] value is %d ", "some_name", 22);
   iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
   printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
@@ -1997,11 +2039,13 @@ int main (int argc, char *argv[])
    init_g_spaces();
    init_insocks();
 
-   test_iob();
-   return 0;
-
    if(argc > 1)
      {
+       if (strcmp(argv[1], "test_iob") == 0)
+	 {
+	      test_iob();
+	      return 0;
+	 }
        if (strcmp(argv[1], "send") == 0)
 	 {
 	   // send arg 2 3 and maybe 4  to local port and listen for reply
