@@ -104,7 +104,7 @@ showall foo/boo/fum
 
 // OK the space becomes the real thing
 // A space can have kids and attributes
-// both or which are spaces  
+// all of which are also "spaces"  
 struct space {
   char *name;
   char *desc;
@@ -142,6 +142,7 @@ struct iobuf
   struct iobuf *prev;
   struct iobuf *next;
   char *outbuf;
+  int outsize;
   int outlen;
   int outptr;
 };
@@ -150,13 +151,17 @@ struct insock
 {
   int fd;
   char inbuf[INSIZE];
-  int inptr;
-  int inlen;
+  unsigned int inptr;
+  unsigned int inlen;
+  unsigned int inbptr;
+  unsigned int inblen;
   int insize;
   char outbuf[OUTSIZE];
   int outptr;
   int outlen;
   int outsize;
+  unsigned int outbptr; // num sent
+  unsigned int outblen; // num to send
   struct iobuf *iobuf;
 };
 
@@ -168,7 +173,7 @@ struct cmds
 };
   
 
-struct insock insock[NUM_SOCKS];
+struct insock g_insock[NUM_SOCKS];
 struct cmds cmds[NUM_CMDS];
 #define NUM_IDX 1024
 struct space *space=NULL;
@@ -192,7 +197,7 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 int free_stuff(int num, char **vals);
 
 struct iobuf *new_iobuf(int len);
-struct iobuf *in_snprintf(struct insock *in, const char *fmt, ...);
+int in_snprintf(struct insock *in, const char *fmt, ...);
 int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
 
 
@@ -849,9 +854,9 @@ struct space *make_space_in(struct space **root, char *name,
   //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
 
   if(new)
-    iob = in_snprintf(in,"[%s] added  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in,"[%s] added  space [%s] %d\n",name, space->name, idx);
   else
-    iob = in_snprintf(in, "[%s] found  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in, "[%s] found  space [%s] %d\n",name, space->name, idx);
   
   free_stuff(idv, valv);
   free_stuff(idx, valx);
@@ -1125,6 +1130,8 @@ int init_insock(struct insock *in)
   in->outsize = OUTSIZE;
   in->outptr = 0;
   in->outlen = 0;
+  in->outbptr = 0;
+  in->outblen = 0;
   in->iobuf = NULL;
   return 0;
 }
@@ -1136,7 +1143,7 @@ int init_insocks(void)
   for (i = 0; i< NUM_SOCKS; i++)
   {
 
-      in = &insock[i];
+      in = &g_insock[i];
       init_insock(in);
   }
   return i;
@@ -1160,6 +1167,25 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     char *sp = NULL;
     va_list args;
     struct iobuf *ciob;
+#if 0
+    char outbuf[128];
+  
+  va_start(args, fmt);
+  size = vsnprintf(outbuf, 0, fmt, args) +1;
+  va_end(args);
+  printf(" size found %d len %lu\n"
+	 , size
+	 , sizeof(outbuf));
+  va_end(args);
+
+  va_start(args, fmt);
+  vsnprintf(outbuf, size, fmt, args);
+  va_end(args);
+  printf(" buf [%s]\n"
+	 , outbuf);
+  va_end(args);
+  return size;
+#endif
     if (iob)
     {
         va_start(args, fmt);
@@ -1182,11 +1208,32 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     return size;
 }
 //in
-struct iobuf *in_snprintf(struct insock *in, const char *fmt, ...)
+int in_snprintf(struct insock *in, const char *fmt, ...)
 {
+  int size;
   struct iobuf *iob;
+  struct iobuf *ciob;
   va_list args;
+#if 0
+  char outbuf[128];
+  
+  va_start(args, fmt);
+  size = vsnprintf(outbuf, 0, fmt, args) +1;
+  va_end(args);
+  printf(" size found %lu len %lu\n"
+	 , size
+	 , sizeof(outbuf));
+  va_end(args);
 
+  va_start(args, fmt);
+  vsnprintf(outbuf, size, fmt, args);
+  va_end(args);
+  printf(" buf [%s]\n"
+	 , outbuf);
+  va_end(args);
+  return size;  
+#endif
+  
   if(!in || !in->iobuf)
     iob = new_iobuf(128);
   if(in)
@@ -1196,10 +1243,28 @@ struct iobuf *in_snprintf(struct insock *in, const char *fmt, ...)
       else
 	in->iobuf=iob;
     }
-  va_start(args, fmt);
-  iob_snprintf(iob, fmt, args);
-  va_end(args);
-  return iob;
+  if (iob)
+    {
+      va_start(args, fmt);
+      size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
+      va_end(args);
+      printf(" size found %d len %d\n"
+	     , size
+	     , iob->outlen);
+      
+      if(iob->outlen+ size > iob->outsize)
+        {
+	  ciob = iob;
+	  iob = new_iobuf(ciob->outlen+size);
+	  push_ciob(NULL, ciob, iob);
+	}
+	va_start(args, fmt);
+	size = vsnprintf(&iob->outbuf[iob->outlen], iob->outsize-iob->outlen, fmt, args);
+	va_end(args);
+	iob->outlen+= size;
+    }
+  in->outblen += size;
+  return size;
   
 }
 
@@ -1237,8 +1302,9 @@ struct iobuf *new_iobuf(int len)
 
   iob->outbuf = (char *)malloc(xlen);
   iob->outbuf[0] = 0;
-    iob->outlen=xlen;
+  iob->outsize=xlen;
   iob->outptr=0;
+  iob->outlen=0;
   iob->prev = iob;
   iob->next = iob;
   return iob;
@@ -1319,7 +1385,7 @@ int add_iob(struct insock *in, char *buf, int len)
       need_push = 1;
     }
 
-  if (iob->outptr+len >= iob->outlen)
+  if (iob->outlen+len >= iob->outsize)
     {
       iob = new_iobuf(len);
       need_push = 1;
@@ -1342,8 +1408,8 @@ struct iobuf *pull_ciob(struct iobuf **inp, struct iobuf *ciob, char **bufp, int
   if (ciob != NULL)
     {
 
-     if(bufp) *bufp = ciob->outbuf;
-     if(lenp) *lenp = ciob->outptr;
+     if(bufp) *bufp = &ciob->outbuf[ciob->outptr];
+     if(lenp) *lenp = ciob->outlen-ciob->outptr;
      if ((ciob->prev == ciob->next) && (ciob->prev == ciob))
        {
 	 if(0)printf(" pull last iob %p\n", ciob);
@@ -1364,7 +1430,6 @@ struct iobuf *pull_ciob(struct iobuf **inp, struct iobuf *ciob, char **bufp, int
        }
      ciob->next = ciob;
      ciob->prev = ciob;
-
     }
   return ciob;
 }
@@ -1376,6 +1441,18 @@ struct iobuf *pull_iob(struct iobuf **inp, char **bufp, int *lenp)
   return pull_ciob(inp, ciob, bufp, lenp);
 }
 
+int print_iob(struct iobuf *iob)
+{
+  printf("@%p next@%p  out p/l/s %d/%d/%d [%s]\n"
+	 , iob
+	 , iob->next
+	 , iob->outptr   // where we read from
+	 , iob->outlen   // where we write to
+	 , iob->outsize  // space
+	 , iob->outbuf
+	 );
+  return 0;
+}
 int print_iobs(struct iobuf *in)
 {
   int rc = 0;
@@ -1388,14 +1465,7 @@ int print_iobs(struct iobuf *in)
   while(iob)
     {
       rc++;
-      printf("@%p next %p  len %d out %d [%s]\n"
-	     , iob
-	     , iob->next
-	     , iob->outptr
-	     , iob->outlen
-	     , iob->outbuf
-	     );
-      
+      print_iob(iob);
       iob = iob->next;
       if(iob == siob) iob = NULL;
     }
@@ -1618,17 +1688,14 @@ int accept_socket(int sockfd)
      {
 	 newsock = sockfd;
      }
-     for (i = 0; i< NUM_SOCKS; i++)
+     for (i = 0; i<NUM_SOCKS; i++)
      {
-	 if (insock[i].fd < 0)
+	 if (g_insock[i].fd < 0)
 	 {
-	     insock[i].fd = newsock;
-	     insock[i].inptr = 0;
-	     insock[i].inlen = 0;
-	     insock[i].outptr = 0;
-	     insock[i].outlen = 0;
+	     init_insock(&g_insock[i]);
+	     g_insock[i].fd = newsock;
 	     num_socks++;
-	     break;
+	     i = NUM_SOCKS;
 	 }
      }
      return newsock;
@@ -1640,11 +1707,10 @@ struct insock *find_fd(int fsock)
     struct insock *in = NULL;
     for (i = 0; i< NUM_SOCKS; i++)
     {
-        if (insock[i].fd == fsock)
+        if (g_insock[i].fd == fsock)
         {
-	    in = &insock[i];
+	    in = &g_insock[i];
 	    break;
-
         }
     }
     return in;
@@ -1715,17 +1781,64 @@ int handle_input(struct insock *in)
 
 int handle_output(struct insock *in)
 {
-    int rc;
-    rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
-    if(rc >0)
+  int rc = 0;
+  struct iobuf *iob;
+  char *sp;
+  int len;
+  static int bcount = 0;
+  // old way
+  if(in->outptr != in->outlen)
     {
-	in->outptr += rc;
-	if (in->outptr == in->outlen)
+      printf(" %s running the old way\n", __FUNCTION__);
+      rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
+      if(rc >0)
 	{
-	    in->outptr = 0;
-	    in->outlen = 0;
+	  in->outptr += rc;
+	  if (in->outptr == in->outlen)
+	    {
+	      in->outptr = 0;
+	      in->outlen = 0;
+	    }
 	}
     }
+  // iobway
+  while((bcount++ < 10) && (in->outbptr != in->outblen))
+      {
+	len = 0;
+	iob = pull_iob(&in->iobuf, &sp, &len);
+	printf(" %s running the new way iob %p len %d sp [%s]\n"
+	       , __FUNCTION__, iob, len, sp);
+	if(iob)
+	  {
+	    print_iob(iob);
+	  }
+	else
+	  {
+	    in->outbptr = 0;
+	    in->outblen = 0;
+	  }
+	if(len > 0)
+	  {
+	    rc = write(in->fd, sp, len);
+	    if(rc <= 0)
+	      {
+	    // shutdown iobuffer
+	    // TODO unload iobs
+		in->outbptr = 0;
+		in->outblen = 0;
+	      }
+	    if(rc >0)
+	      {
+		in->outbptr += rc;
+		if (in->outbptr == in->outblen)
+		  {
+		    in->outbptr = 0;
+		    in->outblen = 0;
+		  }
+	      }
+	  }
+	store_iob(&g_iob_store, iob);
+      }
     return rc;
 }
 
@@ -1756,12 +1869,12 @@ int poll_sock(int lsock)
     
     for (i = 0; i< NUM_SOCKS; i++)
       {
-	if (insock[i].fd >= 0)
+	if (g_insock[i].fd >= 0)
 	  {
-	    fds[idx].fd = insock[i].fd;
+	    fds[idx].fd = g_insock[i].fd;
 	    fds[idx].events = POLLIN;
 	    fds[idx].revents = 0;
-	    if(insock[i].outptr != insock[i].outlen)
+	    if(g_insock[i].outbptr != g_insock[i].outblen)
 	      {
 		fds[idx].events |= POLLOUT;
 	      }
@@ -2022,6 +2135,38 @@ int speed_onget(struct space *this, int idx, char *name, char **buf, int *len)
   return 0;
 
 }
+
+int test_iob_out(void)
+{
+
+  struct insock insock;
+  struct insock *in;
+  int rc;
+  char *sp;
+  sp = "This is a direct test\n";
+  in = &insock;
+  init_insock(in);
+  in->fd = 1;
+  rc = write(in->fd, sp, strlen(sp));
+  printf(" sent %d chars\n", rc);	     
+
+  sp = "using  inblock and in_snprintf\n";
+  in_snprintf(in, " This is using in_sprintf [%s] num %d\n", "a string",21);
+  //add_iob(in, sp, strlen(sp));
+  printf(" after in_snprintf\n");
+  print_iobs(in->iobuf);
+  printf(" in->outblen %u\n", in->outblen);
+  printf(" in->outbptr %u\n", in->outbptr);
+  printf(" ===================\n\n");
+  handle_output(in);
+  printf(" ===================\n\n");
+  printf(" after handle_output\n\n");
+  print_iobs(in->iobuf);
+
+  
+  return 0;
+}
+
 int main (int argc, char *argv[])
 {
    int i;
@@ -2038,6 +2183,8 @@ int main (int argc, char *argv[])
    char *vals[64];
    init_g_spaces();
    init_insocks();
+   test_iob_out();
+   return 0;
 
    if(argc > 1)
      {
