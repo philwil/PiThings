@@ -790,8 +790,6 @@ struct space *make_space_in(struct space **root, char *name,
 {
   struct space *parent=NULL;
   struct space *space=NULL;
-  //char sps[3][64];
-  //char vals[64][64];
   struct iobuf * iob;
   int cidx = 0;
   char *sp = name;
@@ -811,10 +809,7 @@ struct space *make_space_in(struct space **root, char *name,
     {
       space = NULL;
       space = find_space(parent?&parent->child:root, valv[i]);
-      //if(parent)
-      //	  space = find_space(&parent->child, valv[i]);
-      //else
-      //  space = find_space(root, valv[i]);
+      in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
       if (!space)
 	{
 	  new = 1;
@@ -854,9 +849,9 @@ struct space *make_space_in(struct space **root, char *name,
   //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
 
   if(new)
-    in_snprintf(in, NULL, "[%s] added  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in, NULL, "Added [%s] added  space [%s] %d\n",name, space->name, idx);
   else
-    in_snprintf(in, NULL, "[%s] found  space [%s] %d\n",name, space->name, idx);
+    in_snprintf(in, NULL, "Found [%s] found  space [%s] %d\n",name, space->name, idx);
   
   free_stuff(idv, valv);
   free_stuff(idx, valx);
@@ -901,14 +896,24 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
   //vals[idx] = strdup(sp);
   //idx++;
+  // TODO special case where *sp == delim at the start
+  if(*sp && *sp == delim )
+    sp++;
+      
   while(*sp && (rc>0) && (idx < num))
     {
       rc = 0;
       spv = val;
       while (*sp && *sp != delim && (rc < (val_size-1)))
 	{
-          *spv++ = *sp++;
-	  rc++;
+	  if ((*sp != 0xa)&&(*sp != 0xd))
+	    {
+	      rc++;
+	      *spv++ = *sp++;
+	    }
+	  else
+	    sp++;
+	  
 	}
       if(*sp)sp++;
       *spv = 0;
@@ -916,7 +921,12 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
       if(rc>0)
 	{
 	  vals[idx] = strdup(val);
-	  printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+	  printf("rc %d val[%d] [%s] %x %x"
+		 , rc, idx
+		 , vals[idx]
+		 , vals[idx][0]
+		 , vals[idx][1]
+		 );
 	  printf("sp [%s] \n", sp);
 	  idx++;
 	}
@@ -928,7 +938,6 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
 }
 
 int run_str_in(struct insock *in, char *stuff, char **bufp, int *len)
-//int run_str_in(char *stuff, char **bufp, int *len)
 {
   char cmd[128];  // TODO remove this
   snprintf(cmd, sizeof(cmd),"%s",stuff);
@@ -1752,17 +1761,16 @@ int handle_input(struct insock *in)
 	in->inbuf[in->inlen] = 0;
 	sp = &in->inbuf[in->inptr];
 	n = sscanf(sp,"%s ", cmd);
-	rc = snprintf(&in->outbuf[in->outlen], in->outsize-in->outptr
+	in_snprintf(in, NULL
 		      ," message received [%s] ->"
 		      " n %d cmd [%s]\n"
 		      , &in->inbuf[in->inptr]
 		      , n, cmd );
-	in->outlen =+ rc;
-	//run_cmd (cmd, n, sp, speed, time);
+
 	run_str_in(in, sp, &bufp, &lres);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
-	in->outlen =+ rc;
+	//in->outlen =+ rc;
 	in->inptr= 0;
 	in->inlen= 0;
       }
@@ -1779,7 +1787,7 @@ int handle_output(struct insock *in)
   // old way
   if(in->outptr != in->outlen)
     {
-      if(0)printf(" %s running the old way\n", __FUNCTION__);
+      if(1)printf(" %s running the old way\n", __FUNCTION__);
       rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
       if(rc >0)
 	{
