@@ -133,7 +133,7 @@ struct space {
 #define OUTSIZE 1024
 
 int num_socks=0;
-int g_debug = 1;
+int g_debug = 0;
 
 struct iobuf;
 
@@ -156,10 +156,10 @@ struct insock
   unsigned int inbptr;
   unsigned int inblen;
   int insize;
-  char outbuf[OUTSIZE];
-  int outptr;
-  int outlen;
-  int outsize;
+  //char outbuf[OUTSIZE];
+  //  int outptr;
+  //int outlen;
+  //int outsize;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
   struct iobuf *iobuf;
@@ -190,10 +190,10 @@ int set_space(struct space * base, char *name);
 int set_space_in(struct space * base, char *name, struct insock *in);
 
 int add_space(struct space *parent, struct space *space);
-struct space *make_space(struct space **root, char *name, char **buf, int *len);
+struct space *make_space(struct space **root, char *name);
 int add_child(struct space *base, struct space *child);
 
-int show_spaces(struct space *base, char *desc, int indent, char *buf, int len);
+int show_spaces(struct insock *in, struct space *base, char *desc, int indent);
 int parse_stuff(char delim, int num, char **vals, char *stuff);
 
 int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
@@ -401,125 +401,79 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 
 }
 
-int show_space_class(struct space *base, int indent, char *buf, int len)
+int show_space_class(struct insock *in,struct space *base, int indent)
 {
   char atname[128];
+  int len;
   snprintf(atname, sizeof(atname),"  %s Class", base->name); 
   if(base->class)
   {
-    len -= show_spaces(base->class, atname, indent, buf , len);
+    len = show_spaces(in, base->class, atname, indent);
   }
   return len;
 }
 
-int show_space_attr(struct space *base, int indent, char *buf, int len)
+int show_space_attr(struct insock *in,struct space *base, int indent)
 {
   char atname[128];
+  int len=0;
   snprintf(atname, sizeof(atname),"  %s Attr", base->name); 
   if(base->attr)
   {
-    len -= show_spaces(base->attr, atname, indent, buf, len);
+    len = show_spaces(in,base->attr, atname, indent);
   }
   return len;
 }
 
-int show_space(struct space *base, int indent, char *buf, int len)
+int show_space(struct insock *in, struct space *base, int indent)
 {
   int rc=-1;
 
   if(!base)return rc;
+  if(!in)return rc;
  
   rc =  indent;
   while(rc--)
     {
-      if(buf)
-	{
-	  if(len > 0)
-	    {
-	      *buf++ = ' ';
-	      len--;
-	    }
-	}
-      else
 	printf(" ");
     }
-  if(buf)
-    {
-      rc = snprintf(buf,len," name [%s](%d)\n"
-	     , base->name
-	     , base->idx
-	     );
-      if(rc < len)
-	{
-	  len -= strlen(buf);
-	  buf += strlen(buf);
-	}
-    }
-  else
-    {
-      printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
-	     , base
-	     , base->idx
-	     , base->name
-	     , base->node
-	     , base->next->name
-	     , base->prev->name
-	     );
-    }
-  show_space_attr(base, indent+3, buf, len);
+  printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
+	 , base
+	 , base->idx
+	 , base->name
+	 , base->node
+	 , base->next->name
+	 , base->prev->name
+	 );
+  show_space_attr(in,base, indent+3);
 
-  if(buf){
-    len -= strlen(buf);
-    buf += strlen(buf);
-  }
-  show_space_class(base, indent+5, buf, len);
-  if(buf){
-    len -= strlen(buf);
-    buf += strlen(buf);
-  }
-  return len;
+  show_space_class(in,base, indent+5);
+  return rc;
 }
 
 
-int show_spaces(struct space *base, char *desc, int indent, char *buf, int len)
+int show_spaces(struct insock *in, struct space *base, char *desc, int indent)
 {
   struct space *start=base;
-  int rc;
-  if(buf)
-    {
-      rc= snprintf(buf,len,">>>%s\n", desc ? desc:" ");
-      if(rc < len)
-	{
-	  len -= strlen(buf);
-	  buf += strlen(buf);
-	}
-    }
-  else
-    printf("spaces ... %s\n", desc ? desc:" ");
+  int rc = 0;
+  in_snprintf(in, NULL, "spaces ... %s\n", desc ? desc:" ");
 
   while (base)
     {
-      rc = show_space(base, indent, buf, len);
-      if(rc < len)
-	{
-	  len -= strlen(buf);
-	  buf += strlen(buf);
-	}
+      rc = show_space(in, base, indent);
       if(base->child) 
 	{
-	  rc =  show_spaces(base->child,"child",indent+2, buf,len);
+	  rc =  show_spaces(in, base->child,"child",indent+2);
 	}
       if(base->next != start)
 	base=base->next;
       else
 	base =  NULL;
     }
-  return len;
+  return rc;
 }
 
-
-
-int show_space_new(struct space *base, char *desc, int len, char **bufp, int *lenp)
+int show_space_new(struct insock *in, struct space *base, char *desc, int len)
 {
   struct space *start=base;
   struct space *child=NULL;
@@ -531,12 +485,13 @@ int show_space_new(struct space *base, char *desc, int len, char **bufp, int *le
   if(!base)return rc;
   if(!desc)return rc;
   if(len == 0)return rc;
+  sp += strlen(desc);
 
   child = base->child;
   if(child == NULL)
     {
       snprintf(sp, slen,
-	       "/%s => %d\n"
+	       "/%s => %d"
 	       , base->name
 	       , base->idx
 	       );
@@ -550,16 +505,18 @@ int show_space_new(struct space *base, char *desc, int len, char **bufp, int *le
     }
   if(child == NULL)
     {
-      //printf(" >> [%s]\n", buf);
+      in_snprintf(in, NULL," >> [%s]\n", desc);
+      desc[0]=0;
+      //printf(
       return 0;
     }
   // foreach child do the same
   slen -= strlen(sp);
-  sp += strlen(sp);
+  //  sp += strlen(sp);
   while (child != NULL)
     {
 
-      slen += show_space_new(child, sp, slen, bufp, lenp);
+      slen += show_space_new(in,child, desc, slen);
       child = child->next;
       if (child == base->child) 
 	child= NULL;
@@ -569,14 +526,14 @@ int show_space_new(struct space *base, char *desc, int len, char **bufp, int *le
   return ret;
 }
 
-int show_spaces_new(struct space *base, char *desc, int len, char **bufp, int *lenp)
+int show_spaces_new(struct insock *in, struct space *base, char *desc, int len)
 {
   int rc  = -1;
   struct space *start=base;
   struct space *xstart=NULL;
   while (start)
     {
-      rc = show_space_new(start, desc, len, bufp, lenp);
+      rc = show_space_new(in, start, desc, len);
       printf(" >> [%s]\n", desc);
 
       xstart = start->next;
@@ -592,7 +549,6 @@ int show_spaces_new(struct space *base, char *desc, int len, char **bufp, int *l
 
  return rc;
 }
-
 
 struct space *find_space_new(struct space *base, char *name)
 {
@@ -777,19 +733,22 @@ int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char 
   int  rc = 1;
   char *sp;
   *idx = parse_stuff(' ', size, (char **)valx, name);
+  printf(" parse stuff 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
+	 , valx[0], valx[1]); 
 
   sp = valx[0];
   if(*idx >= 2)sp = valx[1];
+
   *idy = parse_stuff('/', size, (char **)valy, sp);
   return rc;
 }
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
-//    sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
+//    sp1 = make_space(&g_space, "ADD uav1/motor1/speed");
 
 struct space *make_space_in(struct space **root, char *name,
-			    struct insock *in, char **buf, int *len)
+			    struct insock *in)
 {
   struct space *parent=NULL;
   struct space *space=NULL;
@@ -808,10 +767,15 @@ struct space *make_space_in(struct space **root, char *name,
 
   rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
 
-  for (i = 0 ; i < idv; i++)
+  for (i = 0; i<idv; i++)
+    {
+      printf(" >> Space %d [%s]\n", i, valv[i]);
+    }
+  for (i=0 ; i<idv; i++)
     {
       space = NULL;
       space = find_space(parent?&parent->child:root, valv[i]);
+      printf(" Space %d [%s] %p\n", i, valv[i], space);
       in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
       if (!space)
 	{
@@ -829,6 +793,8 @@ struct space *make_space_in(struct space **root, char *name,
 	      if(g_debug)
 		printf(" New Space for [%s] at root\n", valv[i]);
 	      space = new_space(valv[i], NULL, &g_space, NULL); 
+	      printf(" New Space for [%s] at root %p\n", valv[i], space);
+
 	    }
 	  if(i == 0)
 	    {
@@ -861,9 +827,9 @@ struct space *make_space_in(struct space **root, char *name,
   return space;
 }
 
-struct space *make_space(struct space **root, char *name, char **buf, int *len)
+struct space *make_space(struct space **root, char *name)
 {
-  return make_space_in(root, name, NULL,buf,len);
+  return make_space_in(root, name, NULL);
 }
   
 int free_stuff(int num, char **vals)
@@ -902,15 +868,15 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   // TODO special case where *sp == delim at the start
   if(*sp && *sp == delim )
     {
-      sp++;
       skip = 1;
     }
   while(*sp && (rc>0) && (idx < num))
     {
       rc = 0;
       spv = val;
-      while (*sp && *sp != delim && (rc < (val_size-1)))
+      while (*sp && ((skip == 1) || (*sp != delim)) && (rc < (val_size-1)))
 	{
+	  skip = 0;
 	  if ((*sp != 0xa)&&(*sp != 0xd))
 	    {
 	      rc++;
@@ -933,8 +899,9 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
 		 , vals[idx][1]
 		 );
 	  printf("sp [%s] \n", sp);
-	  if(!skip)idx++;
-	  skip = 0;
+	  //if(!skip)
+	  idx++;
+	  //skip = 0;
 	}
     }
   printf("%s done idx %d\n", __FUNCTION__, idx);
@@ -942,7 +909,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   return idx;
 }
 
-int run_str_in(struct insock *in, char *stuff, char **bufp, int *len)
+int run_str_in(struct insock *in, char *stuff)
 {
   char cmd[128];  // TODO remove this
   snprintf(cmd, sizeof(cmd),"%s",stuff);
@@ -974,11 +941,9 @@ int run_str_in(struct insock *in, char *stuff, char **bufp, int *len)
   
   if(strcmp(vals[cidx], "ADD") == 0)
     {
-      //make_space(&g_space, idx, vals, stuff, buf, len);
-      make_space_in(&g_space, stuff, in, bufp, len);
+      make_space_in(&g_space, stuff, in);
       return 0;
     }
-  //return run_str_add(stuff,buf,len);
   else if(strcmp(vals[cidx], "SET") == 0)
     {
       rc = set_space_in(g_space, stuff, in);
@@ -988,26 +953,25 @@ int run_str_in(struct insock *in, char *stuff, char **bufp, int *len)
     {
       rc = 0;
       sp = get_space_in(g_space, stuff, in);
-      //if(bufp)
-      //{
-      //  int xlen = strlen(sp) +1;
-      //  char *buf = malloc(xlen);
-      //  snprintf(buf,xlen,"%s",sp);
-      //  rc = strlen(buf);
-      //  *bufp = buf;
-      //  *len = rc;
+      return rc;
+    }
+  else if(strcmp(vals[cidx], "SHOW") == 0)
+    {
+      rc = 0;
+      char sbuf[4096];
+      show_spaces_new(in, g_space, sbuf, 4096);
 
-      //}
+      //sp = get_space_in(g_space, stuff, in);
       return rc;
     }
   return 0;
 }
 
-int run_str(char *stuff, char **bufp, int *len)
+int run_str(char *stuff)
 {
-  return run_str_in(NULL, stuff, bufp, len);
+  return run_str_in(NULL, stuff);
 }
-//int run_str_in(struct insock *in, char *str, char **bufp, int *len)
+//int run_str_in(struct insock *in, char *str)
 //{
 //  int rc;
 //  rc =  run_str(str, bufp, len);
@@ -1141,9 +1105,7 @@ int init_insock(struct insock *in)
   in->inptr = 0;
   in->inlen = 0;
   in->insize = INSIZE;
-  in->outsize = OUTSIZE;
-  in->outptr = 0;
-  in->outlen = 0;
+  //in->outsize = OUTSIZE;
   in->outbptr = 0;
   in->outblen = 0;
   in->iobuf = NULL;
@@ -1645,7 +1607,8 @@ int listen_socket(int portno)
      struct sockaddr_in serv_addr, cli_addr;
      int n;
      int data;
-
+     int optval;
+     
      printf( "using port #%d\n", portno );
     
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -1654,6 +1617,9 @@ int listen_socket(int portno)
 	 printf("ERROR opening socket");
 	 return -1;
      }
+     optval = 1;
+     setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+
      bzero((char *) &serv_addr, sizeof(serv_addr));
 
      serv_addr.sin_family = AF_INET;
@@ -1725,15 +1691,15 @@ int close_fds(int fsock)
     int rc = -1;
     struct insock *in = find_fd(fsock);
     if (in)
-    {
+      {
+	// TODO drain iobufs	
 	rc = 0;
 	in->fd = -1;
 	in->inptr = 0;
 	in->inlen = 0;
-	in->outptr = 0;
-	in->outlen = 0;
+	
 	num_socks--;
-    }
+      }
     return rc;
 }
 
@@ -1756,7 +1722,7 @@ int handle_input(struct insock *in)
     char buf[1024];
     char *bres;
     int lres;
-    char * bufp;
+    char *bufp;
 
     len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
 
@@ -1772,7 +1738,7 @@ int handle_input(struct insock *in)
 		      , &in->inbuf[in->inptr]
 		      , n, cmd );
 
-	run_str_in(in, sp, &bufp, &lres);
+	run_str_in(in, sp);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
 	//in->outlen =+ rc;
@@ -1788,8 +1754,9 @@ int handle_output(struct insock *in)
   struct iobuf *iob;
   char *sp;
   int len;
-  static int bcount = 0;
+  int bcount = 0;
   // old way
+#if 0
   if(in->outptr != in->outlen)
     {
       if(1)printf(" %s running the old way\n", __FUNCTION__);
@@ -1804,45 +1771,46 @@ int handle_output(struct insock *in)
 	    }
 	}
     }
+#endif
   // iobway
-  while((bcount++ < 10) && (in->outbptr != in->outblen))
-      {
-	len = 0;
-	iob = pull_iob(&in->iobuf, &sp, &len);
-	if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
-		    , __FUNCTION__, iob, len, sp);
-	if(iob)
-	  {
-	    if(0)print_iob(iob);
-	  }
-	else
-	  {
-	    in->outbptr = 0;
-	    in->outblen = 0;
-	  }
-	if(len > 0)
-	  {
-	    rc = write(in->fd, sp, len);
-	    if(rc <= 0)
-	      {
-	    // shutdown iobuffer
-	    // TODO unload iobs
-		in->outbptr = 0;
-		in->outblen = 0;
-	      }
-	    if(rc >0)
-	      {
-		in->outbptr += rc;
-		if (in->outbptr == in->outblen)
-		  {
-		    in->outbptr = 0;
-		    in->outblen = 0;
-		  }
-	      }
-	  }
-	store_iob(&g_iob_store, iob);
-      }
-    return rc;
+  while((bcount++ < 1024) && (in->outbptr != in->outblen))
+    {
+      len = 0;
+      iob = pull_iob(&in->iobuf, &sp, &len);
+      if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
+		  , __FUNCTION__, iob, len, sp);
+      if(iob)
+	{
+	  if(0)print_iob(iob);
+	}
+      else
+	{
+	  in->outbptr = 0;
+	  in->outblen = 0;
+	}
+      if(len > 0)
+	{
+	  rc = write(in->fd, sp, len);
+	  if(rc <= 0)
+	    {
+	      // shutdown iobuffer
+	      // TODO unload iobs
+	      in->outbptr = 0;
+	      in->outblen = 0;
+	    }
+	  if(rc >0)
+	    {
+	      in->outbptr += rc;
+	      if (in->outbptr == in->outblen)
+		{
+		  in->outbptr = 0;
+		  in->outblen = 0;
+		}
+	    }
+	}
+      store_iob(&g_iob_store, iob);
+    }
+  return rc;
 }
 
 
@@ -1885,16 +1853,17 @@ int poll_sock(int lsock)
 	  }
       }
 
-    printf("poll start idx %d\n", idx);
+    if(g_debug)printf("poll start idx %d\n", idx);
     ret =  poll(fds, idx, timeout);
-    printf("poll done ret = %d idx %d\n", ret, idx);
+    if(g_debug)printf("poll done ret = %d idx %d\n", ret, idx);
 
     if(ret > 0) 
     {
-	printf("poll ret = %d idx %d\n", ret, idx);
+      if(g_debug)printf("poll ret = %d idx %d\n", ret, idx);
 	
 	for( i = 0; i < idx; i++) 
 	{
+	  if(g_debug)
 	    printf(" idx %d fd %d revents 0x%08x\n",i, fds[i].fd, fds[i].revents);  
 	    if (fds[i].revents & POLLOUT) 
 	    {
@@ -2246,10 +2215,15 @@ int main (int argc, char *argv[])
    char buf[2048];
    char *sp;
    char *vals[64];
+   struct insock ins;
+   struct insock *in = &ins;
+
    init_g_spaces();
    init_insocks();
+   init_insock(in);
+   in->fd = 1;
 
-
+   
    if(argc > 1)
      {
        if (strcmp(argv[1], "test_iob_out") == 0)
@@ -2297,10 +2271,10 @@ int main (int argc, char *argv[])
 	   printf (" rc = %d\n", rc );
 	   show_stuff(rc, vals);
 	   
-	   sp1 = make_space(&g_space, "ADD uav1/motor1/speed", NULL, 0);
-	   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
+	   sp1 = make_space(&g_space, "ADD uav1/motor1/speed");
+	   show_spaces(in, g_space, "All Spaces 1 ",0);
 	   
-	   sp1 = make_space(&g_space, "ADD uav3/motor2/speed", NULL, 0);
+	   sp1 = make_space(&g_space, "ADD uav3/motor2/speed");
 	   sp1->onset = speed_onset;
 	   sp1->onget = speed_onget;
 	   rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
@@ -2308,19 +2282,19 @@ int main (int argc, char *argv[])
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   return 0;
 	   
-	   sp1 = make_space(&g_space, "ADD uav1/motor1/size", NULL, 0);
-	   show_spaces(g_space, "All Spaces 1 ", 0, NULL , 0);
-	   sp1 = make_space(&g_space, "ADD uav1/motor2/speed", NULL, 0);
-	   show_spaces(g_space, "All Spaces 2 ", 0, NULL , 0);
-	   sp1 = make_space(&g_space, "ADD uav2/motor2/speed", NULL, 0);
-	   show_spaces(g_space, "All Spaces 3 ", 0, NULL , 0);
-	   sp1 = make_space(&g_space, "uav3/motor2/speed", NULL, 0);
+	   sp1 = make_space(&g_space, "ADD uav1/motor1/size");
+	   show_spaces(in,g_space, "All Spaces 1 ",0);
+	   sp1 = make_space(&g_space, "ADD uav1/motor2/speed");
+	   show_spaces(in,g_space, "All Spaces 2 ",0);
+	   sp1 = make_space(&g_space, "ADD uav2/motor2/speed");
+	   show_spaces(in,g_space, "All Spaces 3 ",0);
+	   sp1 = make_space(&g_space, "uav3/motor2/speed");
 	   
 	   sp1 = find_space_new(g_space, "uav3/motor2");
 	   sp1->onset = motor_onset;
 	   sp1->onget = motor_onget;
 	   
-	   show_spaces_new(g_space, sbuf, 4096, NULL, 0);
+	   show_spaces_new(in,g_space, sbuf, 4096);
 	   sp1 = find_space_new(g_space, "uav1/motor3");
 	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
 	   sp1 = find_space_new(g_space, "uav1/motor1");
@@ -2330,22 +2304,22 @@ int main (int argc, char *argv[])
 	   sp =  get_space(g_space,"GET uav3/motor2/speed");
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   
-	   show_spaces_new(sp2, sbuf, 4096, NULL, 0);
+	   show_spaces_new(in,sp2, sbuf, 4096);
 	   
 	   //   return 0;
 #if 0
 	   new_space("Space1", NULL, NULL, "127.0.0.1");
 	   sp1 =  g_space;
-	   show_space(sp1, 0, NULL , 0);
+	   show_space(in, sp1, 0, NULL , 0);
 	   sp1 = new_space("Space2", sp1, NULL, "127.0.0.1");
-	   show_space(g_space, 0, NULL , 0);
+	   show_space(in, g_space, 0, NULL , 0);
 	   show_space(sp1, 0, NULL , 0);
 	   sp1 = new_space("Space3", sp1, NULL, "127.0.0.1");
-	   show_space(g_space, 0, NULL , 0);
-	   show_space(sp1, 0, NULL , 0);
+	   show_space(in, g_space, 0, NULL , 0);
+	   show_space(in,sp1, 0, NULL , 0);
 	   
 	   //   sp1 = g_space;
-	   show_spaces(g_space, "Global Spaces 1", 0, NULL , 0);
+	   show_spaces(in, g_space, "Global Spaces 1",0);
 	   //           attr        space  class type  value 
 	   
 	   sp1 = g_space;
@@ -2355,31 +2329,31 @@ int main (int argc, char *argv[])
 	   sp2 = new_space_attr_int("foo_int", sp1, 2345);
 	   sp2 = new_space_attr_str("foo_str", sp1, "x2345");
 	   
-	   show_spaces(sp1->attr, "Sp1 attr", 0, NULL , 0);
+	   show_spaces(in, sp1->attr, "Sp1 attr",0);
 	   
 #endif
 #if 0	   
 	   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
-	   run_str("ADD uavx/led1/on", buf, sizeof(buf));
-	   run_str("ADD uavx/led1/color", buf, sizeof(buf));
-	   run_str("ADD uavx/motor1/speed", buf, sizeof(buf));
-	   run_str("ADD uavx/motor1/size", buf, sizeof(buf));
-	   run_str("ADD uavx/motor2/speed", buf, sizeof(buf));
-	   run_str("ADD uavx/motor2/size", buf, sizeof(buf));
+	   run_str("ADD uavx/led1/on");
+	   run_str("ADD uavx/led1/color");
+	   run_str("ADD uavx/motor1/speed");
+	   run_str("ADD uavx/motor1/size");
+	   run_str("ADD uavx/motor2/speed");
+	   run_str("ADD uavx/motor2/size");
 	   
-	   run_str("SET uavx/led1/on 1", buf, sizeof(buf));
-	   run_str("SET uavx/led1/color red", buf, sizeof(buf));
+	   run_str("SET uavx/led1/on 1");
+	   run_str("SET uavx/led1/color red");
 	   
-	   rc = run_str("GET uavx/led1/color", buf, sizeof(buf));
+	   rc = run_str("GET uavx/led1/color");
 	   
-	   printf("GET rc %d buf [%s]\n",rc, buf);
+	   printf("GET rc %d \n",rc);
 
 #endif
 	   
 #if 0
-	   show_spaces(g_space, "Global Spaces 2", 0, NULL , 0);
-	   rc = show_spaces(g_space, "Global Spaces Buf", 0, buf , sizeof(buf));
-	   printf("rc %d buf [%s]\n",rc, buf);
+	   show_spaces(in, g_space, "Global Spaces 2",0);
+	   rc = show_spaces(in, g_space, "Global Spaces Buf", 0);
+	   printf("rc %d buf \n",rc;
 	   return 0;
 	   
 	   init_cmds();
