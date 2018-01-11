@@ -152,11 +152,13 @@ struct insock
   int fd;
   unsigned int inbptr;
   unsigned int inblen;
-  int insize;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
   struct iobuf *iobuf;  // output buffers
   struct iobuf *inbuf;  // input buffers
+  char *cmdptr; // used to calc command length
+  int cmdlen;   // number of bytes left for curent command
+  char *cmdid;    // current command id
 };
 
 struct cmds
@@ -183,7 +185,9 @@ int init_insock(struct insock *in);
 char *get_space(struct space * base, char *name);
 struct space *get_space_in(struct space ** base, char *name, struct insock *in);
 struct space *show_space_in(struct space ** base, char *name, struct insock *in);
+struct space *decode_cmd_in(struct space ** base, char *name, struct insock *in);
 struct space *help_new_cmds(struct space ** base, char *name, struct insock *in);
+
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct insock *in));
 
@@ -928,6 +932,7 @@ int set_up_new_cmds(void)
   init_new_cmd("ADD",  "Create a new space",           make_space_in);
   init_new_cmd("SET",  "Set a (string) value",	       set_space_in);
   init_new_cmd("GET",  "Get a (string) value",	       get_space_in);
+  init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
   init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
 }
 
@@ -1008,6 +1013,47 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
       spb = &sp1;
     }
   rc = show_spaces_new(in, spb, sbuf, 4096, sbuf);
+  return NULL;
+}
+
+struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
+{
+  int rc = 0;
+  char sbuf[64];
+  char scid[64];
+  char sclen[64];
+  int clen = 0;
+  struct space *sp1=NULL;
+  struct space **spb=&g_space;
+  char *sp = name;
+  sbuf[0] =0;
+  scid[0] =0;
+  sclen[0] =0;
+  
+  rc = sscanf(name,"%s %s %s", sbuf, scid, sclen);  // TODO use more secure option
+  if(rc > 2)
+    {
+      clen = atoi(sclen);
+      if(in->cmdid) free (in->cmdid);
+      in->cmdid = strdup(scid);
+      in->cmdlen = clen;
+      printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
+	     ,__FUNCTION__
+	     ,name
+	     , sbuf
+	     , in->cmdid
+	     , sclen
+	     );
+    }
+  else
+    {
+      printf("%s 2 unable to parse name [%s] cmd [%s] rc %d\n"
+	     ,__FUNCTION__
+	     , name
+	     , sbuf
+	     , rc
+	     );
+    }
   return NULL;
 }
 
@@ -1202,14 +1248,13 @@ int init_insock(struct insock *in)
 {
 
   in->fd = -1;
-  //in->inptr = 0;
-  //in->inlen = 0;
-  in->insize = INSIZE;
-  //in->outsize = OUTSIZE;
   in->outbptr = 0;
   in->outblen = 0;
   in->iobuf = NULL;
   in->inbuf = NULL;
+  in->cmdptr = NULL;
+  in->cmdlen = 0;
+  in->cmdid = NULL;
   return 0;
 }
 
@@ -1846,22 +1891,33 @@ int handle_input(struct insock *in)
       {
 	inbf->outlen += len;
 	sp = &inbf->outbuf[inbf->outptr];
-	n = sscanf(sp,"%s ", cmd);   //TODO use better sscanf
-	in_snprintf(in, NULL
-		    ," message received [%s] ->"
-		    " n %d cmd [%s]\n"
-		    , sp //&in->inbuf[in->inptr]
-		    , n, cmd );
+
 
 	//TODO only run this if we have received all of the command
 	// use in->cmdbytes to count remaining bytes if any
-	run_str_in(in, sp, cmd);
-	printf(" rc %d n %d cmd [%s]\n"
-	       , rc, n, cmd );
+	if((in->cmdlen-len) <= 0)
+	  {
+	    in->cmdptr = sp;
+	    n = sscanf(sp,"%s ", cmd);   //TODO use better sscanf
+	    in_snprintf(in, NULL
+			," message received [%s] ->"
+			" n %d cmd [%s]\n"
+			, sp //&in->inbuf[in->inptr]
+			, n, cmd );
+	    run_str_in(in, sp, cmd);
+	    printf(" rc %d n %d cmd [%s]\n"
+		   , rc, n, cmd );
+	    // TODO consume just the current cmd
+	    inbf->outptr = 0;
+	    inbf->outlen = 0;
+	  }
+	else
+	  {
+	    in->cmdlen -= len;
+	    printf(">>>>>input still needs %d bytes\n"
+		   , in->cmdlen );
+	  }
 
-	// TODO consume just the current cmd
-	inbf->outptr = 0;
-	inbf->outlen = 0;
       }
     return len;
 }
