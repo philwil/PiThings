@@ -162,7 +162,8 @@ struct insock
   //int outsize;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
-  struct iobuf *iobuf;
+  struct iobuf *iobuf;  // output buffers
+  struct iobuf *in_iobuf;  // input buffers
 };
 
 struct cmds
@@ -1019,33 +1020,9 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
 
 int run_str_in(struct insock *in, char *stuff, char *cmd)
 {
-  //char cmd[128];  // TODO remove this
-  //snprintf(cmd, sizeof(cmd),"%s",stuff);
-  //char vals[64][64];   // TODO remove all this
-  //int idx = 0;
-  //int cidx = 0;
-  //char *sp = cmd;
   struct space *space=NULL;
   struct space *attr=NULL;
   int rc;
-
-  rc = 1;
-  //while((rc>0) && (idx < 64))
-  //{
-  //  rc = sscanf(sp, "%s"
-  //	      , vals[idx]
-  //		  );
-  //  if(rc>0)
-  //	{
-  //	  sp = strstr(sp, vals[idx]);
-  //	  sp += strlen(vals[idx]);
-  //	  while (*sp && (*sp == ' ')) sp++;
-  //	  if(g_debug)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-  //	  if(g_debug)printf("sp [%s] \n", sp);
-  //	  idx++;
-  //	}
-  //}
-  //  cidx =  0;
   rc = run_new_cmd (cmd, &g_space, stuff, in);
   if(rc >= 0) return 0;
   if(strcmp(cmd, "ADD") == 0)
@@ -1070,10 +1047,10 @@ int run_str_in(struct insock *in, char *stuff, char *cmd)
       show_space_in(&g_space, stuff, in);
       return rc;
     }
-  return 0;
+  return rc;
 }
 
-int run_str(char *stuff)
+int xrun_str(char *stuff)
 {
   char *sp = stuff;
   char cmd[128];
@@ -1206,22 +1183,7 @@ int init_new_cmd(char *key, char *desc, struct space *(*hand)
 }
 
 
-int run_cmd (char *key, int n, char *data, int speed, int time)
-{
-  int rc=-1;
-  int i;
-  for (i = 0; i< NUM_CMDS; i++)
-    {
-      if(cmds[i].key && (strcmp(cmds[i].key, key) == 0))
-	{
-	  rc = cmds[i].handler(&cmds[i], n, data, speed, time);
-	  break;
-	}
-    }
-  return rc;
-}
-
-int run_new_cmd (char *key, struct space **base, char *name, struct insock *in)
+int run_new_cmd (char *key, struct space **base, char *stuff, struct insock *in)
 {
   int rc=-1;
   int i;
@@ -1230,7 +1192,7 @@ int run_new_cmd (char *key, struct space **base, char *name, struct insock *in)
     {
       if(cmds[i].key && (strcmp(cmds[i].key, key) == 0))
 	{
-	  sp1 = cmds[i].new_hand(base, name, in);
+	  sp1 = cmds[i].new_hand(base, stuff, in);
 	  break;
 	}
     }
@@ -1254,6 +1216,7 @@ int init_insock(struct insock *in)
   in->outbptr = 0;
   in->outblen = 0;
   in->iobuf = NULL;
+  in->in_iobuf = NULL;
   return 0;
 }
 
@@ -1875,27 +1838,41 @@ int handle_input(struct insock *in)
     char *bres;
     int lres;
     char *bufp;
+    struct iobuf *inbf;  // input buffer
 
-    len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
+    if (in->in_iobuf == NULL)
+      in->in_iobuf = new_iobuf(1024);
+    inbf = in->in_iobuf;
+    sp = &inbf->outbuf[inbf->outlen];
+    lres = inbf->outsize-inbf->outlen;
+    
+    //len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
+    len = read(in->fd, sp, lres);
 
     if(len > 0)
       {
-	in->inlen += len;
-	in->inbuf[in->inlen] = 0;
-	sp = &in->inbuf[in->inptr];
+	inbf->outlen += len;
+	sp = &inbf->outbuf[inbf->outptr];
+	//in->inlen += len;
+	//in->inbuf[in->inlen] = 0;
+	//sp = &in->inbuf[in->inptr];
 	n = sscanf(sp,"%s ", cmd);   //TODO use better sscanf
 	in_snprintf(in, NULL
-		      ," message received [%s] ->"
-		      " n %d cmd [%s]\n"
-		      , &in->inbuf[in->inptr]
-		      , n, cmd );
+		    ," message received [%s] ->"
+		    " n %d cmd [%s]\n"
+		    , sp //&in->inbuf[in->inptr]
+		    , n, cmd );
 
+	//TODO only run this if we have all the command in place
 	run_str_in(in, sp, cmd);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
 	//in->outlen =+ rc;
-	in->inptr= 0;
-	in->inlen= 0;
+	//in->inptr= 0;
+	//in->inlen= 0;
+	// TODO consume just the current cmd
+	inbf->outptr = 0;
+	inbf->outlen = 0;
       }
     return len;
 }
@@ -2493,34 +2470,6 @@ int main (int argc, char *argv[])
 	   
 	   show_spaces(in, sp1->attr, "Sp1 attr",0);
 	   
-#endif
-#if 0	   
-	   //sp1 = make_space(&g_space, "uav2/motor2/speed", NULL, 0);
-	   run_str("ADD uavx/led1/on");
-	   run_str("ADD uavx/led1/color");
-	   run_str("ADD uavx/motor1/speed");
-	   run_str("ADD uavx/motor1/size");
-	   run_str("ADD uavx/motor2/speed");
-	   run_str("ADD uavx/motor2/size");
-	   
-	   run_str("SET uavx/led1/on 1");
-	   run_str("SET uavx/led1/color red");
-	   
-	   rc = run_str("GET uavx/led1/color");
-	   
-	   printf("GET rc %d \n",rc);
-
-#endif
-	   
-#if 0
-	   show_spaces(in, g_space, "Global Spaces 2",0);
-	   rc = show_spaces(in, g_space, "Global Spaces Buf", 0);
-	   printf("rc %d buf \n",rc;
-	   return 0;
-	   
-	   init_cmds();
-	   init_cmd("FWD", fwd_cmd);
-	   run_cmd ("FWD", 2, "Some data", 100, 50);
 #endif
 	 }
      }
