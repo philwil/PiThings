@@ -473,7 +473,7 @@ int show_spaces(struct insock *in, struct space *base, char *desc, int indent)
   return rc;
 }
 
-int show_space_new(struct insock *in, struct space *base, char *desc, int len)
+int show_space_new(struct insock *in, struct space *base, char *desc, int len, char *bdesc)
 {
   struct space *start=base;
   struct space *child=NULL;
@@ -485,7 +485,7 @@ int show_space_new(struct insock *in, struct space *base, char *desc, int len)
   if(!base)return rc;
   if(!desc)return rc;
   if(len == 0)return rc;
-  sp += strlen(desc);
+  //  sp += strlen(desc);
 
   child = base->child;
   if(child == NULL)
@@ -505,18 +505,19 @@ int show_space_new(struct insock *in, struct space *base, char *desc, int len)
     }
   if(child == NULL)
     {
-      in_snprintf(in, NULL," >> [%s]\n", desc);
-      desc[0]=0;
+      in_snprintf(in, NULL," >> [%s]\n", bdesc);
+      //desc[0]=0;
       //printf(
       return 0;
     }
   // foreach child do the same
   slen -= strlen(sp);
+  sp += strlen(sp);
   //  sp += strlen(sp);
   while (child != NULL)
     {
 
-      slen += show_space_new(in,child, desc, slen);
+      slen += show_space_new(in,child, sp, slen, bdesc);
       child = child->next;
       if (child == base->child) 
 	child= NULL;
@@ -526,14 +527,14 @@ int show_space_new(struct insock *in, struct space *base, char *desc, int len)
   return ret;
 }
 
-int show_spaces_new(struct insock *in, struct space *base, char *desc, int len)
+int show_spaces_new(struct insock *in, struct space *base, char *desc, int len, char *bdesc)
 {
   int rc  = -1;
   struct space *start=base;
   struct space *xstart=NULL;
   while (start)
     {
-      rc = show_space_new(in, start, desc, len);
+      rc = show_space_new(in, start, desc, len, bdesc);
       printf(" >> [%s]\n", desc);
 
       xstart = start->next;
@@ -959,7 +960,7 @@ int run_str_in(struct insock *in, char *stuff)
     {
       rc = 0;
       char sbuf[4096];
-      show_spaces_new(in, g_space, sbuf, 4096);
+      show_spaces_new(in, g_space, sbuf, 4096, sbuf);
 
       //sp = get_space_in(g_space, stuff, in);
       return rc;
@@ -1618,7 +1619,9 @@ int listen_socket(int portno)
 	 return -1;
      }
      optval = 1;
+#ifdef SO_REUSEPORT
      setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+#endif
 
      bzero((char *) &serv_addr, sizeof(serv_addr));
 
@@ -2294,7 +2297,7 @@ int main (int argc, char *argv[])
 	   sp1->onset = motor_onset;
 	   sp1->onget = motor_onget;
 	   
-	   show_spaces_new(in,g_space, sbuf, 4096);
+	   show_spaces_new(in,g_space, sbuf, 4096, sbuf);
 	   sp1 = find_space_new(g_space, "uav1/motor3");
 	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
 	   sp1 = find_space_new(g_space, "uav1/motor1");
@@ -2304,7 +2307,7 @@ int main (int argc, char *argv[])
 	   sp =  get_space(g_space,"GET uav3/motor2/speed");
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   
-	   show_spaces_new(in,sp2, sbuf, 4096);
+	   show_spaces_new(in,sp2, sbuf, 4096, sbuf);
 	   
 	   //   return 0;
 #if 0
