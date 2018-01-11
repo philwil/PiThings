@@ -937,7 +937,7 @@ int set_up_new_cmds(void)
   init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
 }
 
-struct space * help_new_cmds(struct space **base, char *name, struct insock *in)
+struct space *help_new_cmds(struct space **base, char *name, struct insock *in)
 {
   int rc = 0;
   int i = 0;
@@ -957,12 +957,55 @@ struct space * help_new_cmds(struct space **base, char *name, struct insock *in)
   return NULL;
 }
 
-struct space *show_space_in(struct space ** base, char *name, struct insock *in)
+// TODO add space after cmd
+int in_new_cmds(char * name)
+{
+  int rc = -1;
+  int i;
+  for (i = 0; i< NUM_CMDS; i++)
+    {
+      if(strcmp(cmds[i].key, name) == 0)
+	{
+	  rc = i;
+	  break;
+	}
+    }
+  if(i >= NUM_CMDS)
+    rc = -1;
+
+  return rc;
+}
+
+struct space *show_space_in(struct space **base, char *name, struct insock *in)
 {
   int rc = 0;
   char sbuf[4096];
-  
-  rc = show_spaces_new(in, &g_space, sbuf, 4096, sbuf);
+  struct space *sp1=NULL;
+  struct space **spb=&g_space;
+  char *sp = name;
+  rc = sscanf(name,"%s ", sbuf);  // TODO use more secure option
+  printf("%s name [%s]\n"
+	 ,__FUNCTION__
+	 ,name
+	 );
+  if(in_new_cmds(sbuf)>=0)
+    {
+      sp = strstr(name, sbuf);
+      if(sp)
+	{
+	  sp += strlen(sbuf);
+	  while (*sp &&(*sp == ' '))
+	    {
+	      sp++;
+	    }
+	  sp1 = find_space_new(g_space, sp);
+	}
+    }
+  if(sp1)
+    {
+      spb = &sp1;
+    }
+  rc = show_spaces_new(in, spb, sbuf, 4096, sbuf);
   return NULL;
 }
 
