@@ -150,16 +150,9 @@ struct iobuf
 struct insock
 {
   int fd;
-  //char inbuf[INSIZE];
-  //unsigned int inptr;
-  // unsigned int inlen;
   unsigned int inbptr;
   unsigned int inblen;
   int insize;
-  //char outbuf[OUTSIZE];
-  //  int outptr;
-  //int outlen;
-  //int outsize;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
   struct iobuf *iobuf;  // output buffers
@@ -1842,11 +1835,11 @@ int handle_input(struct insock *in)
 
     if (in->inbuf == NULL)
       in->inbuf = new_iobuf(1024);
+
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
     lres = inbf->outsize-inbf->outlen;
     
-    //len = read(in->fd,&in->inbuf[in->inptr],in->insize-in->inptr);
     len = read(in->fd, sp, lres);
 
     if(len > 0)
@@ -1860,13 +1853,12 @@ int handle_input(struct insock *in)
 		    , sp //&in->inbuf[in->inptr]
 		    , n, cmd );
 
-	//TODO only run this if we have all the command in place
+	//TODO only run this if we have received all of the command
+	// use in->cmdbytes to count remaining bytes if any
 	run_str_in(in, sp, cmd);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
-	//in->outlen =+ rc;
-	//in->inptr= 0;
-	//in->inlen= 0;
+
 	// TODO consume just the current cmd
 	inbf->outptr = 0;
 	inbf->outlen = 0;
