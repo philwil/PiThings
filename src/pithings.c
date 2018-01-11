@@ -984,7 +984,7 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
   struct space **spb=&g_space;
   char *sp = name;
   rc = sscanf(name,"%s ", sbuf);  // TODO use more secure option
-  printf("%s name [%s]\n"
+  printf("%s 1 name [%s]\n"
 	 ,__FUNCTION__
 	 ,name
 	 );
@@ -998,7 +998,15 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
 	    {
 	      sp++;
 	    }
-	  sp1 = find_space_new(g_space, sp);
+	  printf("%s 2 name [%s] len %lu sp [%s] %x\n"
+		 , __FUNCTION__
+		 , name
+		 , strlen(sp)
+		 , sp
+		 , *sp
+		 );
+	  if ((*sp != 0xa) && (*sp != 0xd)) 
+	    sp1 = find_space_new(g_space, sp);
 	}
     }
   if(sp1)
