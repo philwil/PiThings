@@ -1017,54 +1017,54 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
   return NULL;
 }
 
-int run_str_in(struct insock *in, char *stuff)
+int run_str_in(struct insock *in, char *stuff, char *cmd)
 {
-  char cmd[128];  // TODO remove this
-  snprintf(cmd, sizeof(cmd),"%s",stuff);
-  char vals[64][64];   // TODO remove all this
-  int idx = 0;
-  int cidx = 0;
-  char *sp = cmd;
+  //char cmd[128];  // TODO remove this
+  //snprintf(cmd, sizeof(cmd),"%s",stuff);
+  //char vals[64][64];   // TODO remove all this
+  //int idx = 0;
+  //int cidx = 0;
+  //char *sp = cmd;
   struct space *space=NULL;
   struct space *attr=NULL;
   int rc;
 
   rc = 1;
-  while((rc>0) && (idx < 64))
-    {
-      rc = sscanf(sp, "%s"
-	      , vals[idx]
-		  );
-      if(rc>0)
-	{
-	  sp = strstr(sp, vals[idx]);
-	  sp += strlen(vals[idx]);
-	  while (*sp && (*sp == ' ')) sp++;
-	  if(g_debug)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
-	  if(g_debug)printf("sp [%s] \n", sp);
-	  idx++;
-	}
-    }
-  cidx =  0;
-  rc = run_new_cmd (vals[cidx], &g_space, stuff, in);
+  //while((rc>0) && (idx < 64))
+  //{
+  //  rc = sscanf(sp, "%s"
+  //	      , vals[idx]
+  //		  );
+  //  if(rc>0)
+  //	{
+  //	  sp = strstr(sp, vals[idx]);
+  //	  sp += strlen(vals[idx]);
+  //	  while (*sp && (*sp == ' ')) sp++;
+  //	  if(g_debug)printf("rc %d val[%d] [%s] ", rc, idx, vals[idx]);
+  //	  if(g_debug)printf("sp [%s] \n", sp);
+  //	  idx++;
+  //	}
+  //}
+  //  cidx =  0;
+  rc = run_new_cmd (cmd, &g_space, stuff, in);
   if(rc >= 0) return 0;
-  if(strcmp(vals[cidx], "ADD") == 0)
+  if(strcmp(cmd, "ADD") == 0)
     {
       make_space_in(&g_space, stuff, in);
       return 0;
     }
-  else if(strcmp(vals[cidx], "SET") == 0)
+  else if(strcmp(cmd, "SET") == 0)
     {
       set_space_in(&g_space, stuff, in);
       return 0 ; 
     }
-  else if(strcmp(vals[cidx], "GET") == 0)
+  else if(strcmp(cmd, "GET") == 0)
     {
       rc = 0;
       get_space_in(&g_space, stuff, in);
       return rc;
     }
-  else if(strcmp(vals[cidx], "SHOW") == 0)
+  else if(strcmp(cmd, "SHOW") == 0)
     {
       rc = 0;
       show_space_in(&g_space, stuff, in);
@@ -1075,7 +1075,11 @@ int run_str_in(struct insock *in, char *stuff)
 
 int run_str(char *stuff)
 {
-  return run_str_in(NULL, stuff);
+  char *sp = stuff;
+  char cmd[128];
+  cmd[0] = 0;
+  sscanf(sp,"%s ", cmd);   //TODO use better sscanf
+  return run_str_in(NULL, stuff, cmd);
 }
 
 /*
@@ -1847,12 +1851,17 @@ int close_fds(int fsock)
 }
 
 /*
-  commands are 
-  fwd [speed] [time]
-  back [speed] [time]
-  stop
-  right [speed] [time]
-  left [speed] [time]
+  input may go to the default command processor
+  or we may need to scan it for a command block
+  the initial command blocks will be ascii
+  "CMD IDxxxxxx LENxxxxx "
+  BUT we dont know if we are gong to get a CMD
+so lets set an initial input length to 4 , enough to get CMD
+if we get "CMD "set input length to say 18 to get the rest of the structure
+Then we can extract the ID and the length to get the rest of the command.
+The input buffer is relocatable anyway.
+
+note run_str_in should return the length string used 
 */
 
 int handle_input(struct insock *in)
@@ -1874,14 +1883,14 @@ int handle_input(struct insock *in)
 	in->inlen += len;
 	in->inbuf[in->inlen] = 0;
 	sp = &in->inbuf[in->inptr];
-	n = sscanf(sp,"%s ", cmd);
+	n = sscanf(sp,"%s ", cmd);   //TODO use better sscanf
 	in_snprintf(in, NULL
 		      ," message received [%s] ->"
 		      " n %d cmd [%s]\n"
 		      , &in->inbuf[in->inptr]
 		      , n, cmd );
 
-	run_str_in(in, sp);
+	run_str_in(in, sp, cmd);
 	printf(" rc %d n %d cmd [%s]\n"
 	       , rc, n, cmd );
 	//in->outlen =+ rc;
