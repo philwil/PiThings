@@ -169,6 +169,8 @@ struct cmds
 {
   char *key;
   char *cmd;
+  char *desc;
+  struct space *(*new_hand)(struct space **b, char *name, struct insock *in);
   int (*handler)(void *key, int n, char *cmd, int speed, int time);
 };
   
@@ -185,9 +187,16 @@ struct iobuf *g_iob_store = NULL;
 
 int init_insock(struct insock *in);
 char *get_space(struct space * base, char *name);
-char *get_space_in(struct space * base, char *name, struct insock *in);
+struct space *get_space_in(struct space ** base, char *name, struct insock *in);
+struct space *show_space_in(struct space ** base, char *name, struct insock *in);
+struct space *help_new_cmds(struct space ** base, char *name, struct insock *in);
+int init_new_cmd(char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct insock *in));
+
+int run_new_cmd (char *key, struct space **base, char *name, struct insock *in);
+
 int set_space(struct space * base, char *name);
-int set_space_in(struct space * base, char *name, struct insock *in);
+struct space *set_space_in(struct space **base, char *name, struct insock *in);
 
 int add_space(struct space *parent, struct space *space);
 struct space *make_space(struct space **root, char *name);
@@ -527,9 +536,10 @@ int show_space_new(struct insock *in, struct space *base, char *desc, int len, c
   return ret;
 }
 
-int show_spaces_new(struct insock *in, struct space *base, char *desc, int len, char *bdesc)
+int show_spaces_new(struct insock *in, struct space **basep, char *desc, int len, char *bdesc)
 {
   int rc  = -1;
+  struct space *base=*basep;
   struct space *start=base;
   struct space *xstart=NULL;
   while (start)
@@ -910,6 +920,52 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   return idx;
 }
 
+// use cmds
+// HELP
+// ADD       make_space_in(&g_space, stuff, in);
+// SET       set_space_in(&g_space, stuff, in);
+// GET       get_space_in(&g_space, stuff, in);
+// SHOW      show_space_in(&g_space, stuff, in);
+
+int set_up_new_cmds(void)
+{
+  int rc = 0;
+  init_new_cmd("HELP", "Print this help"   ,           help_new_cmds);
+  init_new_cmd("ADD",  "Create a new space",           make_space_in);
+  init_new_cmd("SET",  "Set a (string) value",	       set_space_in);
+  init_new_cmd("GET",  "Get a (string) value",	       get_space_in);
+  init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
+}
+
+struct space * help_new_cmds(struct space **base, char *name, struct insock *in)
+{
+  int rc = 0;
+  int i = 0;
+  char sbuf[4096];
+  for (i = 0; i< NUM_CMDS; i++)
+    {
+      if(cmds[i].key != NULL)
+	{
+	  rc++;
+	  if(in)in_snprintf(in, NULL, "%s -> %s\n"
+			    , cmds[i].key
+			    , cmds[i].desc
+			    );
+	}
+    }
+
+  return NULL;
+}
+
+struct space *show_space_in(struct space ** base, char *name, struct insock *in)
+{
+  int rc = 0;
+  char sbuf[4096];
+  
+  rc = show_spaces_new(in, &g_space, sbuf, 4096, sbuf);
+  return NULL;
+}
+
 int run_str_in(struct insock *in, char *stuff)
 {
   char cmd[128];  // TODO remove this
@@ -939,7 +995,8 @@ int run_str_in(struct insock *in, char *stuff)
 	}
     }
   cidx =  0;
-  
+  rc = run_new_cmd (vals[cidx], &g_space, stuff, in);
+  if(rc >= 0) return 0;
   if(strcmp(vals[cidx], "ADD") == 0)
     {
       make_space_in(&g_space, stuff, in);
@@ -947,22 +1004,19 @@ int run_str_in(struct insock *in, char *stuff)
     }
   else if(strcmp(vals[cidx], "SET") == 0)
     {
-      rc = set_space_in(g_space, stuff, in);
-      return rc ; 
+      set_space_in(&g_space, stuff, in);
+      return 0 ; 
     }
   else if(strcmp(vals[cidx], "GET") == 0)
     {
       rc = 0;
-      sp = get_space_in(g_space, stuff, in);
+      get_space_in(&g_space, stuff, in);
       return rc;
     }
   else if(strcmp(vals[cidx], "SHOW") == 0)
     {
       rc = 0;
-      char sbuf[4096];
-      show_spaces_new(in, g_space, sbuf, 4096, sbuf);
-
-      //sp = get_space_in(g_space, stuff, in);
+      show_space_in(&g_space, stuff, in);
       return rc;
     }
   return 0;
@@ -972,13 +1026,6 @@ int run_str(char *stuff)
 {
   return run_str_in(NULL, stuff);
 }
-//int run_str_in(struct insock *in, char *str)
-//{
-//  int rc;
-//  rc =  run_str(str, bufp, len);
-//  return rc;
-//}
-
 
 /*
    This code may be used to drive the Adafruit (or clones) Motor Shield.
@@ -1054,18 +1101,21 @@ typedef unsigned char uint8_t;
 static uint8_t latch_st;
 
 
-
 int init_cmds(void)
 {
   int i;
   for (i = 0; i< NUM_CMDS; i++)
     {
       cmds[i].key = NULL;
+      cmds[i].desc = NULL;
       cmds[i].handler = NULL;
+      cmds[i].new_hand = NULL;
     }
   return i;
 }
-		 
+
+//struct space *get_space_in(struct space ** base, char *name, struct insock *in);
+
 int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int time))
 {
   int i;
@@ -1075,6 +1125,24 @@ int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int
       {
 	cmds[i].key =  key;
 	cmds[i].handler = hand;
+	break;
+      }
+  }
+  if(i == NUM_CMDS) i = -1;
+  return i;
+}
+
+int init_new_cmd(char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct insock *in))
+{
+  int i;
+  for (i = 0; i< NUM_CMDS; i++)
+  {
+    if(cmds[i].key == NULL)
+      {
+	cmds[i].key =  key;
+	cmds[i].desc =  desc;
+	cmds[i].new_hand = hand;
 	break;
       }
   }
@@ -1097,6 +1165,27 @@ int run_cmd (char *key, int n, char *data, int speed, int time)
     }
   return rc;
 }
+
+int run_new_cmd (char *key, struct space **base, char *name, struct insock *in)
+{
+  int rc=-1;
+  int i;
+  struct space * sp1 = NULL;
+  for (i = 0; i< NUM_CMDS; i++)
+    {
+      if(cmds[i].key && (strcmp(cmds[i].key, key) == 0))
+	{
+	  sp1 = cmds[i].new_hand(base, name, in);
+	  break;
+	}
+    }
+  rc = i;
+  if(i == NUM_CMDS)
+    rc = -1;
+  return rc;
+}
+
+
 
 
 int init_insock(struct insock *in)
@@ -2049,10 +2138,11 @@ int set_spacexx(struct space * base, char *name, char *value)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-int set_space_in(struct space * base, char *name, struct insock *in)
+struct space *set_space_in(struct space **basep, char *name, struct insock *in)
 {
   int rc = -1;
   struct space *sp1;
+  struct space *base =  *basep;
   char sname[3][128];  // TODO
   char * spv;
 
@@ -2079,23 +2169,26 @@ int set_space_in(struct space * base, char *name, struct insock *in)
     {
       if(in)in_snprintf(in,NULL,"?? SET [%s] not found \n",sname[1]);
     }
-  return rc;
+  return sp1;
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
 int set_space(struct space *base, char *name)
 {
-  return set_space_in(base, name, NULL);
+  struct space* gbase = base;
+  set_space_in(&gbase, name, NULL);
+  return 0;
 }
 
 //char *get_space(struct space *base, char *name)
-char *get_space_in(struct space * base, char *name, struct insock *in)
+struct space * get_space_in(struct space ** basep, char *name, struct insock *in)
 {
   char * sret=NULL;
   struct space *sp1;
+  struct space *base =  *basep;
   char *sp;
   char spv[2][128];
-  int rc;
+  int rc=0;
   spv[0][0]=0;
   spv[1][0]=0;
   rc = sscanf(name,"%s %s", spv[0], spv[1]);
@@ -2113,13 +2206,17 @@ char *get_space_in(struct space * base, char *name, struct insock *in)
     {
       if(in)in_snprintf(in,NULL,"?? GET [%s] not found \n",sp);
     }
-  return sret;
+  return sp1;
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
 char *get_space(struct space *base, char *name)
 {
-  return get_space_in(base, name, NULL);
+  char *ret =  NULL;
+  //TODO
+  struct space *gbase = base;
+  get_space_in(&gbase, name, NULL);
+  return ret;
 }
 
 int count = 0;
@@ -2224,6 +2321,8 @@ int main (int argc, char *argv[])
    init_g_spaces();
    init_insocks();
    init_insock(in);
+   set_up_new_cmds();
+
    in->fd = 1;
 
    
@@ -2297,7 +2396,7 @@ int main (int argc, char *argv[])
 	   sp1->onset = motor_onset;
 	   sp1->onget = motor_onget;
 	   
-	   show_spaces_new(in,g_space, sbuf, 4096, sbuf);
+	   show_spaces_new(in, &g_space, sbuf, 4096, sbuf);
 	   sp1 = find_space_new(g_space, "uav1/motor3");
 	   printf(" found %s \n", sp1?sp1->name:"no uav1/motor3");
 	   sp1 = find_space_new(g_space, "uav1/motor1");
@@ -2307,7 +2406,7 @@ int main (int argc, char *argv[])
 	   sp =  get_space(g_space,"GET uav3/motor2/speed");
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   
-	   show_spaces_new(in,sp2, sbuf, 4096, sbuf);
+	   show_spaces_new(in,&sp2, sbuf, 4096, sbuf);
 	   
 	   //   return 0;
 #if 0
