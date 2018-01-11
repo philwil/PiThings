@@ -150,9 +150,9 @@ struct iobuf
 struct insock
 {
   int fd;
-  char inbuf[INSIZE];
-  unsigned int inptr;
-  unsigned int inlen;
+  //char inbuf[INSIZE];
+  //unsigned int inptr;
+  // unsigned int inlen;
   unsigned int inbptr;
   unsigned int inblen;
   int insize;
@@ -163,7 +163,7 @@ struct insock
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
   struct iobuf *iobuf;  // output buffers
-  struct iobuf *in_iobuf;  // input buffers
+  struct iobuf *inbuf;  // input buffers
 };
 
 struct cmds
@@ -1209,14 +1209,14 @@ int init_insock(struct insock *in)
 {
 
   in->fd = -1;
-  in->inptr = 0;
-  in->inlen = 0;
+  //in->inptr = 0;
+  //in->inlen = 0;
   in->insize = INSIZE;
   //in->outsize = OUTSIZE;
   in->outbptr = 0;
   in->outblen = 0;
   in->iobuf = NULL;
-  in->in_iobuf = NULL;
+  in->inbuf = NULL;
   return 0;
 }
 
@@ -1805,8 +1805,8 @@ int close_fds(int fsock)
 	// TODO drain iobufs	
 	rc = 0;
 	in->fd = -1;
-	in->inptr = 0;
-	in->inlen = 0;
+	//in->inptr = 0;
+	//in->inlen = 0;
 	
 	num_socks--;
       }
@@ -1840,9 +1840,9 @@ int handle_input(struct insock *in)
     char *bufp;
     struct iobuf *inbf;  // input buffer
 
-    if (in->in_iobuf == NULL)
-      in->in_iobuf = new_iobuf(1024);
-    inbf = in->in_iobuf;
+    if (in->inbuf == NULL)
+      in->inbuf = new_iobuf(1024);
+    inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
     lres = inbf->outsize-inbf->outlen;
     
@@ -1853,9 +1853,6 @@ int handle_input(struct insock *in)
       {
 	inbf->outlen += len;
 	sp = &inbf->outbuf[inbf->outptr];
-	//in->inlen += len;
-	//in->inbuf[in->inlen] = 0;
-	//sp = &in->inbuf[in->inptr];
 	n = sscanf(sp,"%s ", cmd);   //TODO use better sscanf
 	in_snprintf(in, NULL
 		    ," message received [%s] ->"
