@@ -201,6 +201,7 @@ char *get_space(struct space * base, char *name);
 struct space *get_space_in(struct space ** base, char *name, struct insock *in);
 struct space *show_space_in(struct space ** base, char *name, struct insock *in);
 struct space *decode_cmd_in(struct space ** base, char *name, struct insock *in);
+struct space *decode_rep_in(struct space ** base, char *name, struct insock *in);
 struct space *help_new_cmds(struct space ** base, char *name, struct insock *in);
 
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
@@ -948,6 +949,7 @@ int set_up_new_cmds(void)
   init_new_cmd("SET",  "Set a (string) value",	       set_space_in);
   init_new_cmd("GET",  "Get a (string) value",	       get_space_in);
   init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
+  init_new_cmd("REP", "determine  replyid and len",    decode_rep_in);
   init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
 }
 
@@ -1051,6 +1053,49 @@ struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
       clen = atoi(sclen);
       if(in->cmdid) free (in->cmdid);
       in->cmdid = strdup(scid);
+      in->cmdlen = clen;
+      in->cmdbytes = clen;
+      printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
+	     ,__FUNCTION__
+	     ,name
+	     , sbuf
+	     , in->cmdid
+	     , sclen
+	     );
+    }
+  else
+    {
+      printf("%s 2 unable to parse name [%s] cmd [%s] rc %d\n"
+	     ,__FUNCTION__
+	     , name
+	     , sbuf
+	     , rc
+	     );
+    }
+  return NULL;
+}
+// decode reply , TODO look for function to process reply 
+struct space *decode_rep_in(struct space **base, char *name, struct insock *in)
+{
+  int rc = 0;
+  char sbuf[64];
+  char scid[64];
+  char sclen[64];
+  int clen = 0;
+  struct space *sp1=NULL;
+  struct space **spb=&g_space;
+  char *sp = name;
+  sbuf[0] =0;
+  scid[0] =0;
+  sclen[0] =0;
+  
+  rc = sscanf(name,"%s %s %s", sbuf, scid, sclen);  // TODO use more secure option
+  if(rc > 2)
+    {
+      clen = atoi(sclen);
+      if(in->cmdid) free (in->cmdid);
+      in->cmdid = strdup(scid);
+      // TODO find reply processor      
       in->cmdlen = clen;
       in->cmdbytes = clen;
       printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
@@ -2521,6 +2566,7 @@ int main (int argc, char *argv[])
    int i;
    int lsock = 0;
    int csock;
+   int csize;
    int rc = 1;
    int depth=0;
    //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
@@ -2566,13 +2612,19 @@ int main (int argc, char *argv[])
 	       snprintf(buf, sizeof(buf),"%s %s %s", argv[2], argv[3], argv[4]);
 	     }	       
 	   csock = connect_socket(5432, NULL);
-	   printf ("sending [%s] to server %d \n", buf, csock);
+	   printf ("sending [%s] to server %s res %d \n", buf, "localhost", csock);
 	   if(csock> 0)
 	     {
 	       accept_socket(csock);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
+	       csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+	       //TODO check buf csize
+	       snprintf(buf, sizeof(buf),"CMD %s %d\n\n", "some_id", csize);
 	       rc = write(csock, buf, strlen(buf)); 
+	       snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+	       rc = write(csock, buf, strlen(buf)); 
+
 	       lsock = -1;
 
 	     }
