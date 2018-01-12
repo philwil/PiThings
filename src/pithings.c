@@ -23,7 +23,7 @@ cc -o pimotor pimotor.c -lpigpio -lpthread -lrt
  a parent will keep track of its clones
  we'll make the number of spaces dynamic
  
-Big jump now  make multi/space/possible 
+  Big jump now  make multi/space/possible 
 
 
 API thoughts
@@ -75,6 +75,18 @@ show foo/boo/fum
 showall foo/boo/fum
    shows details of all the child variables
 
+
+message details
+ascii messages are terminated with two cr's
+CMD xxx  yyy0xa0xa
+This message will set up a fixed length message
+The contents will be read until we get yyy chars from the socket
+A process will register with the id yyyy and when we get a response for that message it will be preceeded with :
+
+REP xxx zzzz0xa0xa
+This means that we will get a reply of zzzz bytes and send that to the process
+with an id of xxx
+look at handle_input
 */
 
 #include <stdio.h>
@@ -158,8 +170,10 @@ struct insock
   struct iobuf *inbuf;  // input buffers
   //char *cmdptr; // used to calc command length
   int cmdlen;   // number of bytes left for curent command
+  int cmdbytes;   // number of bytes expected curent command
   char *cmdid;    // current command id
-  int cmdtrm;     // terminator count
+  //int cmdtrm;     // terminator count
+  int tlen;       // term
 };
 
 struct cmds
@@ -1038,6 +1052,7 @@ struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
       if(in->cmdid) free (in->cmdid);
       in->cmdid = strdup(scid);
       in->cmdlen = clen;
+      in->cmdbytes = clen;
       printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
 	     ,__FUNCTION__
 	     ,name
@@ -1255,7 +1270,9 @@ int init_insock(struct insock *in)
   in->inbuf = NULL;
   //in->cmdptr = NULL;
   in->cmdlen = 0;
+  in->cmdbytes = 0;
   //in->cmdtrm = 0;
+  in->tlen = 0;
   in->cmdid = NULL;
   return 0;
 }
@@ -1881,13 +1898,37 @@ int find_cmd_term(struct iobuf *inbf, int len, int last)// input buffer
 
       if (rc == 2)
 	{
-	  rc = inbf->outlen + len - lend;
+	  rc = inbf->outlen + len - lend + 1;
 	  return rc;;
 	}
       sp++;
       lend--;
     }
-  return 0;
+  
+  return rc;
+}
+
+int get_rsize(struct insock *in)
+{
+  int rc=0;
+  int rlen = 0;
+  struct iobuf *inbf;  // input buffer
+
+  inbf = in->inbuf;
+  rlen = inbf->outsize-inbf->outlen;
+  if (in->cmdbytes > 0)
+    {
+      rc = in->cmdbytes - in->cmdlen;
+    }
+  else
+    {
+      // just need one more byte
+      if (in->tlen ==1 )
+	rc = 1;
+    }
+  if(rc == 0 || rc>rlen)
+    rc =  rlen;
+  return rc;
 }
 
 int handle_input(struct insock *in)
@@ -1903,21 +1944,28 @@ int handle_input(struct insock *in)
     int lres;
     char *bufp;
     struct iobuf *inbf;  // input buffer
-
+    int rsize;
     if (in->inbuf == NULL)
       in->inbuf = new_iobuf(1024);
 
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
-    lres = inbf->outsize-inbf->outlen;
-    
-    len = read(in->fd, sp, lres);
+    rsize = get_rsize(in);
+
+    len = read(in->fd, sp, rsize);
     if(len > 0)
       {
 	sp[len] = 0;
-	tlen = find_cmd_term(inbf, len, 2);
+	if(in->cmdbytes == 0)
+	  tlen = find_cmd_term(inbf, len, in->tlen);
+	if(tlen == 1)
+	  in->tlen = 1;
+	else
+	  in->tlen = 0;
+	//if tlen == 1 we found one terminator
+	// the next char must also be a terminator
       }
-    printf("%s read %d bytes [%s] lres  %d tlen %d outptr/len %d/%d\n"
+    printf("%s read %d bytes [%s] lres  %d tlen %d outptr/len/cmd %d/%d/%d\n"
 	   , __FUNCTION__
 	   , len
 	   , sp
@@ -1925,18 +1973,37 @@ int handle_input(struct insock *in)
 	   , tlen
 	   , inbf->outptr
 	   , inbf->outlen
+	   , in->cmdlen
 	   );
+    if(in->cmdbytes > 0)
+      {
+	printf("%s read %d bytes cmdlen/bytes %d/%d\n"
+	       , __FUNCTION__
+	       , len
+	       , in->cmdlen
+	       , in->cmdbytes
+	       );
+      }
     
     if(len > 0)
       {
 	//tlen = find_cmd_term(inbf, len, 2);
 
 	inbf->outlen += len;
+	if(in->cmdbytes > 0)
+	  {
+	    in->cmdlen -= len;
+	    if(in->cmdlen==0)
+	      tlen = in->cmdbytes;
+	    else
+	      tlen = 0;
+	  }
+	
 	sp = &inbf->outbuf[inbf->outptr];
 	//TODO only run this if we have received all of the command
 	// use in->cmdbytes to count remaining bytes if any
-	//if(((in->cmdlen-len) <= 0) || (tlen>0))
-	if(tlen>0)
+	//if(((in->cmdlen-len) <= 0) || (tlen>1))
+	if(tlen>1)
 	  {
 	    //in->cmdptr = sp;
 	    n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
@@ -1945,11 +2012,19 @@ int handle_input(struct insock *in)
 			" n %d cmd [%s]\n"
 			, sp //&in->inbuf[in->inptr]
 			, n, cmd );
+	    in->cmdbytes = -in->cmdbytes;
+
 	    run_str_in(in, sp, cmd);
+
+	    if(in->cmdbytes < 0)
+	      in->cmdbytes = 0;
+	    if(in->cmdlen < 0)
+	      in->cmdbytes = 0;
+	    
 	    printf(" rc %d n %d cmd [%s] tlen %d\n"
 		   , rc, n, cmd, tlen );
 	    // TODO consume just the current cmd
-	    inbf->outptr += (tlen+1);
+	    inbf->outptr += tlen;
 	    printf(" reset buffers tlen = %d ptr/len %d/%d\n"
 		   , tlen
 		   , inbf->outptr
@@ -1969,9 +2044,11 @@ int handle_input(struct insock *in)
 	  }
 	else
 	  {
-	    //in->cmdlen -= len;
-	    //printf(">>>>>input still needs %d bytes\n"
-	    //	   , in->cmdlen );
+	    if(in->cmdbytes > 0)
+	      {
+		printf(">>>>>input still needs %d bytes\n"
+		       	   , in->cmdlen );
+	      }
 	  }
 
       }
