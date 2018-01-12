@@ -87,6 +87,17 @@ REP xxx zzzz0xa0xa
 This means that we will get a reply of zzzz bytes and send that to the process
 with an id of xxx
 look at handle_input
+Sending a command to a remte
+See the "send" thing
+First send [CMD RAW lll\n\n]
+Then send the command specified in the command line
+The remote will detect the [CMD RAW lll\n\n] request and then wait for lll bytes.
+The run_str_in will put stuff in the iobuf to send as usual but we'll turn off
+the actual output is prevented by setting the nosend flag to 1;
+Once run_str_in has completed we can calculate the output bytes and then send the 
+[RSP xxx lll\n\n] with the buffer length and then simply turn off the nosend flag
+ 
+
 */
 
 #include <stdio.h>
@@ -174,6 +185,7 @@ struct insock
   char *cmdid;    // current command id
   //int cmdtrm;     // terminator count
   int tlen;       // term
+  int nosend;       // term
 };
 
 struct cmds
@@ -1317,8 +1329,9 @@ int init_insock(struct insock *in)
   in->cmdlen = 0;
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
-  in->tlen = 0;
   in->cmdid = NULL;
+  in->tlen = 0;
+  in->nosend = 0;
   return 0;
 }
 
@@ -1976,6 +1989,22 @@ int get_rsize(struct insock *in)
   return rc;
 }
 
+int count_buf_bytes(struct iobuf *oubuf)
+{
+  int rc=0;
+  struct iobuf *oust = oubuf;
+  while(oubuf)
+    {
+      rc += oubuf->outlen - oubuf->outptr;
+      oubuf = oubuf->next;
+      if(oubuf == oust)
+	oubuf = NULL;
+    }
+  
+  
+  return rc;
+}
+
 int handle_input(struct insock *in)
 {
     int rc;
@@ -1989,7 +2018,9 @@ int handle_input(struct insock *in)
     int lres;
     char *bufp;
     struct iobuf *inbf;  // input buffer
+    struct iobuf *oubf;  // input buffer
     int rsize;
+    int tosend;
     if (in->inbuf == NULL)
       in->inbuf = new_iobuf(1024);
 
@@ -2060,14 +2091,17 @@ int handle_input(struct insock *in)
 	    in->cmdbytes = -in->cmdbytes;
 
 	    run_str_in(in, sp, cmd);
+	    tosend = count_buf_bytes(in->iobuf);
 
 	    if(in->cmdbytes < 0)
 	      in->cmdbytes = 0;
 	    if(in->cmdlen < 0)
 	      in->cmdbytes = 0;
 	    
-	    printf(" rc %d n %d cmd [%s] tlen %d\n"
-		   , rc, n, cmd, tlen );
+	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d cmdid [%s]\n"
+		   , rc, n, cmd, tlen, tosend
+		   , in->cmdid ? in->cmdid :"no id"
+		   );
 	    // TODO consume just the current cmd
 	    inbf->outptr += tlen;
 	    printf(" reset buffers tlen = %d ptr/len %d/%d\n"
@@ -2197,7 +2231,8 @@ int poll_sock(int lsock)
 	    fds[idx].fd = g_insock[i].fd;
 	    fds[idx].events = POLLIN;
 	    fds[idx].revents = 0;
-	    if(g_insock[i].outbptr != g_insock[i].outblen)
+	    if((g_insock[i].nosend == 0)
+	       && (g_insock[i].outbptr != g_insock[i].outblen))
 	      {
 		fds[idx].events |= POLLOUT;
 	      }
