@@ -157,6 +157,7 @@ struct space {
 
 int num_socks=0;
 int g_debug = 0;
+int g_lsock = 0;
 
 struct iobuf;
 
@@ -215,6 +216,7 @@ struct space *show_space_in(struct space ** base, char *name, struct insock *in)
 struct space *decode_cmd_in(struct space ** base, char *name, struct insock *in);
 struct space *decode_rep_in(struct space ** base, char *name, struct insock *in);
 struct space *help_new_cmds(struct space ** base, char *name, struct insock *in);
+struct space *cmd_quit(struct space **base, char *name, struct insock *in);
 
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct insock *in));
@@ -963,6 +965,7 @@ int set_up_new_cmds(void)
   init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
   init_new_cmd("REP", "determine  replyid and len",    decode_rep_in);
   init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
+  init_new_cmd("QUIT", "quit",      cmd_quit);
 }
 
 struct space *help_new_cmds(struct space **base, char *name, struct insock *in)
@@ -1004,6 +1007,13 @@ int in_new_cmds(char * name)
   return rc;
 }
 
+struct space *cmd_quit(struct space **base, char *name, struct insock *in)
+{
+  //main
+  printf("quitting\n");
+  if(g_lsock>0) close(g_lsock);
+
+}
 struct space *show_space_in(struct space **base, char *name, struct insock *in)
 {
   int rc = 0;
@@ -1949,6 +1959,7 @@ int find_cmd_term(struct iobuf *inbf, int len, int last)// input buffer
   int lend = inbf->outlen + len;
   while (lend)
     {
+      printf("%s checking %c %x rc %d lend %d\n", __FUNCTION__, *sp, *sp ,rc , lend);
       if ((*sp == 0xa) ||(*sp == 0xd))
 	rc++;
       else
@@ -2021,6 +2032,7 @@ int handle_input(struct insock *in)
     struct iobuf *oubf;  // input buffer
     int rsize;
     int tosend;
+
     if (in->inbuf == NULL)
       in->inbuf = new_iobuf(1024);
 
@@ -2041,7 +2053,7 @@ int handle_input(struct insock *in)
 	//if tlen == 1 we found one terminator
 	// the next char must also be a terminator
       }
-    printf("%s read %d bytes [%s] lres  %d tlen %d outptr/len/cmd %d/%d/%d\n"
+    printf("%s read len %d  sp [%s] lres %d tlen %d outptr/len %d/%d/ cmd/bytes %d/%d\n"
 	   , __FUNCTION__
 	   , len
 	   , sp
@@ -2050,6 +2062,7 @@ int handle_input(struct insock *in)
 	   , inbf->outptr
 	   , inbf->outlen
 	   , in->cmdlen
+	   , in->cmdbytes
 	   );
     if(in->cmdbytes > 0)
       {
@@ -2599,7 +2612,6 @@ int test_iob_out(void)
 int main (int argc, char *argv[])
 {
    int i;
-   int lsock = 0;
    int csock;
    int csize;
    int rc = 1;
@@ -2660,7 +2672,7 @@ int main (int argc, char *argv[])
 	       snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
 	       rc = write(csock, buf, strlen(buf)); 
 
-	       lsock = -1;
+	       g_lsock = -1;
 
 	     }
 
@@ -2740,14 +2752,14 @@ int main (int argc, char *argv[])
      }
    
    accept_socket(STDIN_FILENO);
-   if(lsock == 0)
+   if(g_lsock == 0)
      {
-       lsock = listen_socket(5432);
+       g_lsock = listen_socket(5432);
      }
    rc = 1;
    while(rc>0 && count < 10)
    {
-       rc = poll_sock(lsock);
+       rc = poll_sock(g_lsock);
        //count++;
    }
 
