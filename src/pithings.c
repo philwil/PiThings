@@ -1970,7 +1970,7 @@ int find_cmd_term(struct insock *in, int len, int last)// input buffer
 
   inbf = in->inbuf;
   sp = &inbf->outbuf[inbf->outptr];
-  lend = inbf->outlen + len;
+  lend = inbf->outlen;
   while (lend)
     {
       in->tlen = 0;
@@ -2189,6 +2189,7 @@ int handle_input_rep(struct insock *in)
     return len;
 }
 
+// scan for double terminators from outptr to outlen 
 int handle_input_norm(struct insock *in)
 {
     int rc=0;
@@ -2216,11 +2217,11 @@ int handle_input_norm(struct insock *in)
       in->tlen = 0;
     //if tlen == 1 we found one terminator
     // the next char must also be a terminator
-    printf("%s read len %d  sp [%s] lres %d outptr/len %d/%d\n"
+    printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
 	   , __FUNCTION__
 	   , len
 	   , sp
-	   , lres
+	   , tlen
 	   , inbf->outptr
 	   , inbf->outlen
 	   );
@@ -2239,12 +2240,8 @@ int handle_input_norm(struct insock *in)
 	    
 	tosend = count_buf_bytes(in->iobuf);
 	
-	printf(" rc %d n %d cmd [%s] tlen %d tosend %d cmdid [%s] cmd %d/%d\n"
+	printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
 	       , rc, n, cmd, tlen, tosend
-	       , in->cmdid ? in->cmdid :"no id"
-	       , in->cmdlen
-	       , in->cmdbytes
-	       
 	       );
 	// TODO consume just the current cmd
 	// flag the fact that we got more
@@ -2256,13 +2253,14 @@ int handle_input_norm(struct insock *in)
 	       , tlen
 	       , inbf->outptr
 	       , inbf->outlen
-		   , rc
+	       , rc
 	       );
 	if (inbf->outptr == inbf->outlen)
 	  {
 	    inbf->outptr = 0;
 	    inbf->outlen = 0;
-	    printf(" reset buffers tlen = %d ptr/len %d/%d\n"
+	    printf(" %s reset buffers tlen = %d ptr/len %d/%d\n"
+		   , __FUNCTION__
 		   , tlen
 		   , inbf->outptr
 		   , inbf->outlen
@@ -2292,13 +2290,19 @@ int handle_input(struct insock *in)
   if (in->inbuf == NULL)
     in->inbuf = new_iobuf(1024);
   inbf = in->inbuf;
-
   rsize = get_rsize(in);
   // TODO create a new inbuf
   
   sp = &inbf->outbuf[inbf->outlen];
-  printf("%s rsize  %d\n", __FUNCTION__, rsize);
   len = read(in->fd, sp, rsize);
+  printf("%s rsize  %d len %d ptr/len %d/%d\n"
+	 , __FUNCTION__
+	 , rsize
+	 , len
+	 , inbf->outptr
+	 , inbf->outlen
+	 );
+
   if(len > 0)
     {
       sp[len] = 0;
