@@ -2043,7 +2043,19 @@ int handle_input_cmd(struct insock *in)
     inbf = in->inbuf;
 
     bytesin = inbf->outlen - inbf->outptr;
-    printf("%s bytesin %d\n", __FUNCTION__, bytesin);
+    if(in->cmdbytes > 0)
+      {
+	in->cmdlen -= bytesin;
+      }
+    if(in->cmdlen < 0)
+      {
+	in->cmdlen = 0;
+      }
+    
+    printf("%s bytesin %d cmdlen %d\n"
+	   , __FUNCTION__
+	   , bytesin
+	   , in->cmdlen);
 
     sp = &inbf->outbuf[inbf->outptr];
 
@@ -2061,8 +2073,7 @@ int handle_input_cmd(struct insock *in)
 	in->tlen = in->cmdbytes;
 	in->cmdbytes = 0;
 
-	
-	in->instate = STATE_IN_NORM;
+      	in->instate = STATE_IN_NORM;
 	run_str_in(in, sp, cmd);
 	// TODO consume just the current cmd
 	inbf->outptr += in->tlen;
@@ -2072,16 +2083,16 @@ int handle_input_cmd(struct insock *in)
 	       , rc, n, cmd, tosend
 	       , in->cmdid ? in->cmdid :"no id"
 	       );
-	if (inbf->outptr == inbf->outlen)
-	  {
-	    inbf->outptr = 0;
-	    inbf->outlen = 0;
-	    printf(" reset buffers ptr/len %d/%d\n"
-		   , inbf->outptr
-		   , inbf->outlen
-		   );
-	    
-	  }
+	//	if (inbf->outptr == inbf->outlen)
+	//{
+	//  inbf->outptr = 0;
+	//  inbf->outlen = 0;
+	//  printf(" reset buffers ptr/len %d/%d\n"
+	//	   , inbf->outptr
+	//	   , inbf->outlen
+	//	   );
+	//}
+
 	if (inbf->outptr < inbf->outlen)
 	  {
 	    rc = 1;
@@ -2175,23 +2186,22 @@ int handle_input_rep(struct insock *in)
 	       , inbf->outptr
 	       , inbf->outlen
 	       );
-	if (inbf->outptr == inbf->outlen)
-	  {
-	    inbf->outptr = 0;
-	    inbf->outlen = 0;
-	    printf(" reset buffers ptr/len %d/%d\n"
-		   , inbf->outptr
-		   , inbf->outlen
-		   );
+	//if (inbf->outptr == inbf->outlen)
+	//{
+	//  inbf->outptr = 0;
+	//  inbf->outlen = 0;
+	//  printf(" reset buffers ptr/len %d/%d\n"
+	//	   , inbf->outptr
+	//	   , inbf->outlen
+	//	   );
 	    
-	  }
-	else
+	//}
+	//else
+	//{
+	if(in->cmdbytes > 0)
 	  {
-	    if(in->cmdbytes > 0)
-	      {
-		printf(">>>>>reply still needs %d bytes\n"
-		       , in->cmdlen );
-	      }
+	    printf(">>>>>reply still needs %d bytes\n"
+		   , in->cmdlen );
 	  }
 	
       }
@@ -2316,14 +2326,14 @@ int handle_input(struct insock *in)
     {
       sp[len] = 0;
       inbf->outlen += len;
-      if(in->cmdbytes > 0)
-      {
-	in->cmdlen -= len;
-      }
-      if(in->cmdlen < 0)
-      {
-	in->cmdlen = 0;
-      }
+      //if(in->cmdbytes > 0)
+      //{
+      //in->cmdlen -= len;
+      //}
+      //if(in->cmdlen < 0)
+      //{
+      //in->cmdlen = 0;
+      //}
 
       while(more)
 	{
