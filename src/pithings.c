@@ -1409,9 +1409,9 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
         va_start(args, fmt);
         size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
         va_end(args);
-	printf(" size found %d len %d\n"
-	       , size
-	       , iob->outlen);
+	if(0)printf(" size found %d len %d\n"
+		    , size
+		    , iob->outlen);
 	
         if(iob->outptr+ size > iob->outlen)
         {
@@ -2026,10 +2026,6 @@ int handle_input_cmd(struct insock *in)
     int n;
     char cmd[64];
     char *sp;
-    char buf[1024];
-    char *bres;
-    int lres;
-    char *bufp;
     struct iobuf *inbf;  // input buffer
     struct iobuf *oubf;  // input buffer
     int rsize;
@@ -2212,6 +2208,7 @@ int handle_input_norm(struct insock *in)
 
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
+    len = inbf->outlen - inbf->outptr;
     tlen = find_cmd_term(in, len, in->tlen);
     if(tlen == 1)
       in->tlen = 1;
