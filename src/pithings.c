@@ -1963,34 +1963,42 @@ note run_str_in should return the length string used
 */
 int find_cmd_term(struct insock *in, int len, int last)// input buffer
 {
-  int rc  = last;
+  int rc  = 0;
   struct iobuf *inbf;  // input buffer
   char *sp;
   int lend;
+  int found = 0;
 
   inbf = in->inbuf;
   sp = &inbf->outbuf[inbf->outptr];
+
   lend = inbf->outlen;
+  printf("%s lend %d outptr/len %d/%d last %d\n", __FUNCTION__
+	 , lend
+	 , inbf->outptr
+	 , inbf->outlen
+	 , last
+	 );
   while (lend)
     {
+      rc ++;
       in->tlen = 0;
 
       printf("%s checking %c %x rc %d lend %d\n", __FUNCTION__, *sp, *sp ,rc , lend);
       if ((*sp == 0xa) ||(*sp == 0xd))
-	rc++;
+	found++;
       else
-	rc = 0;
+	found = 0;
 
-      if (rc == 2)
+      if (found == 2)
 	{
-	  rc = inbf->outlen + len - lend + 1;
-	  return rc;;
+	  return rc;
 	}
       sp++;
       lend--;
     }
   
-  return rc;
+  return 0;
 }
 
 int get_rsize(struct insock *in)
@@ -2032,6 +2040,7 @@ int handle_input_cmd(struct insock *in)
     int tosend;
     int bytesin;
 
+    inbf = in->inbuf;
 
     bytesin = inbf->outlen - inbf->outptr;
     printf("%s bytesin %d\n", __FUNCTION__, bytesin);
@@ -2210,7 +2219,7 @@ int handle_input_norm(struct insock *in)
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
     len = inbf->outlen - inbf->outptr;
-    tlen = find_cmd_term(in, len, in->tlen);
+    tlen = find_cmd_term(in, len, 0 /*,in->tlen*/);
     if(tlen == 1)
       in->tlen = 1;
     else
