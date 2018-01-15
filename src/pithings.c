@@ -1952,13 +1952,20 @@ The input buffer is relocatable anyway.
 a cmd terminates with a double \a\a 
 note run_str_in should return the length string used 
 */
-int find_cmd_term(struct iobuf *inbf, int len, int last)// input buffer
+int find_cmd_term(struct insock *in, int len, int last)// input buffer
 {
   int rc  = last;
-  char *sp = &inbf->outbuf[inbf->outptr];
-  int lend = inbf->outlen + len;
+  struct iobuf *inbf;  // input buffer
+  char *sp;
+  int lend;
+
+  inbf = in->inbuf;
+  sp = &inbf->outbuf[inbf->outptr];
+  lend = inbf->outlen + len;
   while (lend)
     {
+      in->tlen = 0;
+
       printf("%s checking %c %x rc %d lend %d\n", __FUNCTION__, *sp, *sp ,rc , lend);
       if ((*sp == 0xa) ||(*sp == 0xd))
 	rc++;
@@ -1982,19 +1989,18 @@ int get_rsize(struct insock *in)
   int rc=0;
   int rlen = 0;
   struct iobuf *inbf;  // input buffer
-
   inbf = in->inbuf;
   rlen = inbf->outsize-inbf->outlen;
   if (in->cmdbytes > 0)
     {
       rc = in->cmdbytes - in->cmdlen;
     }
-  else
-    {
-      // just need one more byte
-      if (in->tlen ==1 )
-	rc = 1;
-    }
+  //  else
+  //{
+  // just need one more byte
+  if (in->tlen == 1 )
+    rc = 1;
+      //}
   if(rc == 0 || rc>rlen)
     rc =  rlen;
   return rc;
@@ -2039,13 +2045,14 @@ int handle_input(struct insock *in)
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outlen];
     rsize = get_rsize(in);
-
+    printf("%s rsize  %d\n", __FUNCTION__, rsize);
     len = read(in->fd, sp, rsize);
+
     if(len > 0)
       {
 	sp[len] = 0;
 	if(in->cmdbytes == 0)
-	  tlen = find_cmd_term(inbf, len, in->tlen);
+	  tlen = find_cmd_term(in, len, in->tlen);
 	if(tlen == 1)
 	  in->tlen = 1;
 	else
