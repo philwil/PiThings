@@ -171,6 +171,10 @@ struct iobuf
   int outptr;
 };
 
+#define STATE_IN_NORM 0
+#define STATE_IN_REP 1
+#define STATE_IN_CMD 2
+
 struct insock
 {
   int fd;
@@ -187,6 +191,7 @@ struct insock
   //int cmdtrm;     // terminator count
   int tlen;       // term
   int nosend;       // term
+  int instate;
 };
 
 struct cmds
@@ -1077,6 +1082,7 @@ struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
       in->cmdid = strdup(scid);
       in->cmdlen = clen;
       in->cmdbytes = clen;
+      in->instate = STATE_IN_CMD;
       printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
 	     ,__FUNCTION__
 	     ,name
@@ -1120,6 +1126,8 @@ struct space *decode_rep_in(struct space **base, char *name, struct insock *in)
       // TODO find reply processor      
       in->cmdlen = clen;
       in->cmdbytes = clen;
+      in->instate = STATE_IN_REP;
+
       printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
 	     ,__FUNCTION__
 	     ,name
@@ -1342,6 +1350,7 @@ int init_insock(struct insock *in)
   in->cmdid = NULL;
   in->tlen = 0;
   in->nosend = 0;
+  in->instate = STATE_IN_NORM;
   return 0;
 }
 
@@ -1991,19 +2000,7 @@ int get_rsize(struct insock *in)
   struct iobuf *inbf;  // input buffer
   inbf = in->inbuf;
   rlen = inbf->outsize-inbf->outlen;
-  if (in->cmdbytes > 0)
-    {
-      rc = in->cmdbytes - in->cmdlen;
-    }
-  //  else
-  //{
-  // just need one more byte
-  if (in->tlen == 1 )
-    rc = 1;
-      //}
-  if(rc == 0 || rc>rlen)
-    rc =  rlen;
-  return rc;
+  return rlen;
 }
 
 int count_buf_bytes(struct iobuf *oubuf)
@@ -2022,8 +2019,315 @@ int count_buf_bytes(struct iobuf *oubuf)
   return rc;
 }
 
+int handle_input_cmd(struct insock *in)
+{
+    int rc=0;
+    int len=0;
+    int n;
+    char cmd[64];
+    char *sp;
+    char buf[1024];
+    char *bres;
+    int lres;
+    char *bufp;
+    struct iobuf *inbf;  // input buffer
+    struct iobuf *oubf;  // input buffer
+    int rsize;
+    int tosend;
+    int bytesin;
+
+
+    bytesin = inbf->outlen - inbf->outptr;
+    printf("%s bytesin %d\n", __FUNCTION__, bytesin);
+
+    sp = &inbf->outbuf[inbf->outptr];
+
+    if(in->cmdlen <= 0)
+      {
+	//in->cmdptr = sp;
+
+	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
+	in_snprintf(in, NULL
+		    ," message received [%s] ->"
+		    " n %d cmd [%s]\n"
+		    , sp //&in->inbuf[in->inptr]
+		    , n, cmd );
+
+	in->tlen = in->cmdbytes;
+	in->cmdbytes = 0;
+
+	
+	in->instate = STATE_IN_NORM;
+	run_str_in(in, sp, cmd);
+	// TODO consume just the current cmd
+	inbf->outptr += in->tlen;
+	tosend = count_buf_bytes(in->iobuf);
+
+	printf(" rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+	       , rc, n, cmd, tosend
+	       , in->cmdid ? in->cmdid :"no id"
+	       );
+	if (inbf->outptr == inbf->outlen)
+	  {
+	    inbf->outptr = 0;
+	    inbf->outlen = 0;
+	    printf(" reset buffers ptr/len %d/%d\n"
+		   , inbf->outptr
+		   , inbf->outlen
+		   );
+	    
+	  }
+	if (inbf->outptr < inbf->outlen)
+	  {
+	    rc = 1;
+	  }
+      }
+    else
+      {
+	if(in->cmdbytes > 0)
+	  {
+	    printf(">>>>>input still needs %d bytes\n"
+		   , in->cmdlen );
+	    rc = 1;
+	  }
+      }
+    return rc;
+}
+
+
+int handle_input_rep(struct insock *in)
+{
+    int rc=0;
+    int len=0;
+    int n;
+    char cmd[64];
+    char *sp;
+    char buf[1024];
+    char *bres;
+    int lres;
+    char *bufp;
+    struct iobuf *inbf;  // input buffer
+    struct iobuf *oubf;  // input buffer
+    int rsize;
+    int tosend;
+    int bytesin;
+
+    inbf = in->inbuf;
+    sp = &inbf->outbuf[inbf->outlen];
+
+    rsize = in->cmdbytes - in->cmdlen;
+    bytesin = inbf->outlen - inbf->outptr;
+    printf("%s rsize  %d bytesin %d\n", __FUNCTION__, rsize, bytesin);
+    if (bytesin >= rsize)
+      {
+	in->cmdlen = 0;
+	rsize = 0;
+	rc = 1;
+      }
+    if (bytesin < rsize)
+      {
+	rsize -= bytesin;
+	printf("%s adjusted rsize  %d\n", __FUNCTION__, rsize);
+
+      }
+    // we need more
+    if(rsize > 0)
+      {
+	return 0;
+      }
+    printf("%s read sp [%s] outptr/len %d/%d/ cmd/bytes %d/%d\n"
+	   , __FUNCTION__
+	   , sp
+	   , inbf->outptr
+	   , inbf->outlen
+	   , in->cmdlen
+	   , in->cmdbytes
+	   );
+	
+
+	sp = &inbf->outbuf[inbf->outptr];
+    //TODO only run this if we have received all of the command
+    // use in->cmdbytes to count remaining bytes if any
+    if(in->cmdlen <= 0)
+      {
+	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
+	in_snprintf(in, NULL
+		    ," message received [%s] ->"
+		    " n %d cmd [%s]\n"
+		    , sp //&in->inbuf[in->inptr]
+		    , n, cmd );
+	in->instate = STATE_IN_NORM;
+	//run_str_in(in, sp, cmd);
+	in->cmdbytes = 0;
+	    
+	printf(" rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+	       , rc, n, cmd, tosend
+	       , in->cmdid ? in->cmdid :"no id"
+	       );
+	// TODO consume just the current cmd
+	inbf->outptr += rsize;
+	printf(" reset buffers ptr/len %d/%d\n"
+	       , inbf->outptr
+	       , inbf->outlen
+	       );
+	if (inbf->outptr == inbf->outlen)
+	  {
+	    inbf->outptr = 0;
+	    inbf->outlen = 0;
+	    printf(" reset buffers ptr/len %d/%d\n"
+		   , inbf->outptr
+		   , inbf->outlen
+		   );
+	    
+	  }
+	else
+	  {
+	    if(in->cmdbytes > 0)
+	      {
+		printf(">>>>>reply still needs %d bytes\n"
+		       , in->cmdlen );
+	      }
+	  }
+	
+      }
+    return len;
+}
+
+int handle_input_norm(struct insock *in)
+{
+    int rc=0;
+    int len;
+    int tlen;
+    int n;
+    char cmd[64];
+    char *sp;
+    char buf[1024];
+    char *bres;
+    int lres;
+    char *bufp;
+    struct iobuf *inbf;  // input buffer
+    struct iobuf *oubf;  // input buffer
+    int rsize;
+    int tosend;
+
+    inbf = in->inbuf;
+    sp = &inbf->outbuf[inbf->outlen];
+    tlen = find_cmd_term(in, len, in->tlen);
+    if(tlen == 1)
+      in->tlen = 1;
+    else
+      in->tlen = 0;
+    //if tlen == 1 we found one terminator
+    // the next char must also be a terminator
+    printf("%s read len %d  sp [%s] lres %d outptr/len %d/%d\n"
+	   , __FUNCTION__
+	   , len
+	   , sp
+	   , lres
+	   , inbf->outptr
+	   , inbf->outlen
+	   );
+    
+    if(tlen > 1)
+      {
+	sp = &inbf->outbuf[inbf->outptr];
+	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
+	in_snprintf(in, NULL
+		    ," message received [%s] ->"
+		    " n %d cmd [%s]\n"
+		    , sp //&in->inbuf[in->inptr]
+		    , n, cmd );
+	
+	run_str_in(in, sp, cmd);
+	    
+	tosend = count_buf_bytes(in->iobuf);
+	
+	printf(" rc %d n %d cmd [%s] tlen %d tosend %d cmdid [%s] cmd %d/%d\n"
+	       , rc, n, cmd, tlen, tosend
+	       , in->cmdid ? in->cmdid :"no id"
+	       , in->cmdlen
+	       , in->cmdbytes
+	       
+	       );
+	// TODO consume just the current cmd
+	// flag the fact that we got more
+	
+	inbf->outptr += tlen;
+	if(inbf->outptr < inbf->outlen)
+	  rc  = 1;
+	printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
+	       , tlen
+	       , inbf->outptr
+	       , inbf->outlen
+		   , rc
+	       );
+	if (inbf->outptr == inbf->outlen)
+	  {
+	    inbf->outptr = 0;
+	    inbf->outlen = 0;
+	    printf(" reset buffers tlen = %d ptr/len %d/%d\n"
+		   , tlen
+		   , inbf->outptr
+		   , inbf->outlen
+		   );
+	  }
+      }
+    return rc;
+}
+
+// A bit complicated here
+// we have an input
+// we could have one or more commands in the input
+// If we get the CMD command then its a bit simpler in tht we now have a
+// fixed number of bytes to process before the next input
+// We are confused between getting an input and processing a buffer
+// once we get an input untill we can process no more
+//
+
 int handle_input(struct insock *in)
 {
+  int more = 1;
+  int len = 0;
+  int rsize;
+  char *sp;
+  struct iobuf *inbf;  // input buffer
+
+  if (in->inbuf == NULL)
+    in->inbuf = new_iobuf(1024);
+  inbf = in->inbuf;
+
+  rsize = get_rsize(in);
+  // TODO create a new inbuf
+  
+  sp = &inbf->outbuf[inbf->outlen];
+  printf("%s rsize  %d\n", __FUNCTION__, rsize);
+  len = read(in->fd, sp, rsize);
+  if(len > 0)
+    {
+      sp[len] = 0;
+      inbf->outlen += len;
+      if(in->cmdbytes > 0)
+      {
+	in->cmdlen -= len;
+      }
+      if(in->cmdlen < 0)
+      {
+	in->cmdlen = 0;
+      }
+
+      while(more)
+	{
+	  if (in->instate == STATE_IN_CMD)
+	    more = handle_input_cmd(in);
+	  else if (in->instate == STATE_IN_REP)
+	    more = handle_input_rep(in);
+	  else
+	    more = handle_input_norm(in);
+	}
+    }
+  return len;
+}
+#if 0    
     int rc;
     int len;
     int tlen;
@@ -2153,6 +2457,7 @@ int handle_input(struct insock *in)
       }
     return len;
 }
+#endif
 
 int handle_output(struct insock *in)
 {
