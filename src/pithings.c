@@ -161,7 +161,8 @@ struct space {
 };
 
 
-int num_socks=0;
+//int num_socks=0;
+int g_num_socks=0;
 int g_debug = 0;
 int g_lsock = 0;
 
@@ -228,6 +229,8 @@ int g_space_idx = 1;
 struct space *g_spaces[NUM_IDX];
 struct iobuf *g_iob_store = NULL;
 
+int accept_socket(int sockfd);
+int add_socket(int sockfd);
 
 int init_insock(struct insock *in);
 char *get_space(struct space * base, char *name);
@@ -1954,6 +1957,21 @@ int listen_socket(int portno)
      return sockfd;
 } 
 
+int add_socket(int sockfd)
+{
+  int i;
+  for (i = 0; i<NUM_SOCKS; i++)
+    {
+      if (g_insock[i].fd < 0)
+	{
+	  init_insock(&g_insock[i]);
+	  g_insock[i].fd = sockfd;
+	  g_num_socks++;
+	  i = NUM_SOCKS;
+	}
+    }
+  return sockfd;
+}
 
 int accept_socket(int sockfd)
 {
@@ -1974,17 +1992,7 @@ int accept_socket(int sockfd)
      {
 	 newsock = sockfd;
      }
-     for (i = 0; i<NUM_SOCKS; i++)
-     {
-	 if (g_insock[i].fd < 0)
-	 {
-	     init_insock(&g_insock[i]);
-	     g_insock[i].fd = newsock;
-	     num_socks++;
-	     i = NUM_SOCKS;
-	 }
-     }
-     return newsock;
+     return add_socket(newsock);
 }
 
 struct insock *find_fd(int fsock)
@@ -2014,7 +2022,7 @@ int close_fds(int fsock)
 	//in->inptr = 0;
 	//in->inlen = 0;
 	
-	num_socks--;
+	g_num_socks--;
       }
     return rc;
 }
@@ -3090,7 +3098,7 @@ int main (int argc, char *argv[])
 	       //int dummy_hand(int fd, char *id, char *buf, int len)
 	       init_new_hand("some_id", "Dummy Handler",  dummy_handler);
 	       // run_new_cmd
-	       accept_socket(csock);
+	       add_socket(csock);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
 	       csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
