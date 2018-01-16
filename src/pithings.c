@@ -125,6 +125,16 @@ Once run_str_in has completed we can calculate the output bytes and then send th
 #define SPACE_STR 3
 
 
+#define NUM_SOCKS 16
+#define NUM_CMDS 16
+#define NUM_HAND 16
+#define INSIZE 1024
+#define OUTSIZE 1024
+
+#define STATE_IN_NORM 0
+#define STATE_IN_REP 1
+#define STATE_IN_CMD 2
+
 // OK the space becomes the real thing
 // A space can have kids and attributes
 // all of which are also "spaces"  
@@ -150,10 +160,6 @@ struct space {
 
 };
 
-#define NUM_SOCKS 16
-#define NUM_CMDS 16
-#define INSIZE 1024
-#define OUTSIZE 1024
 
 int num_socks=0;
 int g_debug = 0;
@@ -171,9 +177,6 @@ struct iobuf
   int outptr;
 };
 
-#define STATE_IN_NORM 0
-#define STATE_IN_REP 1
-#define STATE_IN_CMD 2
 
 struct insock
 {
@@ -202,10 +205,22 @@ struct cmds
   struct space *(*new_hand)(struct space **b, char *name, struct insock *in);
   int (*handler)(void *key, int n, char *cmd, int speed, int time);
 };
-  
+
+//int dummy_handler(int fd, char *id, char *buf, int len)
+
+struct hands
+{
+  char *key;
+  char *cmd;
+  char *desc;
+  int(*new_hand)(int fd, char *id, char *buf, int len);
+  int (*handler)(void *key, int n, char *cmd, int speed, int time);
+};
+
 
 struct insock g_insock[NUM_SOCKS];
 struct cmds cmds[NUM_CMDS];
+struct hands hand[NUM_HAND];
 #define NUM_IDX 1024
 struct space *space=NULL;
 struct space *g_space=NULL;
@@ -227,6 +242,10 @@ int init_new_cmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct insock *in));
 
 int run_new_cmd (char *key, struct space **base, char *name, struct insock *in);
+int run_new_hand (char *key, int fd, char *buf, int len);
+int init_new_hand(char *key, char *desc, int(*hand)
+		  (int fd, char *id,char *buf, int len));
+
 
 int set_space(struct space * base, char *name);
 struct space *set_space_in(struct space **base, char *name, struct insock *in);
@@ -1016,7 +1035,10 @@ struct space *cmd_quit(struct space **base, char *name, struct insock *in)
 {
   //main
   printf("quitting\n");
-  if(g_lsock>0) close(g_lsock);
+  //if(g_lsock>0) close(g_lsock);
+  if(in->fd>0) close(in->fd);
+  in->fd = -1;
+  return NULL;
 
 }
 struct space *show_space_in(struct space **base, char *name, struct insock *in)
@@ -1293,7 +1315,6 @@ int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int
   if(i == NUM_CMDS) i = -1;
   return i;
 }
-
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct insock *in))
 {
@@ -1313,7 +1334,7 @@ int init_new_cmd(char *key, char *desc, struct space *(*hand)
 }
 
 
-int run_new_cmd (char *key, struct space **base, char *stuff, struct insock *in)
+int run_new_cmd(char *key, struct space **base, char *stuff, struct insock *in)
 {
   int rc=-1;
   int i;
@@ -1328,6 +1349,57 @@ int run_new_cmd (char *key, struct space **base, char *stuff, struct insock *in)
     }
   rc = i;
   if(i == NUM_CMDS)
+    rc = -1;
+  return rc;
+}
+
+int init_hands(void)
+{
+  int i;
+  for (i = 0; i< NUM_HAND; i++)
+    {
+      hand[i].key = NULL;
+      hand[i].desc = NULL;
+      hand[i].handler = NULL;
+      hand[i].new_hand = NULL;
+    }
+  return i;
+}
+//int dummy_handler(int fd, char *id, char *buf, int len)
+//init_new_hand("some_id", "Dummy Handler",  dummy_handler);
+int init_new_hand(char *key, char *desc, int(*handler)
+		  (int fd, char *id,char *buf, int len))
+{
+  int i;
+  for (i = 0; i< NUM_HAND; i++)
+  {
+    if(hand[i].key == NULL)
+      {
+	hand[i].key =  key;
+	hand[i].desc =  desc;
+	hand[i].new_hand = handler;
+	break;
+      }
+  }
+  if(i == NUM_HAND) i = -1;
+  return i;
+}
+
+//int dummy_handler(int fd, char *id, char *buf, int len)
+int run_new_hand(char *key, int fd, char *buf, int len)
+{
+  int rc=-1;
+  int i;
+  for (i = 0; i< NUM_HAND; i++)
+    {
+      if(hand[i].key && (strcmp(hand[i].key, key) == 0))
+	{
+	  rc = hand[i].new_hand(fd, key, buf, len);
+	  break;
+	}
+    }
+  rc = i;
+  if(i == NUM_HAND)
     rc = -1;
   return rc;
 }
@@ -2083,6 +2155,12 @@ int handle_input_cmd(struct insock *in)
 	       , rc, n, cmd, tosend
 	       , in->cmdid ? in->cmdid :"no id"
 	       );
+	snprintf(cmd, sizeof(cmd), "REP %s %d\n\n"
+		, in->cmdid
+		, tosend
+		);
+	write (in->fd, cmd, strlen(cmd));
+	
 	//	if (inbf->outptr == inbf->outlen)
 	//{
 	//  inbf->outptr = 0;
@@ -2173,6 +2251,10 @@ int handle_input_rep(struct insock *in)
 		    , sp //&in->inbuf[in->inptr]
 		    , n, cmd );
 	in->instate = STATE_IN_NORM;
+	run_new_hand(in->cmdid
+		     , in->fd
+		     , &inbf->outbuf[inbf->outptr]
+		     , in->cmdbytes);
 	//run_str_in(in, sp, cmd);
 	in->cmdbytes = 0;
 	    
@@ -2941,6 +3023,15 @@ int test_iob_out(void)
   return 0;
 }
 
+int dummy_handler(int fd, char *id, char *buf, int len)
+{
+  printf(" %s reply received, id [%s], len %d [%s]\n"
+	 , __FUNCTION__
+	 , id
+	 , len, buf);
+  return 0;
+}
+
 int main (int argc, char *argv[])
 {
    int i;
@@ -2961,6 +3052,8 @@ int main (int argc, char *argv[])
    init_g_spaces();
    init_insocks();
    init_insock(in);
+   init_cmds();
+   init_hands();
    set_up_new_cmds();
 
    in->fd = 1;
@@ -2994,16 +3087,33 @@ int main (int argc, char *argv[])
 	   printf ("sending [%s] to server %s res %d \n", buf, "localhost", csock);
 	   if(csock> 0)
 	     {
+	       //int dummy_hand(int fd, char *id, char *buf, int len)
+	       init_new_hand("some_id", "Dummy Handler",  dummy_handler);
+	       // run_new_cmd
 	       accept_socket(csock);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
 	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
 	       csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
 	       //TODO check buf csize
+	       // register_handler("some_id", dummy_handler);
 	       snprintf(buf, sizeof(buf),"CMD %s %d\n\n", "some_id", csize);
 	       rc = write(csock, buf, strlen(buf)); 
 	       snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
 	       rc = write(csock, buf, strlen(buf)); 
-
+	       //snprintf(buf, sizeof(buf),"QUIT\n\n");
+	       //rc = write(csock, buf, strlen(buf)); 
+	       rc = 1;
+	       //while(rc)
+	       //{
+	       //  rc = read(csock, buf , sizeof(buf)-1);
+	       //  if(rc>0)
+	       //    {
+	       //      dummy_handler(csock, "some_id", buf , rc);
+	       //    }
+	       //}
+	       //close(csock);
+	       //return 0;
+		 
 	       g_lsock = -1;
 
 	     }
