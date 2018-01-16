@@ -165,6 +165,7 @@ struct space {
 int g_num_socks=0;
 int g_debug = 0;
 int g_lsock = 0;
+int g_quit_one = 0;
 
 struct iobuf;
 
@@ -254,8 +255,8 @@ int init_new_hand(char *key, char *desc, int(*hand)
 int set_space(struct space * base, char *name);
 struct space *set_space_in(struct space **base, char *name, struct insock *in);
 
-int add_space(struct space *parent, struct space *space);
-struct space *make_space(struct space **root, char *name);
+int insert_space(struct space *parent, struct space *space);
+struct space *add_space(struct space **root, char *name);
 int add_child(struct space *base, struct space *child);
 
 int show_spaces(struct insock *in, struct space *base, char *desc, int indent);
@@ -601,8 +602,9 @@ int show_spaces_new(struct insock *in, struct space **basep, char *desc, int len
   while (start)
     {
       rc = show_space_new(in, start, desc, len, bdesc);
-      printf(" >> [%s]\n", desc);
-
+      if(g_debug)
+	printf(" >> [%s]\n", desc);
+      if(in)(in, NULL, ">>[%s]\n", desc);
       xstart = start->next;
       start = start->next;
 
@@ -688,7 +690,7 @@ int add_child(struct space *base, struct space *child)
   if(base->child == NULL)
     base->child = child;
   else
-    add_space(base->child, child);
+    insert_space(base->child, child);
   return 0;
 }
 
@@ -759,18 +761,18 @@ after add s1 s0->p = s1 s0->n = s1 s1->p = s0 s1->n=s0
 after add s2 s0->p = s2 s0->n = s1 s1->p = s0 s1->n=s2 s2->p = s1 s2->n=s0
  */
 
-int add_space(struct space *parent, struct space *space)
+int insert_space(struct space *parent, struct space *space)
 {
 
   struct space *last_space;
 
   last_space = parent->prev;
 
-  printf( " add_space  parent [%s] pprev [%s] next [%s]\n"
-	  , parent->name
-	  , last_space->name
-	  , space->name
-	  );
+  if(0)printf( " add_space  parent [%s] pprev [%s] next [%s]\n"
+	       , parent->name
+	       , last_space->name
+	       , space->name
+	       );
 
 
   if(parent->next == parent) 
@@ -812,9 +814,9 @@ int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char 
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
-//    sp1 = make_space(&g_space, "ADD uav1/motor1/speed");
+//    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
 
-struct space *make_space_in(struct space **root, char *name,
+struct space *add_space_in(struct space **root, char *name,
 			    struct insock *in)
 {
   struct space *parent=NULL;
@@ -823,9 +825,7 @@ struct space *make_space_in(struct space **root, char *name,
   int cidx = 0;
   char *sp = name;
   int new = 0;
-  
   int i;
-
   int rc;
   int idx = 0;
   int idv = 0;
@@ -843,7 +843,7 @@ struct space *make_space_in(struct space **root, char *name,
       space = NULL;
       space = find_space(parent?&parent->child:root, valv[i]);
       printf(" Space %d [%s] %p\n", i, valv[i], space);
-      in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
+      if(0)in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
       if (!space)
 	{
 	  new = 1;
@@ -852,7 +852,7 @@ struct space *make_space_in(struct space **root, char *name,
 	      if(g_debug)
 		printf(" New Space for [%s] parent->name [%s]\n", valv[i], parent->name);
 	      space = new_space(valv[i], parent->child, &parent->child, NULL); 
-	      add_child(parent,space);
+	      add_child(parent, space);
 
 	    }
 	  else
@@ -871,7 +871,7 @@ struct space *make_space_in(struct space **root, char *name,
 		}
 	      else
 		{
-		  add_space(*root, space);
+		  insert_space(*root, space);
 		}
 	    }
 	}
@@ -894,9 +894,9 @@ struct space *make_space_in(struct space **root, char *name,
   return space;
 }
 
-struct space *make_space(struct space **root, char *name)
+struct space *add_space(struct space **root, char *name)
 {
-  return make_space_in(root, name, NULL);
+  return add_space_in(root, name, NULL);
 }
   
 int free_stuff(int num, char **vals)
@@ -978,7 +978,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
 
 // use cmds
 // HELP
-// ADD       make_space_in(&g_space, stuff, in);
+// ADD       add_space_in(&g_space, stuff, in);
 // SET       set_space_in(&g_space, stuff, in);
 // GET       get_space_in(&g_space, stuff, in);
 // SHOW      show_space_in(&g_space, stuff, in);
@@ -987,7 +987,7 @@ int set_up_new_cmds(void)
 {
   int rc = 0;
   init_new_cmd("HELP", "Print this help"   ,           help_new_cmds);
-  init_new_cmd("ADD",  "Create a new space",           make_space_in);
+  init_new_cmd("ADD",  "Create a new space",           add_space_in);
   init_new_cmd("SET",  "Set a (string) value",	       set_space_in);
   init_new_cmd("GET",  "Get a (string) value",	       get_space_in);
   init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
@@ -1053,10 +1053,11 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
   struct space **spb=&g_space;
   char *sp = name;
   rc = sscanf(name,"%s ", sbuf);  // TODO use more secure option
-  printf("%s 1 name [%s]\n"
-	 ,__FUNCTION__
-	 ,name
-	 );
+  if(g_debug)
+    printf("%s 1 name [%s]\n"
+	   ,__FUNCTION__
+	   ,name
+	   );
   if(in_new_cmds(sbuf)>=0)
     {
       sp = strstr(name, sbuf);
@@ -1067,13 +1068,14 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
 	    {
 	      sp++;
 	    }
-	  printf("%s 2 name [%s] len %lu sp [%s] %x\n"
-		 , __FUNCTION__
-		 , name
-		 , strlen(sp)
-		 , sp
-		 , *sp
-		 );
+	  if(g_debug)
+	    printf("%s 2 name [%s] len %lu sp [%s] %x\n"
+		   , __FUNCTION__
+		   , name
+		   , strlen(sp)
+		   , sp
+		   , *sp
+		   );
 	  if ((*sp != 0xa) && (*sp != 0xd)) 
 	    sp1 = find_space_new(g_space, sp);
 	}
@@ -1153,23 +1155,24 @@ struct space *decode_rep_in(struct space **base, char *name, struct insock *in)
       in->cmdlen = clen;
       in->cmdbytes = clen;
       in->instate = STATE_IN_REP;
-
-      printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
-	     ,__FUNCTION__
-	     ,name
-	     , sbuf
-	     , in->cmdid
-	     , sclen
-	     );
+      if(g_debug)
+	printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
+	       , __FUNCTION__
+	       , name
+	       , sbuf
+	       , in->cmdid
+	       , sclen
+	       );
     }
   else
     {
-      printf("%s 2 unable to parse name [%s] cmd [%s] rc %d\n"
-	     ,__FUNCTION__
-	     , name
-	     , sbuf
-	     , rc
-	     );
+      if(g_debug)
+	printf("%s 2 unable to parse name [%s] cmd [%s] rc %d\n"
+	       ,__FUNCTION__
+	       , name
+	       , sbuf
+	       , rc
+	       );
     }
   return NULL;
 }
@@ -1183,7 +1186,7 @@ int run_str_in(struct insock *in, char *stuff, char *cmd)
   if(rc >= 0) return 0;
   if(strcmp(cmd, "ADD") == 0)
     {
-      make_space_in(&g_space, stuff, in);
+      add_space_in(&g_space, stuff, in);
       return 0;
     }
   else if(strcmp(cmd, "SET") == 0)
@@ -1467,6 +1470,7 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
   va_start(args, fmt);
   size = vsnprintf(outbuf, 0, fmt, args) +1;
   va_end(args);
+ 
   printf(" size found %d len %lu\n"
 	 , size
 	 , sizeof(outbuf));
@@ -1485,9 +1489,9 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
         va_start(args, fmt);
         size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
         va_end(args);
-	if(0)printf(" size found %d len %d\n"
-		    , size
-		    , iob->outlen);
+	if(g_debug)printf(" size found %d len %d\n"
+			  , size
+			  , iob->outlen);
 	
         if(iob->outptr+ size > iob->outlen)
         {
@@ -1527,9 +1531,10 @@ int in_snprintf(struct insock *in, struct iobuf *xiob, const char *fmt, ...)
       va_start(args, fmt);
       size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
       va_end(args);
-      printf(" size found %d len %d\n"
-	     , size
-	     , iob->outlen);
+      if(g_debug)
+	printf(" size found %d len %d\n"
+	       , size
+	       , iob->outlen);
       
       if(iob->outlen+ size > iob->outsize)
         {
@@ -1790,85 +1795,102 @@ int test_iob(void)
 
   init_insock(in);
 
-  printf(" After init :-\n");
+  if(g_debug)
+    printf(" After init :-\n");
   print_iobs(in->iobuf);
   sp = "1 first inblock\n";
   in_snprintf(in, NULL, "%s", sp);
 
   //add_iob(in, sp, strlen(sp));
-  printf(" After 1 :-\n");
+  if(g_debug)
+    printf(" After 1 :-\n");
   print_iobs(in->iobuf);
   sp = "2 next inblock\n";
   in_snprintf(in, NULL, "%s", sp);
 
   //add_iob(in, sp, strlen(sp));
-  printf(" After 2 :-\n");
+  if(g_debug)
+    printf(" After 2 :-\n");
   print_iobs(in->iobuf);
 
   sp = "3 lastst inblock\n";
   in_snprintf(in, NULL, "%s", sp);
   //add_iob(in, sp, strlen(sp));
-  printf(" After last :-\n");
+  if(g_debug)
+    printf(" After last :-\n");
   print_iobs(in->iobuf);
   //ciob = in->iobuf;
 
   iob = pull_iob(&in->iobuf, &sp, &len);
-  printf(" After pull 1 [%s] len %d iob %p\n", sp, len, iob);
+  if(g_debug)
+    printf(" After pull 1 [%s] len %d iob %p\n", sp, len, iob);
   print_iobs(in->iobuf);
   store_iob(&g_iob_store, iob);
   printf("\n\n");
 
   iob = pull_iob(&in->iobuf, &sp, &len);
-  printf(" After pull 2 [%s] len %d iob %p\n", sp, len, iob);
+  if(g_debug)
+    printf(" After pull 2 [%s] len %d iob %p\n", sp, len, iob);
   print_iobs(in->iobuf);
   store_iob(&g_iob_store, iob);
-  printf("\n\n");
+  if(g_debug)
+    printf("\n\n");
   iob = pull_iob(&in->iobuf, &sp, &len);
-  printf(" After pull 3 [%s] len %d iob %p\n", sp, len, iob);
+  if(g_debug)
+    printf(" After pull 3 [%s] len %d iob %p\n", sp, len, iob);
   print_iobs(in->iobuf);
   store_iob(&g_iob_store, iob);
-  printf("\n\n");
+  if(g_debug)
+    printf("\n\n");
   iob = pull_iob(&in->iobuf, &sp, &len);
-  printf(" After pull 4 [%s] len %d iob %p\n", sp, len, iob);
+  if(g_debug)
+    printf(" After pull 4 [%s] len %d iob %p\n", sp, len, iob);
   print_iobs(in->iobuf);
   store_iob(&g_iob_store, iob);
-  printf("\n\n iobstore follows\n");
+  if(g_debug)
+    printf("\n\n iobstore follows\n");
   print_iobs(g_iob_store);
   iob = new_iobuf(12);
-  printf("\n\n iobstore after small pull %p\n", iob);
+  if(g_debug)
+    printf("\n\n iobstore after small pull %p\n", iob);
   print_iobs(g_iob_store);
 
   if(iob) store_iob(&g_iob_store, iob);
   iob = new_iobuf(120);
-  printf("\n\n iobstore after large pull %p\n", iob);
+  if(g_debug)
+    printf("\n\n iobstore after large pull %p\n", iob);
   print_iobs(g_iob_store);
   if(iob) store_iob(&g_iob_store, iob);
-  printf("\n\n iobstore after store %p\n", iob);
+  if(g_debug)
+    printf("\n\n iobstore after store %p\n", iob);
   print_iobs(g_iob_store);
   remove_iobs(&g_iob_store);
   iob1 = new_iobuf(12);
   in_snprintf(NULL, iob1, "the name [%s] value is %d ", "some_name", 22);
   in_snprintf(NULL, iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
-  printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
-	 , iob1
-	 , iob1->outbuf
-	 , iob1->next
-	 , iob1->prev
-	 );
+  if(g_debug)
+    printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob1
+	   , iob1->outbuf
+	   , iob1->next
+	   , iob1->prev
+	   );
   iob2 = iob1->next;
-  printf("\n\n iob 2 %p after snprintf  [%s] prev %p next %p \n"
-	 , iob2
-	 , iob2->outbuf
-	 , iob2->next
-	 , iob2->prev
-	 );
+  if(g_debug)
+    printf("\n\n iob 2 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob2
+	   , iob2->outbuf
+	   , iob2->next
+	   , iob2->prev
+	   );
   iob3 = iob2->next;
-  printf("\n\n iob 3 %p after snprintf  [%s] prev %p next %p \n"
-	 , iob3
-	 , iob3->outbuf
-	 , iob3->next
-	 , iob3->prev
-	 );
+  if(g_debug)
+    printf("\n\n iob 3 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob3
+	   , iob3->outbuf
+	   , iob3->next
+	   , iob3->prev
+	   );
 
 }
 
@@ -2054,13 +2076,14 @@ int find_cmd_term(struct insock *in, int len, int last)// input buffer
   sp = &inbf->outbuf[inbf->outptr];
 
   lend = inbf->outlen;
-  printf("%s lend %d outptr/len %d/%d last %d\n"
-	 , __FUNCTION__
-	 , lend
-	 , inbf->outptr
-	 , inbf->outlen
-	 , last
-	 );
+  if(g_debug)
+    printf("%s lend %d outptr/len %d/%d last %d\n"
+	   , __FUNCTION__
+	   , lend
+	   , inbf->outptr
+	   , inbf->outlen
+	   , last
+	   );
   while (lend)
     {
       rc ++;
@@ -2224,7 +2247,8 @@ int handle_input_rep(struct insock *in)
 
     rsize = in->cmdbytes - in->cmdlen;
     bytesin = inbf->outlen - inbf->outptr;
-    printf("%s rsize  %d bytesin %d\n", __FUNCTION__, rsize, bytesin);
+    if(g_debug)
+      printf("%s rsize  %d bytesin %d\n", __FUNCTION__, rsize, bytesin);
     if (bytesin >= rsize)
       {
 	in->cmdlen = 0;
@@ -2234,7 +2258,8 @@ int handle_input_rep(struct insock *in)
     if (bytesin < rsize)
       {
 	rsize -= bytesin;
-	printf("%s adjusted rsize  %d\n", __FUNCTION__, rsize);
+	if(g_debug)
+	  printf("%s adjusted rsize  %d\n", __FUNCTION__, rsize);
 
       }
     // we need more
@@ -2242,14 +2267,15 @@ int handle_input_rep(struct insock *in)
       {
 	return 0;
       }
-    printf("%s read sp [%s] outptr/len %d/%d/ cmd/bytes %d/%d\n"
-	   , __FUNCTION__
-	   , sp
-	   , inbf->outptr
-	   , inbf->outlen
-	   , in->cmdlen
-	   , in->cmdbytes
-	   );
+    if(g_debug)
+      printf("%s read sp [%s] outptr/len %d/%d/ cmd/bytes %d/%d\n"
+	     , __FUNCTION__
+	     , sp
+	     , inbf->outptr
+	     , inbf->outlen
+	     , in->cmdlen
+	     , in->cmdbytes
+	     );
 	
 
 	sp = &inbf->outbuf[inbf->outptr];
@@ -2272,31 +2298,21 @@ int handle_input_rep(struct insock *in)
 	rsize = in->cmdbytes;
 	in->cmdbytes = 0;
 	    
-	printf(" %s rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
-	       , __FUNCTION__
-	       , rc, n, cmd, tosend
-	       , in->cmdid ? in->cmdid :"no id"
-	       );
+	if(g_debug)
+	  printf(" %s rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+		 , __FUNCTION__
+		 , rc, n, cmd, tosend
+		 , in->cmdid ? in->cmdid :"no id"
+		 );
 	// TODO consume just the current cmd
 	inbf->outptr += rsize;
-	printf(" %s reset buffers rsize %d ptr/len %d/%d\n"
-	       , __FUNCTION__
-	       , rsize
-	       , inbf->outptr
-	       , inbf->outlen
-	       );
-	//if (inbf->outptr == inbf->outlen)
-	//{
-	//  inbf->outptr = 0;
-	//  inbf->outlen = 0;
-	//  printf(" reset buffers ptr/len %d/%d\n"
-	//	   , inbf->outptr
-	//	   , inbf->outlen
-	//	   );
-	    
-	//}
-	//else
-	//{
+	if(g_debug)
+	  printf(" %s reset buffers rsize %d ptr/len %d/%d\n"
+		 , __FUNCTION__
+		 , rsize
+		 , inbf->outptr
+		 , inbf->outlen
+		 );
 	if(in->cmdbytes > 0)
 	  {
 	    printf("%s >>>>>reply still needs %d bytes\n"
@@ -2304,6 +2320,18 @@ int handle_input_rep(struct insock *in)
 		   , in->cmdlen );
 	  }
 	
+	if(g_quit_one)
+	  {
+	    if(g_debug)
+	      printf("%s >>>>>forcing quit in->fd %d\n"
+		     , __FUNCTION__
+		     , in->fd
+		     );
+	    len = 0;
+	    
+	    if(in->fd>0) close(in->fd);
+	    in->fd = -1;
+	  }
       }
     return len;
 }
@@ -2336,14 +2364,15 @@ int handle_input_norm(struct insock *in)
       in->tlen = 0;
     //if tlen == 1 we found one terminator
     // the next char must also be a terminator
-    printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
-	   , __FUNCTION__
-	   , len
-	   , sp
-	   , tlen
-	   , inbf->outptr
-	   , inbf->outlen
-	   );
+    if(g_debug)
+      printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
+	     , __FUNCTION__
+	     , len
+	     , sp
+	     , tlen
+	     , inbf->outptr
+	     , inbf->outlen
+	     );
     
     if(tlen > 1)
       {
@@ -2356,24 +2385,25 @@ int handle_input_norm(struct insock *in)
 			 , n, cmd );
 	
 	run_str_in(in, sp, cmd);
-	    
-	tosend = count_buf_bytes(in->iobuf);
 	
-	printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
-	       , rc, n, cmd, tlen, tosend
-	       );
+	tosend = count_buf_bytes(in->iobuf);
+	if(g_debug)
+	  printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
+		 , rc, n, cmd, tlen, tosend
+		 );
 	// TODO consume just the current cmd
 	// flag the fact that we got more
 	
 	inbf->outptr += tlen;
 	if(inbf->outptr < inbf->outlen)
 	  rc  = 1;
-	printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
-	       , tlen
-	       , inbf->outptr
-	       , inbf->outlen
-	       , rc
-	       );
+	if(g_debug)
+	  printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
+		 , tlen
+		 , inbf->outptr
+		 , inbf->outlen
+		 , rc
+		 );
 	if (inbf->outptr == inbf->outlen)
 	  {
 	    inbf->outptr = 0;
@@ -2414,36 +2444,39 @@ int handle_input(struct insock *in)
   
   sp = &inbf->outbuf[inbf->outlen];
   len = read(in->fd, sp, rsize);
-  printf("%s rsize  %d len %d ptr/len %d/%d\n"
-	 , __FUNCTION__
-	 , rsize
-	 , len
-	 , inbf->outptr
-	 , inbf->outlen
-	 );
-
+  
   if(len > 0)
     {
       sp[len] = 0;
       inbf->outlen += len;
-      //if(in->cmdbytes > 0)
-      //{
-      //in->cmdlen -= len;
-      //}
-      //if(in->cmdlen < 0)
-      //{
-      //in->cmdlen = 0;
-      //}
-
       while(more)
 	{
+	  if(g_debug)
+	    printf(" %s running more %d\n"
+		   , __FUNCTION__
+		   , more
+		   );
 	  if (in->instate == STATE_IN_CMD)
-	    more = handle_input_cmd(in);
+	    {
+	      more = handle_input_cmd(in);
+	    }
 	  else if (in->instate == STATE_IN_REP)
-	    more = handle_input_rep(in);
+	    {
+	      more = handle_input_rep(in);
+	      if(more == 0)
+		len = 0;
+	    }
 	  else
-	    more = handle_input_norm(in);
+	    {
+	      more = handle_input_norm(in);
+	    }
+	  if(g_debug)
+	    printf(" %s done more %d\n"
+		   , __FUNCTION__
+		   , more
+		   );
 	}
+      
     }
   return len;
 }
@@ -2657,10 +2690,7 @@ int poll_sock(int lsock)
     char str[1024];
     struct insock *in = NULL;
     int rc = 1;    
-    //fds[idx].fd = STDIN_FILENO;
-    //fds[idx].events = POLLIN;
-    //fds[idx].revents = 0;
-    //idx++;
+
     if(lsock>0)
       {
 	fds[idx].fd = lsock;
@@ -2673,6 +2703,13 @@ int poll_sock(int lsock)
       {
 	if (g_insock[i].fd >= 0)
 	  {
+	    if(g_debug)
+	      printf(" setup fd i %d idx %d fd %d\n"
+		     , i
+		     , idx
+		     , g_insock[i].fd
+		     );
+	    
 	    fds[idx].fd = g_insock[i].fd;
 	    fds[idx].events = POLLIN;
 	    fds[idx].revents = 0;
@@ -2684,8 +2721,8 @@ int poll_sock(int lsock)
 	    idx++;
 	  }
       }
-
-    if(g_debug)printf("poll start idx %d\n", idx);
+    if(idx == 0) return -1;
+    if(g_debug)printf("poll start idx %d lsock %d \n", idx, lsock);
     ret =  poll(fds, idx, timeout);
     if(g_debug)printf("poll done ret = %d idx %d\n", ret, idx);
 
@@ -2715,7 +2752,7 @@ int poll_sock(int lsock)
 	    }
 	    if (fds[i].revents & POLLIN) 
 	    {
-	      if((lsock > 0)&& (fds[i].fd == lsock))
+	      if((lsock > 0) && (fds[i].fd == lsock))
 		{ 
 		    ret = accept_socket(lsock);
 		    printf("accept ret = %d \n", ret);
@@ -2730,12 +2767,21 @@ int poll_sock(int lsock)
 
 			if (n <= 0) 
 			{
-			    printf("error reading (n=%d), closing fd %d \n",n,fds[i].fd);
+			  if(g_debug)
+			    printf("error reading (n=%d), "
+				   "closing fd %d in->fd %d\n"
+				   , n
+				   ,fds[i].fd
+				   , in->fd
+				   );
 			    close(fds[i].fd);
 			    close_fds(fds[i].fd);
+			    fds[i].fd = -1;
+			    in->fd = -1; 
 			}
 			else 
 			{
+			  if(g_debug)
 			    printf("message len %d\n", n);
 			    
 			}
@@ -2921,7 +2967,7 @@ int set_space(struct space *base, char *name)
 }
 
 //char *get_space(struct space *base, char *name)
-struct space * get_space_in(struct space ** basep, char *name, struct insock *in)
+struct space *get_space_in(struct space ** basep, char *name, struct insock *in)
 {
   char * sret=NULL;
   struct space *sp1;
@@ -2940,11 +2986,11 @@ struct space * get_space_in(struct space ** basep, char *name, struct insock *in
       if(sp1->onget)
 	sp1->onget(sp1, sp1->idx, name);
       sret = sp1->value;
-      if(in)in_snprintf(in,NULL,"OK GET %s value [%s]\n", sp, sret);
+      if(in)in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
     }
   else
     {
-      if(in)in_snprintf(in,NULL,"?? GET [%s] not found \n",sp);
+      if(in)in_snprintf(in, NULL, "?? GET [%s] not found \n",sp);
     }
   return sp1;
 }
@@ -3043,10 +3089,14 @@ int test_iob_out(void)
 
 int dummy_handler(int fd, char *id, char *buf, int len)
 {
-  printf(" %s reply received, id [%s], len %d [%s]\n"
-	 , __FUNCTION__
-	 , id
-	 , len, buf);
+  if(g_debug)
+    printf(" %s reply received, id [%s], len %d [%s]\n"
+	   , __FUNCTION__
+	   , id
+	   , len, buf);
+  else
+        printf("[%s] \n"
+	   , buf);
   return 0;
 }
 
@@ -3109,8 +3159,7 @@ int main (int argc, char *argv[])
 	       init_new_hand("some_id", "Dummy Handler",  dummy_handler);
 	       // run_new_cmd
 	       add_socket(csock);
-	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
-	       //rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
+	       in->fd = -1;
 	       csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
 	       //TODO check buf csize
 	       // register_handler("some_id", dummy_handler);
@@ -3132,7 +3181,8 @@ int main (int argc, char *argv[])
 	       //}
 	       //close(csock);
 	       //return 0;
-		 
+	       // quit after one _REP
+	       g_quit_one = 1;		 
 	       g_lsock = -1;
 
 	     }
@@ -3148,10 +3198,10 @@ int main (int argc, char *argv[])
 	   printf (" rc = %d\n", rc );
 	   show_stuff(rc, vals);
 	   
-	   sp1 = make_space(&g_space, "ADD uav1/motor1/speed");
+	   sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
 	   show_spaces(in, g_space, "All Spaces 1 ",0);
 	   
-	   sp1 = make_space(&g_space, "ADD uav3/motor2/speed");
+	   sp1 = add_space(&g_space, "ADD uav3/motor2/speed");
 	   sp1->onset = speed_onset;
 	   sp1->onget = speed_onget;
 	   rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
@@ -3159,13 +3209,13 @@ int main (int argc, char *argv[])
 	   printf(" >> %s value [%s]\n","uav3/motor2/speed", sp?sp:"no value");
 	   return 0;
 	   
-	   sp1 = make_space(&g_space, "ADD uav1/motor1/size");
+	   sp1 = add_space(&g_space, "ADD uav1/motor1/size");
 	   show_spaces(in,g_space, "All Spaces 1 ",0);
-	   sp1 = make_space(&g_space, "ADD uav1/motor2/speed");
+	   sp1 = add_space(&g_space, "ADD uav1/motor2/speed");
 	   show_spaces(in,g_space, "All Spaces 2 ",0);
-	   sp1 = make_space(&g_space, "ADD uav2/motor2/speed");
+	   sp1 = add_space(&g_space, "ADD uav2/motor2/speed");
 	   show_spaces(in,g_space, "All Spaces 3 ",0);
-	   sp1 = make_space(&g_space, "uav3/motor2/speed");
+	   sp1 = add_space(&g_space, "uav3/motor2/speed");
 	   
 	   sp1 = find_space_new(g_space, "uav3/motor2");
 	   sp1->onset = motor_onset;
@@ -3212,9 +3262,9 @@ int main (int argc, char *argv[])
 	 }
      }
    
-   accept_socket(STDIN_FILENO);
    if(g_lsock == 0)
      {
+       accept_socket(STDIN_FILENO);
        g_lsock = listen_socket(5432);
      }
    rc = 1;
