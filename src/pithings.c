@@ -1111,7 +1111,7 @@ struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
       in->instate = STATE_IN_CMD;
       printf("%s 1 name [%s] cmd [%s] cid [%s] clen [%s]\n"
 	     ,__FUNCTION__
-	     ,name
+	     , name
 	     , sbuf
 	     , in->cmdid
 	     , sclen
@@ -2147,11 +2147,11 @@ int handle_input_cmd(struct insock *in)
 	//in->cmdptr = sp;
 
 	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
-	in_snprintf(in, NULL
-		    ," message received [%s] ->"
-		    " n %d cmd [%s]\n"
-		    , sp //&in->inbuf[in->inptr]
-		    , n, cmd );
+	if(0)in_snprintf(in, NULL
+			 ," message received [%s] ->"
+			 " n %d cmd [%s]\n"
+			 , sp //&in->inbuf[in->inptr]
+			 , n, cmd );
 
 	in->tlen = in->cmdbytes;
 	in->cmdbytes = 0;
@@ -2162,8 +2162,10 @@ int handle_input_cmd(struct insock *in)
 	inbf->outptr += in->tlen;
 	tosend = count_buf_bytes(in->iobuf);
 
-	printf(" rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+	printf(" %s rc %d n %d  cmd [%s] tosend %d tlen %d cmdid [%s]\n"
+	       , __FUNCTION__
 	       , rc, n, cmd, tosend
+	       , in->tlen
 	       , in->cmdid ? in->cmdid :"no id"
 	       );
 	snprintf(cmd, sizeof(cmd), "REP %s %d\n\n"
@@ -2218,7 +2220,7 @@ int handle_input_rep(struct insock *in)
     int bytesin;
 
     inbf = in->inbuf;
-    sp = &inbf->outbuf[inbf->outlen];
+    sp = &inbf->outbuf[inbf->outptr];
 
     rsize = in->cmdbytes - in->cmdlen;
     bytesin = inbf->outlen - inbf->outptr;
@@ -2256,7 +2258,7 @@ int handle_input_rep(struct insock *in)
     if(in->cmdlen <= 0)
       {
 	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
-	in_snprintf(in, NULL
+	if(0)in_snprintf(in, NULL
 		    ," message received [%s] ->"
 		    " n %d cmd [%s]\n"
 		    , sp //&in->inbuf[in->inptr]
@@ -2267,15 +2269,19 @@ int handle_input_rep(struct insock *in)
 		     , &inbf->outbuf[inbf->outptr]
 		     , in->cmdbytes);
 	//run_str_in(in, sp, cmd);
+	rsize = in->cmdbytes;
 	in->cmdbytes = 0;
 	    
-	printf(" rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+	printf(" %s rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+	       , __FUNCTION__
 	       , rc, n, cmd, tosend
 	       , in->cmdid ? in->cmdid :"no id"
 	       );
 	// TODO consume just the current cmd
 	inbf->outptr += rsize;
-	printf(" reset buffers ptr/len %d/%d\n"
+	printf(" %s reset buffers rsize %d ptr/len %d/%d\n"
+	       , __FUNCTION__
+	       , rsize
 	       , inbf->outptr
 	       , inbf->outlen
 	       );
@@ -2293,7 +2299,8 @@ int handle_input_rep(struct insock *in)
 	//{
 	if(in->cmdbytes > 0)
 	  {
-	    printf(">>>>>reply still needs %d bytes\n"
+	    printf("%s >>>>>reply still needs %d bytes\n"
+		   , __FUNCTION__
 		   , in->cmdlen );
 	  }
 	
@@ -2320,7 +2327,7 @@ int handle_input_norm(struct insock *in)
     int tosend;
 
     inbf = in->inbuf;
-    sp = &inbf->outbuf[inbf->outlen];
+    sp = &inbf->outbuf[inbf->outptr];
     len = inbf->outlen - inbf->outptr;
     tlen = find_cmd_term(in, len, 0 /*,in->tlen*/);
     if(tlen == 1)
@@ -2342,11 +2349,11 @@ int handle_input_norm(struct insock *in)
       {
 	sp = &inbf->outbuf[inbf->outptr];
 	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
-	in_snprintf(in, NULL
-		    ," message received [%s] ->"
-		    " n %d cmd [%s]\n"
-		    , sp //&in->inbuf[in->inptr]
-		    , n, cmd );
+	if(0)in_snprintf(in, NULL
+			 ," message received [%s] ->"
+			 " n %d cmd [%s]\n"
+			 , sp //&in->inbuf[in->inptr]
+			 , n, cmd );
 	
 	run_str_in(in, sp, cmd);
 	    
