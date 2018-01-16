@@ -228,6 +228,7 @@ struct space *g_space=NULL;
 int g_space_idx = 1;
 struct space *g_spaces[NUM_IDX];
 struct iobuf *g_iob_store = NULL;
+int g_debug_term = 1;
 
 int accept_socket(int sockfd);
 int add_socket(int sockfd);
@@ -2053,7 +2054,8 @@ int find_cmd_term(struct insock *in, int len, int last)// input buffer
   sp = &inbf->outbuf[inbf->outptr];
 
   lend = inbf->outlen;
-  printf("%s lend %d outptr/len %d/%d last %d\n", __FUNCTION__
+  printf("%s lend %d outptr/len %d/%d last %d\n"
+	 , __FUNCTION__
 	 , lend
 	 , inbf->outptr
 	 , inbf->outlen
@@ -2063,8 +2065,9 @@ int find_cmd_term(struct insock *in, int len, int last)// input buffer
     {
       rc ++;
       in->tlen = 0;
-
-      printf("%s checking %c %x rc %d lend %d\n", __FUNCTION__, *sp, *sp ,rc , lend);
+      if(g_debug_term)
+	printf("%s checking %c %x rc %d lend %d\n"
+	       , __FUNCTION__, *sp, *sp ,rc , lend);
       if ((*sp == 0xa) ||(*sp == 0xd))
 	found++;
       else
@@ -3111,6 +3114,7 @@ int main (int argc, char *argv[])
 	       //snprintf(buf, sizeof(buf),"QUIT\n\n");
 	       //rc = write(csock, buf, strlen(buf)); 
 	       rc = 1;
+	       g_debug_term = 0;
 	       //while(rc)
 	       //{
 	       //  rc = read(csock, buf , sizeof(buf)-1);
