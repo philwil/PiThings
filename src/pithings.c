@@ -135,6 +135,12 @@ Once run_str_in has completed we can calculate the output bytes and then send th
 #define STATE_IN_REP 1
 #define STATE_IN_CMD 2
 
+struct node {
+  char *address;
+  int port;
+  int fd;
+};
+
 // OK the space becomes the real thing
 // A space can have kids and attributes
 // all of which are also "spaces"  
@@ -154,7 +160,7 @@ struct space {
   float fval;
   char *cval;
   int type;
-  char *node;
+  struct node *node;
   int (*onset)(struct space *this, int idx, char *name, char * value);
   int (*onget)(struct space *this, int idx, char *name);
 
@@ -268,9 +274,50 @@ int free_stuff(int num, char **vals);
 struct iobuf *new_iobuf(int len);
 int in_snprintf(struct insock *in, struct iobuf *iob,const char *fmt, ...);
 int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
+int find_parents(struct space* node, struct space **list, int num, int max);
+
+int test_find_parents(void)
+{
+  int num=0;
+  int rc;
+  int i;
+  struct space *slist[64];
+  struct space *sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
+  for (i = 0 ; i < 64; i++)
+    slist[i] = NULL;
+  num = find_parents(sp1,slist,num,64);
+  printf("%s sp1 [%s] parent %p rc %d num %d\n"
+	 , __FUNCTION__
+	 , sp1->name
+	 , sp1->parent
+	 , rc
+	 , num
+	 );
+  if (num > 0)
+    {
+      for ( i = num-1; i >=0; i--)
+	{
+	  printf("%d [%s] ", i, slist[i]?slist[i]->name?slist[i]->name:"NONAME":"NONODE");
+	}
+      printf("\n");
+      
+    }
+  return rc;
+}
+
+int find_parents(struct space* node, struct space **list, int idx, int max)
+{
+  int rc = 1;
+  list[idx++] = node;
+  if (node->parent)
+    {
+      rc += find_parents(node->parent, list, idx, max);
+    }
+  return rc ;
+}
 
 
-struct space * setup_space(char *name, struct space*parent)
+struct space *setup_space(char *name, struct space*parent)
 {
   struct space *space = calloc(sizeof(struct space), 1);
 
@@ -285,6 +332,7 @@ struct space * setup_space(char *name, struct space*parent)
   space->child = NULL;
   space->desc = NULL;
   space->value = NULL;
+  space->node = NULL;
 
   space->prev = space;
   space->next = space;
@@ -299,7 +347,7 @@ struct space * setup_space(char *name, struct space*parent)
   return space;
 }
 
-struct space *new_space(char *name , struct space *parent, struct space **root_space,char *node)
+struct space *new_space(char *name , struct space *parent, struct space **root_space, struct node *node)
 {
   struct space *space;
   struct space *root = NULL;
@@ -312,7 +360,7 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
 
   if(node)
     {
-      space->node = strdup(node);
+      space->node = node;
     }
 
   // insert in parent list
@@ -503,7 +551,7 @@ int show_space(struct insock *in, struct space *base, int indent)
     {
 	printf(" ");
     }
-  printf(" %p space %03d name [%s] node [%s] next name [%s] prev name [%s]\n"
+  printf(" %p space %03d name [%s] node [%p] next name [%s] prev name [%s]\n"
 	 , base
 	 , base->idx
 	 , base->name
@@ -685,12 +733,13 @@ struct space *find_space_new(struct space *base, char *name)
 }
 
 
-int add_child(struct space *base, struct space *child)
+int add_child(struct space *parent, struct space *child)
 {
-  if(base->child == NULL)
-    base->child = child;
+  if(parent->child == NULL)
+    parent->child = child;
   else
-    insert_space(base->child, child);
+    insert_space(parent->child, child);
+  child->parent = parent;
   return 0;
 }
 
@@ -791,6 +840,7 @@ int insert_space(struct space *parent, struct space *space)
       parent->prev = space;
 
     }
+  space->parent = parent;
   return 0;
 }
 
@@ -1322,6 +1372,7 @@ int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int
   if(i == NUM_CMDS) i = -1;
   return i;
 }
+
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct insock *in))
 {
@@ -1410,9 +1461,6 @@ int run_new_hand(char *key, int fd, char *buf, int len)
     rc = -1;
   return rc;
 }
-
-
-
 
 int init_insock(struct insock *in)
 {
@@ -1682,7 +1730,6 @@ int xadd_iob(struct insock *in, char *buf, int len)
   return 0;
 }
 
-
 struct iobuf *pull_ciob(struct iobuf **inp, struct iobuf *ciob, char **bufp, int *lenp)
 {
   struct iobuf *piob = NULL;
@@ -1737,6 +1784,7 @@ int print_iob(struct iobuf *iob)
 	 );
   return 0;
 }
+
 int print_iobs(struct iobuf *in)
 {
   int rc = 0;
@@ -2480,137 +2528,6 @@ int handle_input(struct insock *in)
     }
   return len;
 }
-#if 0    
-    int rc;
-    int len;
-    int tlen;
-    int n;
-    char cmd[64];
-    char *sp;
-    char buf[1024];
-    char *bres;
-    int lres;
-    char *bufp;
-    struct iobuf *inbf;  // input buffer
-    struct iobuf *oubf;  // input buffer
-    int rsize;
-    int tosend;
-
-    if (in->inbuf == NULL)
-      in->inbuf = new_iobuf(1024);
-
-    inbf = in->inbuf;
-    sp = &inbf->outbuf[inbf->outlen];
-    rsize = get_rsize(in);
-    printf("%s rsize  %d\n", __FUNCTION__, rsize);
-    len = read(in->fd, sp, rsize);
-
-    if(len > 0)
-      {
-	sp[len] = 0;
-	if(in->cmdbytes == 0)
-	  tlen = find_cmd_term(in, len, in->tlen);
-	if(tlen == 1)
-	  in->tlen = 1;
-	else
-	  in->tlen = 0;
-	//if tlen == 1 we found one terminator
-	// the next char must also be a terminator
-      }
-    printf("%s read len %d  sp [%s] lres %d tlen %d outptr/len %d/%d/ cmd/bytes %d/%d\n"
-	   , __FUNCTION__
-	   , len
-	   , sp
-	   , lres
-	   , tlen
-	   , inbf->outptr
-	   , inbf->outlen
-	   , in->cmdlen
-	   , in->cmdbytes
-	   );
-    if(in->cmdbytes > 0)
-      {
-	printf("%s read %d bytes cmdlen/bytes %d/%d\n"
-	       , __FUNCTION__
-	       , len
-	       , in->cmdlen
-	       , in->cmdbytes
-	       );
-      }
-    
-    if(len > 0)
-      {
-	//tlen = find_cmd_term(inbf, len, 2);
-
-	inbf->outlen += len;
-	if(in->cmdbytes > 0)
-	  {
-	    in->cmdlen -= len;
-	    if(in->cmdlen==0)
-	      tlen = in->cmdbytes;
-	    else
-	      tlen = 0;
-	  }
-	
-	sp = &inbf->outbuf[inbf->outptr];
-	//TODO only run this if we have received all of the command
-	// use in->cmdbytes to count remaining bytes if any
-	//if(((in->cmdlen-len) <= 0) || (tlen>1))
-	if(tlen>1)
-	  {
-	    //in->cmdptr = sp;
-	    n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
-	    in_snprintf(in, NULL
-			," message received [%s] ->"
-			" n %d cmd [%s]\n"
-			, sp //&in->inbuf[in->inptr]
-			, n, cmd );
-	    in->cmdbytes = -in->cmdbytes;
-
-	    run_str_in(in, sp, cmd);
-	    tosend = count_buf_bytes(in->iobuf);
-
-	    if(in->cmdbytes < 0)
-	      in->cmdbytes = 0;
-	    if(in->cmdlen < 0)
-	      in->cmdbytes = 0;
-	    
-	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d cmdid [%s]\n"
-		   , rc, n, cmd, tlen, tosend
-		   , in->cmdid ? in->cmdid :"no id"
-		   );
-	    // TODO consume just the current cmd
-	    inbf->outptr += tlen;
-	    printf(" reset buffers tlen = %d ptr/len %d/%d\n"
-		   , tlen
-		   , inbf->outptr
-		   , inbf->outlen
-		   );
-	    if (inbf->outptr == inbf->outlen)
-	      {
-		inbf->outptr = 0;
-		inbf->outlen = 0;
-		printf(" reset buffers tlen = %d ptr/len %d/%d\n"
-		       , tlen
-		       , inbf->outptr
-		       , inbf->outlen
-		   );
-
-	      }
-	  }
-	else
-	  {
-	    if(in->cmdbytes > 0)
-	      {
-		printf(">>>>>input still needs %d bytes\n"
-		       	   , in->cmdlen );
-	      }
-	  }
-
-      }
-    return len;
-}
-#endif
 
 int handle_output(struct insock *in)
 {
@@ -3125,7 +3042,8 @@ int main (int argc, char *argv[])
    set_up_new_cmds();
 
    in->fd = 1;
-
+   test_find_parents();
+   //return 0;
    
    if(argc > 1)
      {
