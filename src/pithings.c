@@ -683,18 +683,17 @@ struct space *find_space_new(struct space *base, char *name)
   int idv = 0;
   char *valv[64];
   char *valx[64];
-
   rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-
   // now find the space at each step
   i = 0;
   start = base;
   while (base)
     {
-      if(0)printf(" looking for [%s] found [%s] i %d idx %d\n"
-		  , valv[i], base->name
-		  , i
-		  , idx
+      if(g_debug)
+	printf(" looking for [%s] found [%s] i %d idx %d\n"
+	       , valv[i], base->name
+	       , i
+	       , idx
 		  );
       if(strcmp(base->name, valv[i])==0)
 	{
@@ -778,13 +777,14 @@ struct space *find_space(struct space**parent, char *name)
     {
       start = *parent;
       base = *parent;
-      printf(" >>> find space [%s] parent name [%s] ... \n", name
-	     ,start?start->name ? start->name:"No name":"No start");
-
+      if(g_debug)
+	printf(" >>> find space [%s] parent name [%s] ... \n", name
+	       ,start?start->name ? start->name:"No name":"No start");
     }
   else
     {
-      printf(" >>> find space name [%s] ... \n", name);
+      if(g_debug)
+	printf(" >>> find space name [%s] ... \n", name);
     }
   while (base)
     {
@@ -798,21 +798,19 @@ struct space *find_space(struct space**parent, char *name)
       else
 	base =  NULL;
     }
-  printf(" >>> find space name [%s] space %p... \n", name, base);
+  
+  if(g_debug)
+    printf(" >>> find space name [%s] space %p... \n", name, base);
   return base;
 }
-
-
 
 /*
 before any s0->p = s0 s0->n=s0
 after add s1 s0->p = s1 s0->n = s1 s1->p = s0 s1->n=s0
 after add s2 s0->p = s2 s0->n = s1 s1->p = s0 s1->n=s2 s2->p = s1 s2->n=s0
  */
-
 int insert_space(struct space *parent, struct space *space)
 {
-
   struct space *last_space;
 
   last_space = parent->prev;
@@ -833,12 +831,10 @@ int insert_space(struct space *parent, struct space *space)
     }
   else
     {
-      
       last_space->next = space;
       space->prev = last_space;
       space->next =  parent;
       parent->prev = space;
-
     }
   space->parent = parent;
   return 0;
@@ -846,9 +842,8 @@ int insert_space(struct space *parent, struct space *space)
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
-int parse_name( int *idx, char ** valx, int *idy , char ** valy, int size, char * name)
+int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name)
 {
-
   int  rc = 1;
   char *sp;
   *idx = parse_stuff(' ', size, (char **)valx, name);
@@ -944,6 +939,27 @@ struct space *add_space_in(struct space **root, char *name,
   return space;
 }
 
+struct space *add_node_in(struct space **root, char *name,
+			    struct insock *in)
+{
+  struct space *space=NULL;
+  int idv = 0;
+  int idx = 0;
+  char *valv[64];
+  char *valx[64];
+  int rc = 0;
+  int i = 0;
+  rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
+
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> Arg %d [%s]\n", i, valx[i]);
+    }
+  space = add_space_in(root, name, in);
+  return space;  
+}
+
+
 struct space *add_space(struct space **root, char *name)
 {
   return add_space_in(root, name, NULL);
@@ -978,8 +994,8 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   val_size = 64;
   val = malloc(64);
   val[0]=0;
-
-  printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
+  if(g_debug)
+    printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
   //vals[idx] = strdup(sp);
   //idx++;
   // TODO special case where *sp == delim at the start
@@ -1009,19 +1025,22 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
       if(rc>0)
 	{
 	  vals[idx] = strdup(val);
-	  printf("rc %d val[%d] [%s] %x %x"
-		 , rc, idx
-		 , vals[idx]
-		 , vals[idx][0]
-		 , vals[idx][1]
-		 );
-	  printf("sp [%s] \n", sp);
+	  if(g_debug)
+	    printf("rc %d val[%d] [%s] %x %x"
+		   , rc, idx
+		   , vals[idx]
+		   , vals[idx][0]
+		   , vals[idx][1]
+		   );
+	  if(g_debug)
+	    printf("sp [%s] \n", sp);
 	  //if(!skip)
 	  idx++;
 	  //skip = 0;
 	}
     }
-  printf("%s done idx %d\n", __FUNCTION__, idx);
+  if(g_debug)
+    printf("%s done idx %d\n", __FUNCTION__, idx);
   free(val);
   return idx;
 }
@@ -1043,6 +1062,7 @@ int set_up_new_cmds(void)
   init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
   init_new_cmd("REP", "determine  replyid and len",    decode_rep_in);
   init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
+  init_new_cmd("NODE", "Show spaces from a root",      add_node_in);
   init_new_cmd("QUIT", "quit",      cmd_quit);
 }
 
