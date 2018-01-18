@@ -135,10 +135,13 @@ Once run_str_in has completed we can calculate the output bytes and then send th
 #define STATE_IN_REP 1
 #define STATE_IN_CMD 2
 
+struct iosock;
+
 struct node {
-  char *address;
+  char *addr;
   int port;
   int fd;
+  struct iosock *in;
 };
 
 // OK the space becomes the real thing
@@ -186,7 +189,7 @@ struct iobuf
 };
 
 
-struct insock
+struct iosock
 {
   int fd;
   unsigned int inbptr;
@@ -195,11 +198,9 @@ struct insock
   unsigned int outblen; // num to send
   struct iobuf *iobuf;  // output buffers
   struct iobuf *inbuf;  // input buffers
-  //char *cmdptr; // used to calc command length
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
   char *cmdid;    // current command id
-  //int cmdtrm;     // terminator count
   int tlen;       // term
   int nosend;       // term
   int instate;
@@ -210,12 +211,11 @@ struct cmds
   char *key;
   char *cmd;
   char *desc;
-  struct space *(*new_hand)(struct space **b, char *name, struct insock *in);
+  struct space *(*new_hand)(struct space **b, char *name, struct iosock *in);
   int (*handler)(void *key, int n, char *cmd, int speed, int time);
 };
 
-//int dummy_handler(int fd, char *id, char *buf, int len)
-
+struct node;
 struct hands
 {
   char *key;
@@ -226,7 +226,7 @@ struct hands
 };
 
 
-struct insock g_insock[NUM_SOCKS];
+struct iosock g_iosock[NUM_SOCKS];
 struct cmds cmds[NUM_CMDS];
 struct hands hand[NUM_HAND];
 #define NUM_IDX 1024
@@ -240,39 +240,39 @@ int g_debug_term = 1;
 int accept_socket(int sockfd);
 int add_socket(int sockfd);
 
-int init_insock(struct insock *in);
+int init_iosock(struct iosock *in);
 char *get_space(struct space * base, char *name);
-struct space *get_space_in(struct space ** base, char *name, struct insock *in);
-struct space *show_space_in(struct space ** base, char *name, struct insock *in);
-struct space *decode_cmd_in(struct space ** base, char *name, struct insock *in);
-struct space *decode_rep_in(struct space ** base, char *name, struct insock *in);
-struct space *help_new_cmds(struct space ** base, char *name, struct insock *in);
-struct space *cmd_quit(struct space **base, char *name, struct insock *in);
+struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
+struct space *show_space_in(struct space ** base, char *name, struct iosock *in);
+struct space *decode_cmd_in(struct space ** base, char *name, struct iosock *in);
+struct space *decode_rep_in(struct space ** base, char *name, struct iosock *in);
+struct space *help_new_cmds(struct space ** base, char *name, struct iosock *in);
+struct space *cmd_quit(struct space **base, char *name, struct iosock *in);
 
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct insock *in));
+		 (struct space ** base, char *name, struct iosock *in));
 
-int run_new_cmd (char *key, struct space **base, char *name, struct insock *in);
+int run_new_cmd (char *key, struct space **base, char *name, struct iosock *in);
 int run_new_hand (char *key, int fd, char *buf, int len);
 int init_new_hand(char *key, char *desc, int(*hand)
 		  (int fd, char *id,char *buf, int len));
 
 
 int set_space(struct space * base, char *name);
-struct space *set_space_in(struct space **base, char *name, struct insock *in);
+struct space *set_space_in(struct space **base, char *name, struct iosock *in);
 
 int insert_space(struct space *parent, struct space *space);
 struct space *add_space(struct space **root, char *name);
 int add_child(struct space *base, struct space *child);
 
-int show_spaces(struct insock *in, struct space *base, char *desc, int indent);
+int show_spaces(struct iosock *in, struct space *base, char *desc, int indent);
 int parse_stuff(char delim, int num, char **vals, char *stuff);
 
 int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
 int free_stuff(int num, char **vals);
 
 struct iobuf *new_iobuf(int len);
-int in_snprintf(struct insock *in, struct iobuf *iob,const char *fmt, ...);
+int in_snprintf(struct iosock *in, struct iobuf *iob,const char *fmt, ...);
 int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
 int find_parents(struct space* node, struct space **list, int num, int max);
 
@@ -515,7 +515,7 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 
 }
 
-int show_space_class(struct insock *in,struct space *base, int indent)
+int show_space_class(struct iosock *in,struct space *base, int indent)
 {
   char atname[128];
   int len;
@@ -527,7 +527,7 @@ int show_space_class(struct insock *in,struct space *base, int indent)
   return len;
 }
 
-int show_space_attr(struct insock *in,struct space *base, int indent)
+int show_space_attr(struct iosock *in,struct space *base, int indent)
 {
   char atname[128];
   int len=0;
@@ -539,7 +539,7 @@ int show_space_attr(struct insock *in,struct space *base, int indent)
   return len;
 }
 
-int show_space(struct insock *in, struct space *base, int indent)
+int show_space(struct iosock *in, struct space *base, int indent)
 {
   int rc=-1;
 
@@ -566,7 +566,7 @@ int show_space(struct insock *in, struct space *base, int indent)
 }
 
 
-int show_spaces(struct insock *in, struct space *base, char *desc, int indent)
+int show_spaces(struct iosock *in, struct space *base, char *desc, int indent)
 {
   struct space *start=base;
   int rc = 0;
@@ -587,7 +587,7 @@ int show_spaces(struct insock *in, struct space *base, char *desc, int indent)
   return rc;
 }
 
-int show_space_new(struct insock *in, struct space *base, char *desc, int len, char *bdesc)
+int show_space_new(struct iosock *in, struct space *base, char *desc, int len, char *bdesc)
 {
   struct space *start=base;
   struct space *child=NULL;
@@ -641,7 +641,7 @@ int show_space_new(struct insock *in, struct space *base, char *desc, int len, c
   return ret;
 }
 
-int show_spaces_new(struct insock *in, struct space **basep, char *desc, int len, char *bdesc)
+int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len, char *bdesc)
 {
   int rc  = -1;
   struct space *base=*basep;
@@ -862,7 +862,7 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 //    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
 
 struct space *add_space_in(struct space **root, char *name,
-			    struct insock *in)
+			    struct iosock *in)
 {
   struct space *parent=NULL;
   struct space *space=NULL;
@@ -939,8 +939,21 @@ struct space *add_space_in(struct space **root, char *name,
   return space;
 }
 
+struct node *new_node(char *aport, char *addr)
+{
+  struct node * node;
+  node = (struct node *) calloc(sizeof (struct node), 1);
+  node->addr = strdup(addr);
+  node->port = atoi(aport);
+  node->fd = connect_socket(node->port, node->addr);;
+  node->in = NULL;
+  return node;
+}
+
+// struct node
+// "NODE name/n/n addr port 
 struct space *add_node_in(struct space **root, char *name,
-			    struct insock *in)
+			    struct iosock *in)
 {
   struct space *space=NULL;
   int idv = 0;
@@ -949,13 +962,32 @@ struct space *add_node_in(struct space **root, char *name,
   char *valx[64];
   int rc = 0;
   int i = 0;
+  int fd = 0;
+  struct node *node = NULL;
+
   rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
 
   for (i = 0; i<idx; i++)
     {
       printf(" >> Arg %d [%s]\n", i, valx[i]);
     }
+  // connect
   space = add_space_in(root, name, in);
+
+  if(idx >= 3)
+    {
+      node =  new_node(valx[3], valx[2]);
+    }
+  space->node =  node;
+  printf(" %s space name %s idx %d fd %d @%s:%s\n"
+	 , __FUNCTION__
+	 , space->name
+	 , idx
+	 , fd
+	 , valx[2]
+	 , valx[3]
+	 );
+
   return space;  
 }
 
@@ -1066,7 +1098,7 @@ int set_up_new_cmds(void)
   init_new_cmd("QUIT", "quit",      cmd_quit);
 }
 
-struct space *help_new_cmds(struct space **base, char *name, struct insock *in)
+struct space *help_new_cmds(struct space **base, char *name, struct iosock *in)
 {
   int rc = 0;
   int i = 0;
@@ -1105,7 +1137,7 @@ int in_new_cmds(char * name)
   return rc;
 }
 
-struct space *cmd_quit(struct space **base, char *name, struct insock *in)
+struct space *cmd_quit(struct space **base, char *name, struct iosock *in)
 {
   //main
   printf("quitting\n");
@@ -1115,7 +1147,7 @@ struct space *cmd_quit(struct space **base, char *name, struct insock *in)
   return NULL;
 
 }
-struct space *show_space_in(struct space **base, char *name, struct insock *in)
+struct space *show_space_in(struct space **base, char *name, struct iosock *in)
 {
   int rc = 0;
   char sbuf[4096];
@@ -1158,7 +1190,7 @@ struct space *show_space_in(struct space **base, char *name, struct insock *in)
   return NULL;
 }
 
-struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
+struct space *decode_cmd_in(struct space **base, char *name, struct iosock *in)
 {
   int rc = 0;
   char sbuf[64];
@@ -1201,7 +1233,7 @@ struct space *decode_cmd_in(struct space **base, char *name, struct insock *in)
   return NULL;
 }
 // decode reply , TODO look for function to process reply 
-struct space *decode_rep_in(struct space **base, char *name, struct insock *in)
+struct space *decode_rep_in(struct space **base, char *name, struct iosock *in)
 {
   int rc = 0;
   char sbuf[64];
@@ -1247,7 +1279,7 @@ struct space *decode_rep_in(struct space **base, char *name, struct insock *in)
   return NULL;
 }
 
-int run_str_in(struct insock *in, char *stuff, char *cmd)
+int run_str_in(struct iosock *in, char *stuff, char *cmd)
 {
   struct space *space=NULL;
   struct space *attr=NULL;
@@ -1375,7 +1407,7 @@ int init_cmds(void)
   return i;
 }
 
-//struct space *get_space_in(struct space ** base, char *name, struct insock *in);
+//struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
 
 int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int time))
 {
@@ -1394,7 +1426,7 @@ int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int
 }
 
 int init_new_cmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct insock *in))
+		 (struct space ** base, char *name, struct iosock *in))
 {
   int i;
   for (i = 0; i< NUM_CMDS; i++)
@@ -1412,7 +1444,7 @@ int init_new_cmd(char *key, char *desc, struct space *(*hand)
 }
 
 
-int run_new_cmd(char *key, struct space **base, char *stuff, struct insock *in)
+int run_new_cmd(char *key, struct space **base, char *stuff, struct iosock *in)
 {
   int rc=-1;
   int i;
@@ -1482,7 +1514,7 @@ int run_new_hand(char *key, int fd, char *buf, int len)
   return rc;
 }
 
-int init_insock(struct insock *in)
+int init_iosock(struct iosock *in)
 {
 
   in->fd = -1;
@@ -1501,15 +1533,15 @@ int init_insock(struct insock *in)
   return 0;
 }
 
-int init_insocks(void)
+int init_iosocks(void)
 {
   int i;
-  struct insock *in;
+  struct iosock *in;
   for (i = 0; i< NUM_SOCKS; i++)
   {
 
-      in = &g_insock[i];
-      init_insock(in);
+      in = &g_iosock[i];
+      init_iosock(in);
   }
   return i;
 }
@@ -1574,7 +1606,7 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     return size;
 }
 //in
-int in_snprintf(struct insock *in, struct iobuf *xiob, const char *fmt, ...)
+int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 {
   int size;
   struct iobuf *iob = NULL;
@@ -1722,7 +1754,7 @@ int store_iob(struct iobuf **iobp ,  struct iobuf *iob)
 
 }
 
-int xadd_iob(struct insock *in, char *buf, int len)
+int xadd_iob(struct iosock *in, char *buf, int len)
 {
   int need_push = 0;
   struct iobuf *iob = NULL;
@@ -1852,8 +1884,8 @@ int remove_iobs(struct iobuf **in)
 //
 int test_iob(void)
 {
-  struct insock inx;
-  struct insock *in = &inx;
+  struct iosock inx;
+  struct iosock *in = &inx;
   char *sp;
   int len;
   struct iobuf *iob= NULL;
@@ -1861,7 +1893,7 @@ int test_iob(void)
   struct iobuf *iob2= NULL;
   struct iobuf *iob3= NULL;
 
-  init_insock(in);
+  init_iosock(in);
 
   if(g_debug)
     printf(" After init :-\n");
@@ -2053,10 +2085,10 @@ int add_socket(int sockfd)
   int i;
   for (i = 0; i<NUM_SOCKS; i++)
     {
-      if (g_insock[i].fd < 0)
+      if (g_iosock[i].fd < 0)
 	{
-	  init_insock(&g_insock[i]);
-	  g_insock[i].fd = sockfd;
+	  init_iosock(&g_iosock[i]);
+	  g_iosock[i].fd = sockfd;
 	  g_num_socks++;
 	  i = NUM_SOCKS;
 	}
@@ -2086,15 +2118,15 @@ int accept_socket(int sockfd)
      return add_socket(newsock);
 }
 
-struct insock *find_fd(int fsock)
+struct iosock *find_fd(int fsock)
 {
     int i;
-    struct insock *in = NULL;
+    struct iosock *in = NULL;
     for (i = 0; i< NUM_SOCKS; i++)
     {
-        if (g_insock[i].fd == fsock)
+        if (g_iosock[i].fd == fsock)
         {
-	    in = &g_insock[i];
+	    in = &g_iosock[i];
 	    break;
         }
     }
@@ -2104,7 +2136,7 @@ struct insock *find_fd(int fsock)
 int close_fds(int fsock)
 {
     int rc = -1;
-    struct insock *in = find_fd(fsock);
+    struct iosock *in = find_fd(fsock);
     if (in)
       {
 	// TODO drain iobufs	
@@ -2132,7 +2164,7 @@ The input buffer is relocatable anyway.
 a cmd terminates with a double \a\a 
 note run_str_in should return the length string used 
 */
-int find_cmd_term(struct insock *in, int len, int last)// input buffer
+int find_cmd_term(struct iosock *in, int len, int last)// input buffer
 {
   int rc  = 0;
   struct iobuf *inbf;  // input buffer
@@ -2175,7 +2207,7 @@ int find_cmd_term(struct insock *in, int len, int last)// input buffer
   return 0;
 }
 
-int get_rsize(struct insock *in)
+int get_rsize(struct iosock *in)
 {
   int rc=0;
   int rlen = 0;
@@ -2201,7 +2233,7 @@ int count_buf_bytes(struct iobuf *oubuf)
   return rc;
 }
 
-int handle_input_cmd(struct insock *in)
+int handle_input_cmd(struct iosock *in)
 {
     int rc=0;
     int len=0;
@@ -2293,7 +2325,7 @@ int handle_input_cmd(struct insock *in)
 }
 
 
-int handle_input_rep(struct insock *in)
+int handle_input_rep(struct iosock *in)
 {
     int rc=0;
     int len=0;
@@ -2405,7 +2437,7 @@ int handle_input_rep(struct insock *in)
 }
 
 // scan for double terminators from outptr to outlen 
-int handle_input_norm(struct insock *in)
+int handle_input_norm(struct iosock *in)
 {
     int rc=0;
     int len;
@@ -2496,7 +2528,7 @@ int handle_input_norm(struct insock *in)
 // once we get an input untill we can process no more
 //
 
-int handle_input(struct insock *in)
+int handle_input(struct iosock *in)
 {
   int more = 1;
   int len = 0;
@@ -2549,7 +2581,7 @@ int handle_input(struct insock *in)
   return len;
 }
 
-int handle_output(struct insock *in)
+int handle_output(struct iosock *in)
 {
   int rc = 0;
   struct iobuf *iob;
@@ -2625,7 +2657,7 @@ int poll_sock(int lsock)
     int ret;
     int n;
     char str[1024];
-    struct insock *in = NULL;
+    struct iosock *in = NULL;
     int rc = 1;    
 
     if(lsock>0)
@@ -2638,20 +2670,20 @@ int poll_sock(int lsock)
     
     for (i = 0; i< NUM_SOCKS; i++)
       {
-	if (g_insock[i].fd >= 0)
+	if (g_iosock[i].fd >= 0)
 	  {
 	    if(g_debug)
 	      printf(" setup fd i %d idx %d fd %d\n"
 		     , i
 		     , idx
-		     , g_insock[i].fd
+		     , g_iosock[i].fd
 		     );
 	    
-	    fds[idx].fd = g_insock[i].fd;
+	    fds[idx].fd = g_iosock[i].fd;
 	    fds[idx].events = POLLIN;
 	    fds[idx].revents = 0;
-	    if((g_insock[i].nosend == 0)
-	       && (g_insock[i].outbptr != g_insock[i].outblen))
+	    if((g_iosock[i].nosend == 0)
+	       && (g_iosock[i].outbptr != g_iosock[i].outblen))
 	      {
 		fds[idx].events |= POLLOUT;
 	      }
@@ -2861,7 +2893,7 @@ int set_spacexx(struct space * base, char *name, char *value)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-struct space *set_space_in(struct space **basep, char *name, struct insock *in)
+struct space *set_space_in(struct space **basep, char *name, struct iosock *in)
 {
   int rc = -1;
   struct space *sp1;
@@ -2904,7 +2936,7 @@ int set_space(struct space *base, char *name)
 }
 
 //char *get_space(struct space *base, char *name)
-struct space *get_space_in(struct space ** basep, char *name, struct insock *in)
+struct space *get_space_in(struct space ** basep, char *name, struct iosock *in)
 {
   char * sret=NULL;
   struct space *sp1;
@@ -2987,13 +3019,13 @@ int speed_onget(struct space *this, int idx, char *name)
 int test_iob_out(void)
 {
 
-  struct insock insock;
-  struct insock *in;
+  struct iosock iosock;
+  struct iosock *in;
   int rc;
   char *sp;
   sp = "This is a direct test\n";
-  in = &insock;
-  init_insock(in);
+  in = &iosock;
+  init_iosock(in);
   in->fd = 1;
   rc = write(in->fd, sp, strlen(sp));
   printf(" sent %d chars\n", rc);	     
@@ -3051,12 +3083,12 @@ int main (int argc, char *argv[])
    char buf[2048];
    char *sp;
    char *vals[64];
-   struct insock ins;
-   struct insock *in = &ins;
+   struct iosock ins;
+   struct iosock *in = &ins;
 
    init_g_spaces();
-   init_insocks();
-   init_insock(in);
+   init_iosocks();
+   init_iosock(in);
    init_cmds();
    init_hands();
    set_up_new_cmds();
