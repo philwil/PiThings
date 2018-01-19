@@ -2419,8 +2419,18 @@ int find_cmd_term(struct iosock *in, int len, int last)// input buffer
       rc ++;
       in->tlen = 0;
       if(g_debug_term)
-	printf("%s checking %c %x rc %d lend %d\n"
-	       , __FUNCTION__, *sp, *sp ,rc , lend);
+	{
+	  if((*sp == 0xa) ||(*sp == 0xd))
+	    {
+	      printf("%s checking (.) %x rc %d lend %d\n"
+		     , __FUNCTION__, *sp ,rc , lend);
+	    }
+	  else
+	    {
+	      printf("%s checking (%c) %x rc %d lend %d\n"
+		     , __FUNCTION__, *sp, *sp ,rc , lend);
+	    }
+	}
       if ((*sp == 0xa) ||(*sp == 0xd))
 	found++;
       else
@@ -2708,9 +2718,10 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   
   if((sp[0] == 0xd) || (sp[0] == 0xa))
     {
-      printf(" %s start of data from 0x%x hlen %d hidx %d name [%s]\n"
+      printf(" %s start of data from 0x%x 0x%x hlen %d hidx %d name [%s]\n"
 	     , __FUNCTION__
 	     , sp[0]
+	     , sp[1]
 	     , in->hlen
 	     , in->hidx
 	     , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
