@@ -147,20 +147,7 @@ Accept: */*
  parse_name 2 name [/uav1?ver=1] *idy 1 valy[0/1] 0x41d080/0x7f9cf816f0 [/uav1]-[none]
  looking for [/uav1] [uav1] found [uav1] i 0 idx/v 1/1
  find_space_new we found it [uav1]
-find_cmd_term checking H 48 rc 1 lend 88
-find_cmd_term checking o 6f rc 2 lend 87
-find_cmd_term checking s 73 rc 3 lend 86
-find_cmd_term checking t 74 rc 4 lend 85
-find_cmd_term checking : 3a rc 5 lend 84
-find_cmd_term checking   20 rc 6 lend 83
-find_cmd_term checking 1 31 rc 7 lend 82
-find_cmd_term checking 2 32 rc 8 lend 81
-find_cmd_term checking 7 37 rc 9 lend 80
-find_cmd_term checking . 2e rc 10 lend 79
-find_cmd_term checking 0 30 rc 11 lend 78
-find_cmd_term checking . 2e rc 12 lend 77
-find_cmd_term checking 0 30 rc 13 lend 76
-find_cmd_term checking . 2e rc 14 lend 75
+
 find_cmd_term checking 1 31 rc 15 lend 74
 find_cmd_term checking : 3a rc 16 lend 73
 find_cmd_term checking 5 35 rc 17 lend 72
@@ -197,8 +184,6 @@ Accept: */*
 
 ]
 
-find_cmd_term checking p 70 rc 5 lend 84
-find_cmd_term checking t 74 rc 6 lend 83
 find_cmd_term checking : 3a rc 7 lend 82
 find_cmd_term checking   20 rc 8 lend 81
 find_cmd_term checking * 2a rc 9 lend 80
@@ -341,6 +326,7 @@ struct iosock
   struct iobuf *inbuf;  // input buffers
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
+  int hlen;
   char *cmdid;    // current command id
   int tlen;       // term
   int nosend;       // term
@@ -367,7 +353,8 @@ struct hands
 };
 
 struct iosock g_iosock[NUM_SOCKS];
-struct cmds cmds[NUM_CMDS];
+struct cmds g_cmds[NUM_CMDS];
+struct cmds h_cmds[NUM_CMDS];
 struct hands hand[NUM_HAND];
 #define NUM_IDX 1024
 struct space *space=NULL;
@@ -387,13 +374,22 @@ struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
 struct space *show_space_in(struct space ** base, char *name, struct iosock *in);
 struct space *decode_cmd_in(struct space ** base, char *name, struct iosock *in);
 struct space *decode_rep_in(struct space ** base, char *name, struct iosock *in);
-struct space *help_new_cmds(struct space ** base, char *name, struct iosock *in);
+struct space *help_new_gcmds(struct space ** base, char *name, struct iosock *in);
+struct space *help_new_cmds(struct cmds * cmds, int n,struct space ** base, char *name, struct iosock *in);
 struct space *cmd_quit(struct space **base, char *name, struct iosock *in);
 
-int init_new_cmd(char *key, char *desc, struct space *(*hand)
+int init_new_cmd(struct cmds *cmds, int n, char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct iosock *in));
+int init_new_gcmd(char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct iosock *in));
+int init_new_hcmd(char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct iosock *in));
 
-int run_new_cmd (char *key, struct space **base, char *name, struct iosock *in);
+int run_new_cmd(struct cmds *cmd, int n,char *key, struct space **base, char *name, struct iosock *in);
+
+int run_new_gcmd(char *key, struct space **base, char *nam, struct iosock *in);
+int run_new_hcmd(char *key, struct space **base, char *nam, struct iosock *in);
+
 int run_new_hand (char *key, int fd, char *buf, int len);
 int init_new_hand(char *key, char *desc, int(*hand)
 		  (int fd, char *id,char *buf, int len));
@@ -1001,6 +997,60 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 	 ); 
   return rc;
 }
+
+struct space *cmd_html_len(struct space **root, char *name,
+			    struct iosock *in)
+{
+  int rc;
+  int i;
+  int idx = 0;
+  char *valx[64];
+
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  in->hlen = 0;
+  
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+  
+  if(idx>1)
+    {
+      rc = atoi(valx[1]);
+      in->hlen = rc;
+      printf(" %s setting hlen to %d\n"
+	     , __FUNCTION__
+	     , in->hlen
+	     );
+      
+    }
+
+  return NULL;
+}
+
+struct space *cmd_html_dummy(struct space **root, char *name,
+			    struct iosock *in)
+{
+  int rc;
+  int i;
+  int idx = 0;
+  char *valx[64];
+  
+  if((name[0] == 0xd) || (name[0] == 0xd))
+    printf(" %s start of data from %x hlen %d\n"
+	   , __FUNCTION__
+	   , name[0], in->hlen);
+  
+
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  //rc = parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+
+  return NULL;
+}
 // split up multi/space/name
 // look for children of the same name 
 // return found name or new space object
@@ -1205,8 +1255,10 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 	{
 	  vals[idx] = strdup(val);
 	  if(g_debug)
-	    printf("rc %d val[%d] [%s] %x %x"
-		   , rc, idx
+	    printf("rc %d val [%s] val[%d] [%s] %x %x"
+		   , rc
+		   , val
+		   , idx
 		   , vals[idx]
 		   , vals[idx][0]
 		   , vals[idx][1]
@@ -1234,30 +1286,47 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 int set_up_new_cmds(void)
 {
   int rc = 0;
-  init_new_cmd("HELP", "Print this help"   ,           help_new_cmds);
-  init_new_cmd("ADD",  "Create a new space",           add_space_in);
-  init_new_cmd("SET",  "Set a (string) value",	       set_space_in);
-  init_new_cmd("GET",  "Get a (string) value",	       get_space_in);
-  init_new_cmd("CMD", "determine command id and len",  decode_cmd_in);
-  init_new_cmd("REP", "determine  replyid and len",    decode_rep_in);
-  init_new_cmd("SHOW", "Show spaces from a root",      show_space_in);
-  init_new_cmd("NODE", "Show spaces from a root",      add_node_in);
-  init_new_cmd("QUIT", "quit",      cmd_quit);
+  init_new_gcmd("HELP", "Print this help",             help_new_gcmds);
+  init_new_gcmd("ADD",  "Create a new space",          add_space_in);
+  init_new_gcmd("SET",  "Set a (string) value",	       set_space_in);
+  init_new_gcmd("GET",  "Get a (string) value",	       get_space_in);
+  init_new_gcmd("CMD", "determine command id and len", decode_cmd_in);
+  init_new_gcmd("REP", "determine  replyid and len",    decode_rep_in);
+  init_new_gcmd("SHOW", "Show spaces from a root",      show_space_in);
+  init_new_gcmd("NODE", "Show spaces from a root",      add_node_in);
+  init_new_gcmd("QUIT", "quit",      cmd_quit);
+
+  init_new_hcmd("POST",            "Post",            cmd_html_dummy);
+  init_new_hcmd("Host:",           "Host: Port",      cmd_html_dummy);
+  init_new_hcmd("User-Agent:",     "User Agent",      cmd_html_dummy);
+  init_new_hcmd("Accept:",         "Accept",          cmd_html_dummy);
+  init_new_hcmd("Content-Type:",   "Content type",    cmd_html_dummy);
+  init_new_hcmd("Content-Length:", "Content length",  cmd_html_len);
+
+  //  Host: 127.0.0.1:5432
+  //User-Agent: curl/7.47.0
+  //Accept: */*
+  //Content-Length: 4
+  //Content-Type: application/x-www-form-urlencoded
+
 }
 
-struct space *help_new_cmds(struct space **base, char *name, struct iosock *in)
+struct space *help_new_gcmds(struct space **base, char *name, struct iosock *in)
 {
-  int rc = 0;
+  return help_new_cmds(g_cmds, NUM_CMDS, base, name, in);
+}
+
+struct space *help_new_cmds(struct cmds *cmds, int n,struct space **base, char *name, struct iosock *in)
+{
+  //int rc = 0;
   int i = 0;
-  char sbuf[4096];
-  for (i = 0; i< NUM_CMDS; i++)
+  for (i = 0; i< n; i++,cmds++)
     {
-      if(cmds[i].key != NULL)
+      if(cmds->key != NULL)
 	{
-	  rc++;
 	  if(in)in_snprintf(in, NULL, "%s -> %s\n"
-			    , cmds[i].key
-			    , cmds[i].desc
+			    , cmds->key
+			    , cmds->desc
 			    );
 	}
     }
@@ -1266,19 +1335,19 @@ struct space *help_new_cmds(struct space **base, char *name, struct iosock *in)
 }
 
 // TODO add space after cmd
-int in_new_cmds(char * name)
+int in_new_cmds(struct cmds * cmds, int n, char * name)
 {
   int rc = -1;
   int i;
-  for (i = 0; i< NUM_CMDS; i++)
+  for (i = 0; i< n; i++, cmds++)
     {
-      if(strcmp(cmds[i].key, name) == 0)
+      if(strcmp(cmds->key, name) == 0)
 	{
 	  rc = i;
 	  break;
 	}
     }
-  if(i >= NUM_CMDS)
+  if(i >= n)
     rc = -1;
 
   return rc;
@@ -1307,7 +1376,7 @@ struct space *show_space_in(struct space **base, char *name, struct iosock *in)
 	   ,__FUNCTION__
 	   ,name
 	   );
-  if(in_new_cmds(sbuf)>=0)
+  if(in_new_cmds(g_cmds, NUM_CMDS, sbuf)>=0)
     {
       sp = strstr(name, sbuf);
       if(sp)
@@ -1431,7 +1500,7 @@ int run_str_in(struct iosock *in, char *stuff, char *cmd)
   struct space *space=NULL;
   struct space *attr=NULL;
   int rc;
-  rc = run_new_cmd (cmd, &g_space, stuff, in);
+  rc = run_new_gcmd (cmd, &g_space, stuff, in);
   if(rc >= 0) return 0;
   if(strcmp(cmd, "ADD") == 0)
     {
@@ -1541,71 +1610,76 @@ typedef unsigned char uint8_t;
 static uint8_t latch_st;
 
 
-int init_cmds(void)
+int init_cmds(struct cmds *cmds, int n)
 {
   int i;
-  for (i = 0; i< NUM_CMDS; i++)
+  for (i = 0; i<n; i++, cmds++)
     {
-      cmds[i].key = NULL;
-      cmds[i].desc = NULL;
-      cmds[i].handler = NULL;
-      cmds[i].new_hand = NULL;
+      cmds->key = NULL;
+      cmds->desc = NULL;
+      cmds->handler = NULL;
+      cmds->new_hand = NULL;
     }
   return i;
 }
 
-//struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
 
-int init_cmd(char *key, int (*hand)(void *key, int n, char *data, int speed, int time))
+int init_new_gcmd(char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct iosock *in))
 {
-  int i;
-  for (i = 0; i< NUM_CMDS; i++)
-  {
-    if(cmds[i].key == NULL)
-      {
-	cmds[i].key =  key;
-	cmds[i].handler = hand;
-	break;
-      }
-  }
-  if(i == NUM_CMDS) i = -1;
-  return i;
+  init_new_cmd(g_cmds, NUM_CMDS, key, desc, hand);
+}
+int init_new_hcmd(char *key, char *desc, struct space *(*hand)
+		 (struct space ** base, char *name, struct iosock *in))
+{
+  init_new_cmd(h_cmds, NUM_CMDS, key, desc, hand);
 }
 
-int init_new_cmd(char *key, char *desc, struct space *(*hand)
+
+int init_new_cmd(struct cmds *cmds, int ncmds , char *key, char *desc, struct space *(*hand)
 		 (struct space ** base, char *name, struct iosock *in))
 {
   int i;
-  for (i = 0; i< NUM_CMDS; i++)
+  for (i = 0; i< ncmds; i++, cmds++)
   {
-    if(cmds[i].key == NULL)
+    if(cmds->key == NULL)
       {
-	cmds[i].key =  key;
-	cmds[i].desc =  desc;
-	cmds[i].new_hand = hand;
+	cmds->key =  key;
+	cmds->desc =  desc;
+	cmds->new_hand = hand;
 	break;
       }
   }
-  if(i == NUM_CMDS) i = -1;
+  if(i == ncmds) i = -1;
   return i;
 }
 
+int run_new_gcmd(char *key, struct space **base, char *stuff, struct iosock *in)
+{
+  return run_new_cmd(g_cmds, NUM_CMDS, key, base, stuff, in);
+}
+int run_new_hcmd(char *key, struct space **base, char *stuff, struct iosock *in)
+{
+  return run_new_cmd(h_cmds, NUM_CMDS, key, base, stuff, in);
+}
 
-int run_new_cmd(char *key, struct space **base, char *stuff, struct iosock *in)
+
+
+int run_new_cmd(struct cmds *cmds, int ncmds, char *key, struct space **base, char *stuff, struct iosock *in)
 {
   int rc=-1;
   int i;
   struct space * sp1 = NULL;
-  for (i = 0; i< NUM_CMDS; i++)
+  for (i = 0; i< ncmds; i++, cmds++)
     {
-      if(cmds[i].key && (strcmp(cmds[i].key, key) == 0))
+      if(cmds->key && (strcmp(cmds->key, key) == 0))
 	{
-	  sp1 = cmds[i].new_hand(base, stuff, in);
+	  sp1 = cmds->new_hand(base, stuff, in);
 	  break;
 	}
     }
   rc = i;
-  if(i == NUM_CMDS)
+  if(i == ncmds)
     rc = -1;
   return rc;
 }
@@ -1671,6 +1745,7 @@ int init_iosock(struct iosock *in)
   in->inbuf = NULL;
   //in->cmdptr = NULL;
   in->cmdlen = 0;
+  in->hlen = 0;
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
   in->cmdid = NULL;
@@ -2617,13 +2692,34 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   //struct space *space=NULL;
   //struct space *attr=NULL;
   int rc;
-  printf(" %s >>>> cmd [%s] sp [%s]\n"
+  struct iobuf *inbf;  // input buffer
+
+  inbf = in->inbuf;
+  rc = inbf->outlen - inbf->outptr;
+  printf(" %s >>>> rc %d cmd [%s] sp [%s]\n"
 	 , __FUNCTION__
+	 , rc
 	 , cmd
 	 , sp
 	 );
   
-  rc = run_new_cmd (cmd, &g_space, sp, in);
+  if((sp[0] == 0xd) || (sp[0] == 0xa))
+    {
+      printf(" %s start of data from 0x%x hlen %d\n"
+	     , __FUNCTION__
+	     , sp[0], in->hlen);
+      in->cmdlen = in->hlen;
+      in->cmdbytes = in->hlen;
+      inbf->outptr += (in->hlen +2);
+      // TODO find space referenced and set data
+      //len = inbf->outlen - inbf->outptr;
+
+    }
+  else
+    {
+      rc = run_new_gcmd (cmd, &g_space, sp, in);
+      rc = run_new_hcmd (cmd, &g_space, sp, in);
+    }
   return 0;
 }
 // scan for double terminators from outptr to outlen 
@@ -3301,7 +3397,8 @@ int main (int argc, char *argv[])
    init_g_spaces();
    init_iosocks();
    init_iosock(in);
-   init_cmds();
+   init_cmds(g_cmds, NUM_CMDS);
+   init_cmds(h_cmds, NUM_CMDS);
    init_hands();
    set_up_new_cmds();
 
@@ -3339,7 +3436,7 @@ int main (int argc, char *argv[])
 	     {
 	       //int dummy_hand(int fd, char *id, char *buf, int len)
 	       init_new_hand("some_id", "Dummy Handler",  dummy_handler);
-	       // run_new_cmd
+	       // run_new_gcmd
 	       add_socket(csock);
 	       in->fd = -1;
 	       csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
