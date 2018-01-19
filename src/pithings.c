@@ -96,9 +96,149 @@ The run_str_in will put stuff in the iobuf to send as usual but we'll turn off
 the actual output is prevented by setting the nosend flag to 1;
 Once run_str_in has completed we can calculate the output bytes and then send the 
 [RSP xxx lll\n\n] with the buffer length and then simply turn off the nosend flag
- 
-
 */
+
+#if 0
+
+http decode
+we get this
+
+accept ret = 4 
+find_cmd_term checking G 47 rc 1 lend 88
+find_cmd_term checking E 45 rc 2 lend 87
+find_cmd_term checking T 54 rc 3 lend 86
+find_cmd_term checking   20 rc 4 lend 85
+find_cmd_term checking / 2f rc 5 lend 84
+find_cmd_term checking u 75 rc 6 lend 83
+find_cmd_term checking a 61 rc 7 lend 82
+find_cmd_term checking v 76 rc 8 lend 81
+find_cmd_term checking 1 31 rc 9 lend 80
+find_cmd_term checking ? 3f rc 10 lend 79
+find_cmd_term checking v 76 rc 11 lend 78
+find_cmd_term checking e 65 rc 12 lend 77
+find_cmd_term checking r 72 rc 13 lend 76
+find_cmd_term checking = 3d rc 14 lend 75
+find_cmd_term checking 1 31 rc 15 lend 74
+find_cmd_term checking   20 rc 16 lend 73
+find_cmd_term checking H 48 rc 17 lend 72
+find_cmd_term checking T 54 rc 18 lend 71
+find_cmd_term checking T 54 rc 19 lend 70
+find_cmd_term checking P 50 rc 20 lend 69
+find_cmd_term checking / 2f rc 21 lend 68
+find_cmd_term checking 1 31 rc 22 lend 67
+find_cmd_term checking . 2e rc 23 lend 66
+find_cmd_term checking 1 31 rc 24 lend 65
+ d rc 25 lend 64ecking 
+find_cmd_term checking 
+ a rc 26 lend 63
+ handle_input_norm message received [GET /uav1?ver=1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: curl/7.47.0
+Accept: */*
+
+] -> n 3 cmd [GET] uri [/uav1?ver=1] vers [HTTP/1.1]
+ run_str_http >>>> cmd [GET] sp [GET /uav1?ver=1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: curl/7.47.0
+Accept: */*
+
+]
+ parse_name 1 name [/uav1?ver=1] *idx 1 valx[0/1] 0x41d010/0x7fdd26df60
+ parse_name 2 name [/uav1?ver=1] *idy 1 valy[0/1] 0x41d080/0x7f9cf816f0 [/uav1]-[none]
+ looking for [/uav1] [uav1] found [uav1] i 0 idx/v 1/1
+ find_space_new we found it [uav1]
+find_cmd_term checking H 48 rc 1 lend 88
+find_cmd_term checking o 6f rc 2 lend 87
+find_cmd_term checking s 73 rc 3 lend 86
+find_cmd_term checking t 74 rc 4 lend 85
+find_cmd_term checking : 3a rc 5 lend 84
+find_cmd_term checking   20 rc 6 lend 83
+find_cmd_term checking 1 31 rc 7 lend 82
+find_cmd_term checking 2 32 rc 8 lend 81
+find_cmd_term checking 7 37 rc 9 lend 80
+find_cmd_term checking . 2e rc 10 lend 79
+find_cmd_term checking 0 30 rc 11 lend 78
+find_cmd_term checking . 2e rc 12 lend 77
+find_cmd_term checking 0 30 rc 13 lend 76
+find_cmd_term checking . 2e rc 14 lend 75
+find_cmd_term checking 1 31 rc 15 lend 74
+find_cmd_term checking : 3a rc 16 lend 73
+find_cmd_term checking 5 35 rc 17 lend 72
+find_cmd_term checking 4 34 rc 18 lend 71
+find_cmd_term checking 3 33 rc 19 lend 70
+find_cmd_term checking 2 32 rc 20 lend 69
+ d rc 21 lend 68ecking 
+find_cmd_term checking 
+ a rc 22 lend 67
+ handle_input_norm message received [Host: 127.0.0.1:5432
+User-Agent: curl/7.47.0
+Accept: */*
+
+] -> n 3 cmd [Host:] uri [127.0.0.1:5432] vers [User-Agent:]
+ run_str_http >>>> cmd [Host:] sp [Host: 127.0.0.1:5432
+User-Agent: curl/7.47.0
+Accept: */*
+
+]
+[...]
+  
+find_cmd_term checking 7 37 rc 21 lend 68
+find_cmd_term checking . 2e rc 22 lend 67
+find_cmd_term checking 0 30 rc 23 lend 66
+ d rc 24 lend 65ecking 
+find_cmd_term checking 
+ a rc 25 lend 64
+ handle_input_norm message received [User-Agent: curl/7.47.0
+Accept: */*
+
+] -> n 3 cmd [User-Agent:] uri [curl/7.47.0] vers [Accept:]
+ run_str_http >>>> cmd [User-Agent:] sp [User-Agent: curl/7.47.0
+Accept: */*
+
+]
+
+find_cmd_term checking p 70 rc 5 lend 84
+find_cmd_term checking t 74 rc 6 lend 83
+find_cmd_term checking : 3a rc 7 lend 82
+find_cmd_term checking   20 rc 8 lend 81
+find_cmd_term checking * 2a rc 9 lend 80
+find_cmd_term checking / 2f rc 10 lend 79
+find_cmd_term checking * 2a rc 11 lend 78
+ d rc 12 lend 77ecking 
+find_cmd_term checking 
+ a rc 13 lend 76
+ handle_input_norm message received [Accept: */*
+
+] -> n 2 cmd [Accept:] uri [*/*] vers []
+ run_str_http >>>> cmd [Accept:] sp [Accept: */*
+
+]*/
+ d rc 1 lend 88hecking 
+find_cmd_term checking 
+ a rc 2 lend 87
+ handle_input_norm message received [
+] -> n -1 cmd [] uri [] vers []
+ run_str_http >>>> cmd [] sp [
+]
+ handle_input_norm reset buffers tlen = 2 ptr/len 0/0
+					     
+				     
+or
+
+run_str_http >>>> cmd [Accept:] sp [Accept:
+				    
+Content-Length: 4
+Content-Type: application/x-www-form-urlencoded
+
+1234]
+
+1234] -> n 3 cmd [Content-Length:] uri [4] vers [Content-Type:]
+ run_str_http >>>> cmd [Content-Length:] sp [Content-Length: 4
+Content-Type: application/x-www-form-urlencoded
+
+1234]
+#endif
+  
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,7 +365,6 @@ struct hands
   int(*new_hand)(int fd, char *id, char *buf, int len);
   int (*handler)(void *key, int n, char *cmd, int speed, int time);
 };
-
 
 struct iosock g_iosock[NUM_SOCKS];
 struct cmds cmds[NUM_CMDS];
@@ -2451,6 +2590,26 @@ void url_decode(char* src, char* dest, int max) {
         }
     }
     *dest = '\0';
+}
+				     
+int send_html_head(struct iosock *in, char *msg)
+{
+  int len = 0;
+  len = in_snprintf(in, NULL, "HTTP/1.1 200 OK\r\n%s%s%s%s%s",
+		    "Content-Type: text/html\r\n\r\n",
+		    "<html><head><style>",
+		    "body{font-family: monospace; font-size: 13px;}",
+		    "td {padding: 1.5px 6px;}",
+		    "</style></head><body>\n");
+  return len;
+}
+
+int send_html_tail(struct iosock *in, char *msg)
+{
+  int len;
+  len - in_snprintf(in, NULL, "</table></body></html>");
+ 
+  return len;
 }
 
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
