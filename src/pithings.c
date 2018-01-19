@@ -327,6 +327,7 @@ struct iosock
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
   int hlen;
+  int hidx;
   char *cmdid;    // current command id
   int tlen;       // term
   int nosend;       // term
@@ -1296,7 +1297,7 @@ int set_up_new_cmds(void)
   init_new_gcmd("NODE", "Show spaces from a root",      add_node_in);
   init_new_gcmd("QUIT", "quit",      cmd_quit);
 
-  init_new_hcmd("POST",            "Post",            cmd_html_dummy);
+  init_new_hcmd("POST",            "Post",            get_space_in);
   init_new_hcmd("Host:",           "Host: Port",      cmd_html_dummy);
   init_new_hcmd("User-Agent:",     "User Agent",      cmd_html_dummy);
   init_new_hcmd("Accept:",         "Accept",          cmd_html_dummy);
@@ -1746,6 +1747,7 @@ int init_iosock(struct iosock *in)
   //in->cmdptr = NULL;
   in->cmdlen = 0;
   in->hlen = 0;
+  in->hidx = -1;
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
   in->cmdid = NULL;
@@ -2693,7 +2695,8 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   //struct space *attr=NULL;
   int rc;
   struct iobuf *inbf;  // input buffer
-
+  struct space *sp1;
+  
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
   printf(" %s >>>> rc %d cmd [%s] sp [%s]\n"
@@ -2705,9 +2708,25 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   
   if((sp[0] == 0xd) || (sp[0] == 0xa))
     {
-      printf(" %s start of data from 0x%x hlen %d\n"
+      printf(" %s start of data from 0x%x hlen %d hidx %d name [%s]\n"
 	     , __FUNCTION__
-	     , sp[0], in->hlen);
+	     , sp[0]
+	     , in->hlen
+	     , in->hidx
+	     , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
+	     );
+      sp1 = NULL;
+      if(in->hidx >= 0)
+	{
+	  sp1 = g_spaces[in->hidx];
+	}
+      if(sp1)
+	{
+	  if (sp1->value) free(sp1->value);
+	  sp1->value = malloc(in->hlen+1);
+	  memcpy(sp1->value,&sp[2],in->hlen);
+	  sp1->value[in->hlen] = 0;
+	}
       in->cmdlen = in->hlen;
       in->cmdbytes = in->hlen;
       inbf->outptr += (in->hlen +2);
@@ -3263,11 +3282,19 @@ struct space *get_space_in(struct space ** basep, char *name, struct iosock *in)
       if(sp1->onget)
 	sp1->onget(sp1, sp1->idx, name);
       sret = sp1->value;
-      if(in)in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
+      if(in)
+	{
+	  in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
+	  in->hidx = sp1->idx;
+	}
     }
   else
     {
-      if(in)in_snprintf(in, NULL, "?? GET [%s] not found \n",sp);
+      if(in)
+	{
+	  in_snprintf(in, NULL, "?? GET [%s] not found \n",sp);
+	  in->hidx = -2;
+	}
     }
   return sp1;
 }
