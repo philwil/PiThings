@@ -134,6 +134,7 @@ Once run_str_in has completed we can calculate the output bytes and then send th
 #define STATE_IN_NORM 0
 #define STATE_IN_REP 1
 #define STATE_IN_CMD 2
+#define STATE_IN_HTTP 3
 
 struct iosock;
 
@@ -239,6 +240,7 @@ int g_debug_term = 1;
 
 int accept_socket(int sockfd);
 int add_socket(int sockfd);
+int connect_socket(int portno, char *addr);
 
 int init_iosock(struct iosock *in);
 char *get_space(struct space * base, char *name);
@@ -266,7 +268,7 @@ struct space *add_space(struct space **root, char *name);
 int add_child(struct space *base, struct space *child);
 
 int show_spaces(struct iosock *in, struct space *base, char *desc, int indent);
-int parse_stuff(char delim, int num, char **vals, char *stuff);
+int parse_stuff(char delim, int num, char **vals, char *stuff, char stop);
 
 int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
 int free_stuff(int num, char **vals);
@@ -670,13 +672,9 @@ int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len
 struct space *find_space_new(struct space *base, char *name)
 {
   struct space *start;
-  //  char vals[64][64];
-  //int idx = 0;
-  //int idv = 0;
   char *sp = name;
-  //int rc;
+  char *spv = NULL;
   int i;
-  //rc = 1;
 
   int rc;
   int idx = 0;
@@ -689,13 +687,16 @@ struct space *find_space_new(struct space *base, char *name)
   start = base;
   while (base)
     {
-      if(g_debug)
-	printf(" looking for [%s] found [%s] i %d idx %d\n"
-	       , valv[i], base->name
+      spv = valv[i];
+      if(*spv == '/')spv++;
+      if(1)
+	printf(" looking for [%s] [%s] found [%s] i %d idx/v %d/%d\n"
+	       , valv[i], spv, base->name
 	       , i
 	       , idx
+	       , idv
 		  );
-      if(strcmp(base->name, valv[i])==0)
+      if(strcmp(base->name, spv)==0)
 	{
 
           if(i < idv) i++;
@@ -703,7 +704,7 @@ struct space *find_space_new(struct space *base, char *name)
 	    {
 	      free_stuff(idv, valv);
 	      free_stuff(idx, valx);
-	      
+	      printf(" %s we found it [%s]\n", __FUNCTION__, base->name);
 	      return base;
 	    }
 	  base =  base->child;
@@ -846,14 +847,19 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
 {
   int  rc = 1;
   char *sp;
-  *idx = parse_stuff(' ', size, (char **)valx, name);
-  printf(" parse stuff 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
+  *idx = parse_stuff(' ', size, (char **)valx, name, 0);
+  printf(" parse_name 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
 	 , valx[0], valx[1]); 
 
   sp = valx[0];
   if(*idx >= 2)sp = valx[1];
 
-  *idy = parse_stuff('/', size, (char **)valy, sp);
+  *idy = parse_stuff('/', size, (char **)valy, sp,'?');
+  printf(" parse_name 2 name [%s] *idy %d valy[0/1] %p/%p [%s]-[%s]\n"
+	 , name, *idy
+	 , valy[0], valy[1]
+	 , valy[0], (*idy>1)?valy[1]:"none"
+	 ); 
   return rc;
 }
 // split up multi/space/name
@@ -1013,7 +1019,7 @@ int free_stuff(int num, char **vals)
 // TODO dynamic sizing
 //      allow escape
 //
-int parse_stuff(char delim, int num, char **vals, char *stuff)
+int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 {
   int idx = 0;
   char *sp = stuff;
@@ -1023,8 +1029,9 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
   char  *spv;
   int val_size;
   int skip = 0;
+  int done = 0;
   val_size = 64;
-  val = malloc(64);
+  val = malloc(64);  //TODO fix this
   val[0]=0;
   if(g_debug)
     printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
@@ -1035,21 +1042,22 @@ int parse_stuff(char delim, int num, char **vals, char *stuff)
     {
       skip = 1;
     }
-  while(*sp && (rc>0) && (idx < num))
+  while(*sp && (rc>0) && (idx < num) && !done)
     {
       rc = 0;
       spv = val;
-      while (*sp && ((skip == 1) || (*sp != delim)) && (rc < (val_size-1)))
+      while (*sp && (*sp!= cstop) && ((skip == 1) || (*sp != delim)) && (rc < (val_size-1)))
 	{
 	  skip = 0;
-	  if ((*sp != 0xa)&&(*sp != 0xd))
+	  if ((*sp != 0xa)&&(*sp != 0xd) &&(*sp != cstop))
 	    {
 	      rc++;
 	      *spv++ = *sp++;
 	    }
 	  else
 	    sp++;
-	  
+	  if(*sp && *sp == cstop) done = 1;
+  
 	}
       if(*sp)sp++;
       *spv = 0;
@@ -2058,8 +2066,14 @@ int listen_socket(int portno)
 	 return -1;
      }
      optval = 1;
+
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+	       (const void *)&optval , sizeof(int));
+      
+#if 0
 #ifdef SO_REUSEPORT
      setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+#endif
 #endif
 
      bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -2296,17 +2310,6 @@ int handle_input_cmd(struct iosock *in)
 		, tosend
 		);
 	write (in->fd, cmd, strlen(cmd));
-	
-	//	if (inbf->outptr == inbf->outlen)
-	//{
-	//  inbf->outptr = 0;
-	//  inbf->outlen = 0;
-	//  printf(" reset buffers ptr/len %d/%d\n"
-	//	   , inbf->outptr
-	//	   , inbf->outlen
-	//	   );
-	//}
-
 	if (inbf->outptr < inbf->outlen)
 	  {
 	    rc = 1;
@@ -2435,7 +2438,35 @@ int handle_input_rep(struct iosock *in)
       }
     return len;
 }
+void url_decode(char* src, char* dest, int max) {
+    char *p = src;
+    char code[3] = { 0 };
+    while(*p && --max) {
+        if(*p == '%') {
+            memcpy(code, ++p, 2);
+            *dest++ = (char)strtoul(code, NULL, 16);
+            p += 2;
+        } else {
+            *dest++ = *p++;
+        }
+    }
+    *dest = '\0';
+}
 
+int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
+{
+  //struct space *space=NULL;
+  //struct space *attr=NULL;
+  int rc;
+  printf(" %s >>>> cmd [%s] sp [%s]\n"
+	 , __FUNCTION__
+	 , cmd
+	 , sp
+	 );
+  
+  rc = run_new_cmd (cmd, &g_space, sp, in);
+  return 0;
+}
 // scan for double terminators from outptr to outlen 
 int handle_input_norm(struct iosock *in)
 {
@@ -2443,7 +2474,9 @@ int handle_input_norm(struct iosock *in)
     int len;
     int tlen;
     int n;
-    char cmd[64];
+    char cmd[1024];
+    char uri[1024];
+    char vers[1024];
     char *sp;
     char buf[1024];
     char *bres;
@@ -2477,15 +2510,29 @@ int handle_input_norm(struct iosock *in)
     if(tlen > 1)
       {
 	sp = &inbf->outbuf[inbf->outptr];
-	n = sscanf(sp, "%s ", cmd);   //TODO use better sscanf
-	if(0)in_snprintf(in, NULL
-			 ," message received [%s] ->"
-			 " n %d cmd [%s]\n"
+	cmd[0]=0;
+	uri[0]=0;
+	vers[0]=0;
+
+	n = sscanf(sp, "%s %s %s", cmd, uri, vers);   //TODO use better sscanf
+	//if(1)in_snprintf(in, NULL
+	printf(		 " %s message received [%s] ->"
+			 " n %d cmd [%s] uri [%s] vers [%s]\n"
+			 , __FUNCTION__
 			 , sp //&in->inbuf[in->inptr]
-			 , n, cmd );
-	
-	run_str_in(in, sp, cmd);
-	
+			 , n, cmd, uri, vers );
+	if(strstr(vers,"HTTP/"))
+	  {
+	    in->instate = STATE_IN_HTTP;
+	  }
+	if (in->instate == STATE_IN_HTTP)
+	  {
+	    run_str_http(in, sp, cmd, uri, vers);
+	  }
+	else
+	  {
+	    run_str_in(in, sp, cmd);
+	  }
 	tosend = count_buf_bytes(in->iobuf);
 	if(g_debug)
 	  printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
@@ -2535,7 +2582,7 @@ int handle_input(struct iosock *in)
   int rsize;
   char *sp;
   struct iobuf *inbf;  // input buffer
-
+  
   if (in->inbuf == NULL)
     in->inbuf = new_iobuf(1024);
   inbf = in->inbuf;
@@ -2566,6 +2613,12 @@ int handle_input(struct iosock *in)
 	      if(more == 0)
 		len = 0;
 	    }
+	  //else if (in->instate == STATE_IN_HTTP)
+	  //{
+	  //  more = handle_input_http(in);
+	  //  if(more == 0)
+	  //	len = 0;
+	  //}
 	  else
 	    {
 	      more = handle_input_norm(in);
@@ -3164,7 +3217,7 @@ int main (int argc, char *argv[])
 
 	   char sbuf[4096];
 
-	   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse");
+	   rc = parse_stuff(' ', 64, (char **)vals, "this is a bunch/of/stuff to parse",0);
 	   printf (" rc = %d\n", rc );
 	   show_stuff(rc, vals);
 	   
