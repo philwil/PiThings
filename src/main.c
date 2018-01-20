@@ -87,9 +87,6 @@ int main (int argc, char *argv[])
    init_iosocks();
    init_iosock(in);
 
-
-
-
    in->fd = 1;
    test_find_parents();
    //return 0;
@@ -240,4 +237,5 @@ int main (int argc, char *argv[])
        rc = poll_sock(g_lsock);
        //g_count++;
    }
+   return 0;
 }
