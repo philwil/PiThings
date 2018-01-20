@@ -1,4 +1,5 @@
 COMMENT ?=no comment
+
 all: pithings lib main
 
 pithings: pithings.c
