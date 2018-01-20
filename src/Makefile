@@ -24,6 +24,6 @@ clean:
 	rm -f pithings
 
 git:
-	git add *.c ../inc/*.h ../lib/*.c Makefile
+	git add runme *.c ../inc/*.h ../lib/*.c Makefile
 	git commit -m "$(COMMENT)"
 	git push
