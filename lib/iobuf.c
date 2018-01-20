@@ -1,3 +1,8 @@
+/* 
+  iobufs are used to store a sequence of input or output bufers
+  we build up a list of unused ones and grab from that list when needed  
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -10,6 +15,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <poll.h>
+
 #include "../inc/pithings.h"
 
 extern struct iobuf *g_iob_store;

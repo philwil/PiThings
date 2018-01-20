@@ -31,6 +31,9 @@ struct iobuf *g_iob_store = NULL;
 int g_debug_term = 1;
 int g_count = 0;
 
+struct node *g_node_store = NULL;
+int g_node_debug;
+
 int init_g_spaces(void)
 {
   int i;
@@ -68,6 +71,10 @@ int main (int argc, char *argv[])
    char *vals[64];
    struct iosock ins;
    struct iosock *in = &ins;
+
+   test_nodes();
+   //return 0;
+   
    init_hands(NUM_HAND);
    init_cmds(g_cmds, NUM_CMDS);
    init_cmds(h_cmds, NUM_CMDS);

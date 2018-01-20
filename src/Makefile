@@ -10,6 +10,7 @@ LIBOBJS += ../lib/cmds.c
 LIBOBJS += ../lib/hands.c
 LIBOBJS += ../lib/iosock.c
 LIBOBJS += ../lib/iobuf.c
+LIBOBJS += ../lib/node.c
 
 lib:
 	gcc -Wall -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
