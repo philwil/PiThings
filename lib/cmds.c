@@ -15,6 +15,7 @@
 extern struct cmds g_cmds[];
 extern  struct cmds h_cmds[];
 extern struct space *g_space;
+extern struct node *g_node_store;
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
@@ -177,10 +178,15 @@ struct space *add_space_in(struct space **root, char *name,
 struct node *new_node(char *aport, char *addr)
 {
   struct node * node;
-  node = (struct node *) calloc(sizeof (struct node), 1);
-  node->addr = strdup(addr);
-  node->port = atoi(aport);
-  node->fd = connect_socket(node->port, node->addr);;
+  node = get_node(&g_node_store,addr, atoi(aport));
+  //node = (struct node *) calloc(sizeof (struct node), 1);
+  //node->addr = strdup(addr);
+  //node->port = atoi(aport);
+
+  if(node->fd == -1)
+    {
+      node->fd = connect_socket(node->port, node->addr);;
+    }
   node->in = NULL;
   return node;
 }
@@ -204,7 +210,7 @@ struct space *add_node_in(struct space **root, char *name,
 
   for (i = 0; i<idx; i++)
     {
-      printf(" >> Arg %d [%s]\n", i, valx[i]);
+      printf(" %s >> Arg %d [%s]\n", __FUNCTION__ , i, valx[i]);
     }
   // connect
   space = add_space_in(root, name, in);
@@ -212,6 +218,7 @@ struct space *add_node_in(struct space **root, char *name,
   if(idx >= 3)
     {
       node =  new_node(valx[3], valx[2]);
+      fd = node->fd;
     }
   space->node =  node;
   printf(" %s space name %s idx %d fd %d @%s:%s\n"

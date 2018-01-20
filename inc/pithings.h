@@ -54,7 +54,8 @@ struct node {
 struct space {
   char *name;
   char *desc;
-  int idx;
+  int idx;        // local index
+  int ridx;       // remote index
   struct space *next;
   struct space *prev;
   struct space *parent;
