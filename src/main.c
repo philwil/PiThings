@@ -32,6 +32,7 @@ int g_debug_term = 1;
 int g_count = 0;
 
 struct node *g_node_store = NULL;
+struct list *g_node_list = NULL;
 int g_node_debug;
 
 int init_g_spaces(void)
@@ -72,8 +73,9 @@ int main (int argc, char *argv[])
    struct iosock ins;
    struct iosock *in = &ins;
 
-   test_nodes();
-   //return 0;
+   //test_nodes();
+   test_node_list();
+   //eturn 0;
    
    init_hands(NUM_HAND);
    init_cmds(g_cmds, NUM_CMDS);

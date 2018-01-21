@@ -39,6 +39,12 @@
 
 struct iosock;
 
+struct list {
+  struct list *prev;
+  struct list *next;
+  void * data;
+};
+
 struct node {
   struct node *prev;
   struct node *next;
@@ -254,7 +260,7 @@ int run_str_in(struct iosock *in, char *stuff, char *cmd);
 int count_buf_bytes(struct iobuf *oubuf);
 
 
-// node list interface
+// old node interface
 int test_nodes(void);
 int remove_nodes(struct node **root);
 int print_nodes(struct node *item);
@@ -263,6 +269,17 @@ int push_node(struct node **root ,  struct node *item);
 int push_cnode(struct node **root, struct node *citem, struct node *item);
 struct node *get_node(struct node**root, char *addr, int port);
 struct node *seek_node(struct node **root, char *addr, int port);
+
+// node list interface
+int test_node_list(void);
+int remove_node_list(struct list **root);
+int print_node_list(struct list *item);
+int print_node_item(struct list *item);
+int push_list(struct list **root ,  struct list *item);
+int push_clist(struct list **root, struct list *citem, struct list *item);
+struct list *get_node_list(struct list**root, char *addr, int port);
+struct list *seek_node_list(struct list **root, char *addr, int port);
+
 
 #endif
 

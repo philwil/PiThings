@@ -15,7 +15,8 @@
 extern struct cmds g_cmds[];
 extern  struct cmds h_cmds[];
 extern struct space *g_space;
-extern struct node *g_node_store;
+//xtern struct node *g_node_store;
+extern struct list *g_node_list;
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
@@ -177,9 +178,10 @@ struct space *add_space_in(struct space **root, char *name,
 
 struct node *new_node(char *aport, char *addr)
 {
+  struct list *item;
   struct node * node;
-  node = get_node(&g_node_store,addr, atoi(aport));
-  //node = (struct node *) calloc(sizeof (struct node), 1);
+  item = get_node_list(&g_node_list,addr, atoi(aport));
+  node = (struct node *) item->data;
   //node->addr = strdup(addr);
   //node->port = atoi(aport);
 

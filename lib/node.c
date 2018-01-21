@@ -19,16 +19,18 @@
 
 #include "../inc/pithings.h"
 
-extern struct node *g_node_store;
+extern struct list *g_node_list;
 extern int g_node_debug;
 
-struct node *seek_node(struct node **root, char *addr, int port)
+struct list *seek_node_list(struct list **root, char *addr, int port)
 {
-  struct node *item = *root;
-  struct node *items = *root;
+  struct list *item = *root;
+  struct list *items = *root;
+  struct node *node;
   while (item)
     {
-      if((item->port == port) && (strcmp(item->addr, addr)==0))
+      node = (struct node*)item->data;
+      if((node->port == port) && (strcmp(node->addr, addr)==0))
 	break;
       item = item->next;
       if(item == items)
@@ -38,18 +40,21 @@ struct node *seek_node(struct node **root, char *addr, int port)
 }
 
 // get_node (&g_node_store,"127.0.0.1", 5432);
-struct node *get_node(struct node**root, char *addr, int port)
+struct list *get_node_list(struct list **root, char *addr, int port)
 {
-  struct node *item = NULL;
+  struct list *item = NULL;
+  struct node *node = NULL;
 
-  item = seek_node(root, addr, port); 
+  item = seek_node_list(root, addr, port); 
   if(!item)
     {
-      item = (struct node *)malloc(sizeof (struct node));
+      item = (struct list *)malloc(sizeof (struct list));
+      node = (struct node *)malloc(sizeof (struct node));
       
-      item->addr = strdup(addr);
-      item->port = port;
-      item->fd = -1;
+      node->addr = strdup(addr);
+      node->port = port;
+      node->fd = -1;
+      item->data = node;
       item->prev = item;
       item->next = item;
     }
@@ -57,73 +62,37 @@ struct node *get_node(struct node**root, char *addr, int port)
 }
 
 
-int push_cnode(struct node **root, struct node *citem, struct node *item)
-{
 
-  struct node *pitem = NULL;
-  struct node *nitem = NULL;
-  //if(iobp)ciob= *iobp;
-  if(citem)
-    {
-      nitem = citem->next;
-      pitem = citem->prev;
-      if ((pitem == nitem) && (pitem == citem))
-	{
-	  if(g_node_debug)printf("zero insert item %p citem %p\n", item , citem); 
-	  citem->next = item;
-	  citem->prev = item;
-	  item->next = citem;
-	  item->prev = citem;
-	}
-      else
-	{
-	  if(g_node_debug)printf("before citem insert item %p citem %p\n", item , citem); 
-	  item->next = citem;
-	  item->prev = pitem;
-	  citem->prev = item;
-	  pitem->next = item;
-	}
-    }
-  else
-    {
-      if(root)*root=item;
-    }
-  return 0;
-}
-  
-int push_node(struct node **root ,  struct node *item)
-{
-  struct node *citem = NULL;
-  if(root)citem= *root;
-  return push_cnode(root, citem, item);
-}
 
-int print_node(struct node *item)
+int print_node_item(struct list *item)
 {
+  struct node *node = NULL;
+  node = (struct node*)item->data;
+
   printf("@%p next@%p prev@%p  port %d addr [%s] fd %d\n"
 	 , item
 	 , item->next
 	 , item->prev
-	 , item->port   // where we read from
-	 , item->addr   // where we write to
-	 , item->fd   // where we write to
+	 , node->port   // where we read from
+	 , node->addr   // where we write to
+	 , node->fd   // where we write to
 
 	 );
   return 0;
 }
 
-int print_nodes(struct node *item)
+int print_node_list(struct list *item)
 {
   int rc = 0;
   //struct node *item = NULL;
-  struct node *sitem = NULL;
+  struct list *sitem = NULL;
 
   sitem = item;//in->iobuf;
 
   while(item)
     {
       rc++;
-      print_node(item);
+      print_node_item(item);
       item = item->next;
       if(item == sitem) item = NULL;
     }
@@ -131,23 +100,25 @@ int print_nodes(struct node *item)
 }
 
 
-int remove_nodes(struct node **root)
+int remove_node_list(struct list **root)
 {
   int rc = 0;
-  struct node *item = NULL;
-  struct node *litem = NULL;
-  struct node *sitem = NULL;
+  struct list *item = NULL;
+  struct list *litem = NULL;
+  struct list *sitem = NULL;
+  struct node *node = NULL; 
 
   sitem = *root;//in->iobuf;
   item = *root;//in->iobuf;
 
   while(item)
     {
+      node = (struct node *)item->data; 
       rc++;
-      
-      if(item->addr)free(item->addr);
-      if(item->fd > 0)close(item->fd);
-      
+     
+      if(node->addr)free(node->addr);
+      if(node->fd > 0)close(node->fd);
+      free(node);
       litem = item;
       item = item->next;
       if(item == sitem) item = NULL;
@@ -159,20 +130,22 @@ int remove_nodes(struct node **root)
 
 
 //
-int test_nodes(void)
+int test_node_list(void)
 {
-  struct node *node;
-  node = get_node(&g_node_store,"127.0.0.1", 5432);
-  push_node(&g_node_store, node);
+  struct list *item;
+  printf(" test_node_list\n");
 
-  node = get_node(&g_node_store,"127.0.0.1", 6000);
-  push_node(&g_node_store, node);
+  item = get_node_list(&g_node_list,"127.0.0.1", 5432);
+  push_list(&g_node_list, item);
 
-  node = get_node(&g_node_store,"127.0.0.1", 7000);
-  push_node(&g_node_store, node);
+  item = get_node_list(&g_node_list,"127.0.0.1", 6000);
+  push_list(&g_node_list, item);
 
-  print_nodes(g_node_store);
-  remove_nodes(&g_node_store);
+  item = get_node_list(&g_node_list,"127.0.0.1", 7000);
+  push_list(&g_node_list, item);
+
+  print_node_list(g_node_list);
+  remove_node_list(&g_node_list);
   return 0;
 }
 
