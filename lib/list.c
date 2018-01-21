@@ -19,7 +19,7 @@
 
 #include "../inc/pithings.h"
 
-int g_list_debug = 0;
+extern int g_list_debug;
 
 struct list *new_list(void *data)
 {
@@ -31,7 +31,7 @@ struct list *new_list(void *data)
 
   return item;
 }
-
+// citem = current item
 int push_clist(struct list **root, struct list *citem, struct list *item)
 {
 
@@ -44,7 +44,9 @@ int push_clist(struct list **root, struct list *citem, struct list *item)
       pitem = citem->prev;
       if ((pitem == nitem) && (pitem == citem))
 	{
-	  if(g_list_debug)printf("zero insert item %p citem %p\n", item , citem); 
+	  if(g_list_debug)printf("%s zero insert item %p citem %p\n"
+				 , __FUNCTION__
+				 , item , citem); 
 	  citem->next = item;
 	  citem->prev = item;
 	  item->next = citem;
@@ -52,24 +54,42 @@ int push_clist(struct list **root, struct list *citem, struct list *item)
 	}
       else
 	{
-	  if(g_list_debug)printf("before citem insert item %p citem %p\n", item , citem); 
+	  if(g_list_debug)printf(" %s before citem insert item %p citem %p\n"
+				 , __FUNCTION__
+				 , item , citem); 
+	  //	  item->next = citem;
+	  //item->prev = pitem;
+	  //citem->prev = item;
+	  //pitem->next = item;
+	  //citem->next = item;
+	  citem->prev = item;
+	  if(citem->next == citem)
+	    citem->next = item;
 	  item->next = citem;
 	  item->prev = pitem;
-	  citem->prev = item;
 	  pitem->next = item;
 	}
     }
   else
     {
-      if(root)*root=item;
+      if(root)
+	{
+	  if(g_list_debug)printf(" %s null root insert item %p citem %p\n"
+				 , __FUNCTION__
+				 , item , citem); 
+	  *root=item;
+	  item->next = item;
+	  item->prev = item;
+
+	}
     }
   return 0;
 }
   
-int push_list(struct list **root ,  struct list *item)
+int push_list(struct list **root,  struct list *item)
 {
   struct list *citem = NULL;
-  if(root)citem= *root;
+  if(*root)citem = *root;
   return push_clist(root, citem, item);
 }
 

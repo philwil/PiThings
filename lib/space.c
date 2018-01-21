@@ -18,6 +18,100 @@ extern struct space *g_space;
 extern struct space *g_spaces[];
 extern int g_space_idx;
 
+extern struct list *g_space_list;
+
+int init_g_spaces(void)
+{
+  int i;
+  for (i=0 ; i< NUM_IDX; i++)
+    g_spaces[i]=NULL;
+  return 0;
+
+}
+// split up multi/space/name
+// look for children of the same name 
+// return found name or new space object
+//    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
+
+struct space *add_space_in(struct list **root, char *name,
+			    struct iosock *in)
+{
+  struct space *parent=NULL;
+  //  struct space *child=NULL;
+  struct space *space=NULL;
+  //struct iobuf * iob;
+  //int cidx = 0;
+  //char *sp = name;
+  int new = 0;
+  int i;
+  //int rc;
+  int idx = 0;
+  int idv = 0;
+  char *valv[64];
+  char *valx[64];
+  struct list *item;
+  struct list **clist = root;
+  parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
+  printf(" ===========\n>>> %s name [%s] idv %d \n", __FUNCTION__, name, idv );
+
+  for (i = 0; i<idv; i++)
+    {
+      printf("     %s >> item %d [%s]\n", __FUNCTION__, i, valv[i]);
+    }
+  for (i=0 ; i<idv; i++)
+    {
+      //space = NULL;
+      printf(" Space .. 1 %d [%s] root %p parent %p \n"
+	     , i, valv[i], root, parent);
+      space = find_space(clist, valv[i]);
+      printf(" Space .. 2 %d [%s] %p\n", i, valv[i], space);
+      if(0)in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
+      if (!space)
+	{
+	  new = 1;
+	  space = new_space(valv[i], NULL, clist, NULL); 
+	  printf(" Created New Space for [%s] %p \n", valv[i], space);
+	  if(!parent)
+	    printf(" %s no parent adding [%s] to root \n"
+		   , __FUNCTION__, space->name);
+	  else
+	    {
+	      printf(" %s adding [%s] to parent [%s] \n"
+		     , __FUNCTION__
+		     , space->name
+		     , parent->name);
+	      clist = &parent->child;
+	    }
+	  if(g_debug)
+	    printf(" New Space for [%s] at root\n", valv[i]);
+
+	  item = new_list(space);
+	  push_list(clist, item);
+
+	  if(parent)
+	    space->parent = parent;
+	}
+      else
+	{
+	  // we found this level move on
+	  //if(g_debug)
+	    printf(" Space found [%s]\n", valv[i]);
+	    clist = &space->child;
+	}
+      parent = space;
+    }
+  //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
+
+  if(new)
+    in_snprintf(in, NULL, "Added [%s] added  space [%s] %d\n",name, space->name, idx);
+  else
+    in_snprintf(in, NULL, "Found [%s] found  space [%s] %d\n",name, space->name, idx);
+  
+  free_stuff(idv, valv);
+  free_stuff(idx, valx);
+  return space;
+}
+
 
 int test_find_parents(void)
 {
@@ -25,7 +119,7 @@ int test_find_parents(void)
   int rc=0;
   int i;
   struct space *slist[64];
-  struct space *sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
+  struct space *sp1 = add_space(&g_space_list, "ADD uav1/motor1/speed");
   for (i = 0 ; i < 64; i++)
     slist[i] = NULL;
   num = find_parents(sp1,slist,num,64);
@@ -76,9 +170,10 @@ struct space *setup_space(char *name, struct space*parent)
   space->desc = NULL;
   space->value = NULL;
   space->node = NULL;
+  space->group = NULL;
 
-  space->prev = space;
-  space->next = space;
+  //  space->prev = space;
+  //space->next = space;
   space->onset = NULL;
   space->onget = NULL;
 
@@ -90,11 +185,9 @@ struct space *setup_space(char *name, struct space*parent)
   return space;
 }
 
-struct space *new_space(char *name , struct space *parent, struct space **root_space, struct node *node)
+struct space *new_space(char *name , struct space *parent, struct list **root_space, struct node *node)
 {
   struct space *space;
-  //struct space *root = NULL;
-  struct space *last_space;
   printf(" new space [%s] root %p\n"
 	 , name
 	 , root_space
@@ -106,60 +199,22 @@ struct space *new_space(char *name , struct space *parent, struct space **root_s
       space->node = node;
     }
 
-  // insert in parent list
-  if(parent)
-    {
-	  last_space = parent->prev;
-	  last_space->next = space;
-	  space->prev =  parent->prev;
-	  space->next =  parent;
-	  parent->prev = space;
-    }
-  else
-    {
-#if 0
-      if(root_space)
-	{
-	  root = *root_space;
-	  if(root)
-	    {
-	      last_space = root->prev;
-	      last_space->next = space;
-	      space->prev =  root->prev;
-	      space->next =  root;
-	      root->prev = space;
-	    }
-	  else
-	    {
-	      *root_space = space;
-	      space->next = space;
-	      space->prev = space;
-	    }
-	}
-      else
-	{
-	  g_space = space;
-	  space->next = space;
-	  space->prev = space;
-	}
-#endif
-    }
   return space;
 }  
 
 struct space *new_space_class(char *name , struct space *parent)
 {
   //int i;
-  struct space *space;
+  struct space *space=NULL;
+#if 0
   struct space *class;
-  struct space *last_space;
+  //  struct space *last_space;
   printf(" new space class [%s] parent [%s]\n"
 	 , name
 	 , parent?parent->name:"no parent"
 	 );
   class = parent->class;
   space = setup_space(name, parent);
-
   if(class)
     {
 	  last_space = class->prev;
@@ -172,15 +227,17 @@ struct space *new_space_class(char *name , struct space *parent)
     {
       parent->class = space;
     }
+#endif
+
   return space;
 }  
-
 struct space *new_space_attr(char *name , struct space *parent)
 {
   //int i;
-  struct space *space;
+  struct space *space=NULL;
+#if 0
   struct space *attr;
-  struct space *last_space;
+  //  struct space *last_space;
   printf(" new space attr [%s] parent [%s]\n"
 	 , name
 	 , parent?parent->name:"no parent"
@@ -201,6 +258,7 @@ struct space *new_space_attr(char *name , struct space *parent)
     {
       parent->attr = space;
     }
+#endif
   return space;
 }  
 
@@ -261,11 +319,11 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
 int show_space_class(struct iosock *in,struct space *base, int indent)
 {
   char atname[128];
-  int len;
+  int len=0;
   snprintf(atname, sizeof(atname),"  %s Class", base->name); 
   if(base->class)
   {
-    len = show_spaces(in, base->class, atname, indent);
+    // len = show_spaces(in, base->class, atname, indent);
   }
   return len;
 }
@@ -277,12 +335,12 @@ int show_space_attr(struct iosock *in,struct space *base, int indent)
   snprintf(atname, sizeof(atname),"  %s Attr", base->name); 
   if(base->attr)
   {
-    len = show_spaces(in,base->attr, atname, indent);
+    //len = show_spaces(in,base->attr, atname, indent);
   }
   return len;
 }
 
-int show_space(struct iosock *in, struct space *base, int indent)
+int show_space(struct iosock *in, struct space*base, int indent)
 {
   int rc=-1;
 
@@ -294,113 +352,129 @@ int show_space(struct iosock *in, struct space *base, int indent)
     {
 	printf(" ");
     }
-  printf(" %p space %03d name [%s] node [%p] next name [%s] prev name [%s]\n"
+  printf(" %p space %03d name [%s] node [%p]\n"
 	 , base
 	 , base->idx
 	 , base->name
 	 , base->node
-	 , base->next->name
-	 , base->prev->name
+	 //, base->next->name
+	 //, base->prev->name
 	 );
-  show_space_attr(in,base, indent+3);
+  if(0)  show_space_attr(in,base, indent+3);
 
-  show_space_class(in,base, indent+5);
+  if(0)show_space_class(in,base, indent+5);
   return rc;
 }
 
 
-int show_spaces(struct iosock *in, struct space *base, char *desc, int indent)
+int show_spaces(struct iosock *in, struct list **list, char *desc, int indent)
 {
-  struct space *start=base;
+  struct space *start;
+  struct list *slist = *list;
+  struct list *ilist = *list;
   int rc = 0;
   in_snprintf(in, NULL, "spaces ... %s\n", desc ? desc:" ");
 
-  while (base)
+  while (ilist)
     {
-      rc = show_space(in, base, indent);
-      if(base->child) 
+      start =(struct space *)ilist->data;
+      rc = show_space(in, start, indent);
+      if(start->child) 
 	{
-	  rc =  show_spaces(in, base->child,"child",indent+2);
+	  rc =  show_spaces(in, &start->child,"child",indent+2);
 	}
-      if(base->next != start)
-	base=base->next;
+      if(ilist->next != slist)
+	ilist=ilist->next;
       else
-	base =  NULL;
+	ilist =  NULL;
     }
   return rc;
 }
 
-int show_space_new(struct iosock *in, struct space *base, char *desc, int len, char *bdesc)
+int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, char *bdesc)
 {
   //struct space *start=base;
-  struct space *child=NULL;
+  //struct space *child=NULL;
+  struct space *space=NULL;
+  struct list *clist=NULL;
+  struct list *slist=NULL;
   int ret;
   int rc=-1;
   char *sp = desc;
   int slen = len;
 
-  if(!base)return rc;
+  if(!list)return rc;
   if(!desc)return rc;
   if(len == 0)return rc;
   //  sp += strlen(desc);
-
-  child = base->child;
-  if(child == NULL)
+  space = (struct space *)list->data;
+  clist = space->child;
+  if(clist == NULL)
     {
       snprintf(sp, slen,
 	       "/%s => %d"
-	       , base->name
-	       , base->idx
+	       , space->name
+	       , space->idx
 	       );
     }
   else
     {
       snprintf(sp, slen,
 	       "/%s"
-	       , base->name
+	       , space->name
 	       );
+      printf("    run >> [%s]\n", bdesc);
     }
-  if(child == NULL)
+  if(clist == NULL)
     {
-      in_snprintf(in, NULL," >> [%s]\n", bdesc);
+      //in_snprintf(in, NULL," >> [%s]\n", bdesc);
       //desc[0]=0;
       //printf(
       return 0;
     }
+
   // foreach child do the same
   slen -= strlen(sp);
   sp += strlen(sp);
   //  sp += strlen(sp);
-  while (child != NULL)
+  slist = clist;
+  while (slist)
     {
+      //child = (struct space *)slist->data;
 
-      slen += show_space_new(in,child, sp, slen, bdesc);
-      child = child->next;
-      if (child == base->child) 
-	child= NULL;
+      slen += show_space_new(in, slist, sp, slen, bdesc);
+      slist = slist->next;
+      if (slist == clist) 
+	slist = NULL;
     }
   //  ret =  strlen(buf);
   ret =  slen;
   return ret;
 }
 
-int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len, char *bdesc)
+int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len, char *bdesc)
 {
-  int rc  = -1;
-  struct space *base=*basep;
-  struct space *start=base;
+  int rc  = 0;
+  //struct space *base=NULL;
+  //struct space *start=NULL;
+  struct list *ilist = NULL;
+  struct list *slist = NULL;
+  printf("%s listp %p *listp %p\n", __FUNCTION__, listp , *listp);
   //struct space *xstart=NULL;
-  while (start)
-    {
-      rc = show_space_new(in, start, desc, len, bdesc);
-      if(g_debug)
-	printf(" >> [%s]\n", desc);
-      if(in)in_snprintf(in, NULL, ">>[%s]\n", desc);
-      //xstart = start->next;
-      start = start->next;
+  ilist = *listp;
+  slist = *listp;
 
-      if(start == base) 
-	start =  NULL;
+  while (ilist)
+    {
+      rc = show_space_new(in, ilist, desc, len, bdesc);
+      if(1 || g_debug)
+	printf(" dbg >>> [%s] rc %d\n", desc, rc);
+      if(in)in_snprintf(in, NULL, ">>>>[%s]\n", desc);
+      //xstart = start->next;
+      ilist = ilist->next;
+
+      if(ilist == slist) 
+	ilist =  NULL;
       //start =  NULL;
     }
   //printf(" base [%s] %d @ %p \n", base->name, base->idx, base);
@@ -410,9 +484,13 @@ int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len
  return rc;
 }
 
-struct space *find_space_new(struct space *base, char *name)
+
+// reworking with lists
+struct space *find_space_new(struct list **listp, char *name)
 {
-  struct space *start;
+  struct list *ilist;
+  struct list *slist;
+  struct space *space=NULL;
   //char *sp = name;
   char *spv = NULL;
   int i;
@@ -422,68 +500,95 @@ struct space *find_space_new(struct space *base, char *name)
   int idv = 0;
   char *valv[64];
   char *valx[64];
+  // break up the name into a load of names
+  // valv is the broken down list of name elements
   parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-  // now find the space at each step
+  // now find the space name at each step
   i = 0;
-  start = base;
-  while (base)
+
+  if(idv == 0)
     {
+      spv = name;
+      goto free_out;
+    }
+  spv = valv[i];
+  slist = *listp;
+  ilist = *listp;
+  while (ilist)
+    {
+      space = (struct space *)ilist->data;
       spv = valv[i];
       if(*spv == '/')spv++;
       if(1)
 	printf(" looking for [%s] [%s] found [%s] i %d idx/v %d/%d\n"
-	       , valv[i], spv, base->name
+	       , valv[i], spv, space->name
 	       , i
 	       , idx
 	       , idv
 		  );
-      if(strcmp(base->name, spv)==0)
+      if(strcmp(space->name, spv)==0)  // we found it
 	{
-
           if(i < idv) i++;
 	  if(i == idv)
 	    {
-	      free_stuff(idv, valv);
-	      free_stuff(idx, valx);
-	      printf(" %s we found it [%s]\n", __FUNCTION__, base->name);
-	      return base;
+	      goto free_out;
 	    }
-	  base =  base->child;
-	  start = base;
-	  //break;
+	  // step down to the next child list
+	  slist = space->child;
+	  ilist =  slist;
+
 	}
-      else
+      else   // not found , search to end of list 
 	{
-	  if(base->next != start)
-	    base=base->next;
+	  if(ilist->next != slist)
+	    {
+              // move to next child
+	      ilist=ilist->next;
+	    }
 	  else
 	    {
-	      if(i < idv) i++;
-	      if(i == idv)
-		{
-		  free_stuff(idv, valv);
-		  free_stuff(idx, valx);
-		  return NULL;
-		}
-	      base =  base->child;
-	      start = base;
+	      ilist = NULL;
+	      space = NULL;
 	    }
+
+	  //	      if(i < idv) i++;
+	  //  if(i == idv)
+	  //	{
+	  //	  free_stuff(idv, valv);
+	  //	  free_stuff(idx, valx);
+	  //	  return NULL;
+	  //	}
+	  //  slist =  base->child;
+	  //  ilist = base->child;
+	  //}
 	}
     }
-  return base;
+ free_out:
+  // end of name list we are done
+  if(space)
+    printf(" %s we found it seeking [%s] found [%s]\n"
+	   , __FUNCTION__, spv,  space->name);
+  else
+    printf(" %s no luck seeking [%s]\n", __FUNCTION__, spv);
+  free_stuff(idv, valv);
+  free_stuff(idx, valx);
+
+  return space;
+
+
 }
+
 
 
 int add_child(struct space *parent, struct space *child)
 {
-  if(parent->child == NULL)
-    parent->child = child;
-  else
-    insert_space(parent->child, child);
+  struct list *item = new_list(child);
+  push_list(&parent->child, item);
   child->parent = parent;
   return 0;
 }
 
+#if 0
 // create a copy of the space if any at name
 //  base = find_space_new(base, name);
 struct space *copy_space_new(struct space *base, char *new_name)
@@ -507,43 +612,45 @@ struct space *copy_space_new(struct space *base, char *new_name)
     }
   return space;
 }
+#endif
 
-struct space *find_space(struct space**parent, char *name)
+// find a space given a name
+struct space *find_space(struct list**list, char *name)
 {
-  struct space *base;
-  struct space *start;
+  struct list *ilist;
+  struct list *slist;
+  struct space *space;
 
-  start = g_space;
-  base = g_space;
-  if(parent)
+  if(!list || !*list || !name)
     {
-      start = *parent;
-      base = *parent;
-      if(g_debug)
-	printf(" >>> find space [%s] parent name [%s] ... \n", name
-	       ,start?start->name ? start->name:"No name":"No start");
+      return NULL;
     }
-  else
+  slist = *list;
+  ilist = *list;
+  //if(g_debug)
+  // printf(" >>> find space [%s] base name [%s] ... \n", name
+  //	 ,base?base->name ? base->name:"No name":"No base");
+  while (ilist)
     {
-      if(g_debug)
-	printf(" >>> find space name [%s] ... \n", name);
-    }
-  while (base)
-    {
-      if(strcmp(base->name, name)==0)
+      space = (struct space *)ilist->data;
+      printf(" %s looking at space [%s]\n", __FUNCTION__, space->name);
+      if(strcmp(space->name, name)==0)
 	{
 	  break;
 	}
       
-      if(base->next != start)
-	base=base->next;
+      if(ilist->next != slist)
+	ilist=ilist->next;
       else
-	base =  NULL;
+	{
+	  ilist =  NULL;
+	  space = NULL;
+	}
     }
   
   if(g_debug)
-    printf(" >>> find space name [%s] space %p... \n", name, base);
-  return base;
+    printf(" >>> find space name [%s] space %p... \n", name, space);
+  return space;
 }
 
 /*
@@ -551,42 +658,19 @@ before any s0->p = s0 s0->n=s0
 after add s1 s0->p = s1 s0->n = s1 s1->p = s0 s1->n=s0
 after add s2 s0->p = s2 s0->n = s1 s1->p = s0 s1->n=s2 s2->p = s1 s2->n=s0
  */
-int insert_space(struct space *parent, struct space *space)
+int insert_space(struct list **parent, struct space *space)
 {
-  struct space *last_space;
+  struct list * item = new_list(space);
+  push_list(parent, item);
 
-  last_space = parent->prev;
-
-  if(0)printf( " add_space  parent [%s] pprev [%s] next [%s]\n"
-	       , parent->name
-	       , last_space->name
-	       , space->name
-	       );
-
-
-  if(parent->next == parent) 
-    {
-      parent->next = space;
-      parent->prev = space;
-      space->next = parent;
-      space->prev = parent;
-    }
-  else
-    {
-      last_space->next = space;
-      space->prev = last_space;
-      space->next =  parent;
-      parent->prev = space;
-    }
-  space->parent = parent;
   return 0;
 }
-struct space *show_space_in(struct space **base, char *name, struct iosock *in)
+struct space *show_space_in(struct list **list, char *name, struct iosock *in)
 {
   //int rc = 0;
   char sbuf[4096];
   struct space *sp1=NULL;
-  struct space **spb=&g_space;
+  //struct space **spb=&g_space;
   char *sp = name;
   sscanf(name,"%s ", sbuf);  // TODO use more secure option
   if(g_debug)
@@ -613,19 +697,20 @@ struct space *show_space_in(struct space **base, char *name, struct iosock *in)
 		   , *sp
 		   );
 	  if ((*sp != 0xa) && (*sp != 0xd)) 
-	    sp1 = find_space_new(g_space, sp);
+	    sp1 = find_space_new(&g_space_list, sp);
 	}
     }
   if(sp1)
-    {
-      spb = &sp1;
-    }
-  show_spaces_new(in, spb, sbuf, 4096, sbuf);
+  {
+    printf(" got sp1\n");
+  //  spb = &sp1;
+  }
+  show_spaces_new(in, &g_space_list, sbuf, 4096, sbuf);
   return NULL;
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-int set_spacexx(struct space * base, char *name, char *value)
+int set_spacexx(struct list **list, char *name, char *value)
 {
   int rc = -1;
   struct space *sp1;
@@ -636,7 +721,7 @@ int set_spacexx(struct space * base, char *name, char *value)
   sname[1][0]=0;
   sname[2][0]=0;
   rc = sscanf(name,"%s %s %s", sname[0], sname[1], sname[2]);
-  sp1 = find_space_new(base, sname[1]);
+  sp1 = find_space_new(list, sname[1]);
   if(sp1)
     {
       spv = sname[2];
@@ -654,11 +739,11 @@ int set_spacexx(struct space * base, char *name, char *value)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-struct space *set_space_in(struct space **basep, char *name, struct iosock *in)
+struct space *set_space_in(struct list **list, char *name, struct iosock *in)
 {
   //int rc = -1;
   struct space *sp1;
-  struct space *base =  *basep;
+  //  struct space *base =NULL;
   char sname[3][128];  // TODO
   char * spv;
 
@@ -666,7 +751,7 @@ struct space *set_space_in(struct space **basep, char *name, struct iosock *in)
   sname[1][0]=0;
   sname[2][0]=0;
   sscanf(name,"%s %s %s", sname[0], sname[1], sname[2]);
-  sp1 = find_space_new(base, sname[1]);
+  sp1 = find_space_new(list, sname[1]);
   if(sp1)
     {
       spv = sname[2];
@@ -689,19 +774,19 @@ struct space *set_space_in(struct space **basep, char *name, struct iosock *in)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-int set_space(struct space *base, char *name)
+int set_space(struct list **list, char *name)
 {
-  struct space* gbase = base;
-  set_space_in(&gbase, name, NULL);
+  set_space_in(list, name, NULL);
   return 0;
 }
 
 //char *get_space(struct space *base, char *name)
-struct space *get_space_in(struct space ** basep, char *name, struct iosock *in)
+struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 {
   char * sret=NULL;
   struct space *sp1;
-  struct space *base =  *basep;
+  //struct list *list;
+  //struct space *base = NULL;
   char *sp;
   char spv[2][128];
   int rc=0;
@@ -710,7 +795,7 @@ struct space *get_space_in(struct space ** basep, char *name, struct iosock *in)
   rc = sscanf(name,"%s %s", spv[0], spv[1]);
   sp = spv[0];
   if( rc == 2 ) sp = spv[1];
-  sp1 = find_space_new(base, sp);
+  sp1 = find_space_new(listp, sp);
   if(sp1)
     {
       if(sp1->onget)
@@ -734,13 +819,13 @@ struct space *get_space_in(struct space ** basep, char *name, struct iosock *in)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-char *get_space(struct space *base, char *name)
+char *get_space(struct list **list, char *name)
 {
   char *ret =  NULL;
   //TODO
-  struct space *gbase = base;
-  get_space_in(&gbase, name, NULL);
+  //struct space *gbase = base;
+  get_space_in(list, name, NULL);
   return ret;
 }
 
-int count = 0;
+//int count = 0;

@@ -14,9 +14,10 @@
 
 extern struct cmds g_cmds[];
 extern  struct cmds h_cmds[];
-extern struct space *g_space;
+//extern struct space *g_space;
 //xtern struct node *g_node_store;
 extern struct list *g_node_list;
+extern struct list *g_space_list;
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
@@ -25,22 +26,22 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
   int  rc = 1;
   char *sp;
   *idx = parse_stuff(' ', size, (char **)valx, name, 0);
-  printf(" parse_name 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
-	 , valx[0], valx[1]); 
+  if(0)printf(" parse_name 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
+	      , valx[0], valx[1]); 
 
   sp = valx[0];
   if(*idx >= 2)sp = valx[1];
 
   *idy = parse_stuff('/', size, (char **)valy, sp,'?');
-  printf(" parse_name 2 name [%s] *idy %d valy[0/1] %p/%p [%s]-[%s]\n"
-	 , name, *idy
-	 , valy[0], valy[1]
-	 , valy[0], (*idy>1)?valy[1]:"none"
-	 ); 
+  if(0)printf(" parse_name 2 name [%s] *idy %d valy[0/1] %p/%p [%s]-[%s]\n"
+	      , name, *idy
+	      , valy[0], valy[1]
+	      , valy[0], (*idy>1)?valy[1]:"none"
+	      ); 
   return rc;
 }
 
-struct space *cmd_html_len(struct space **root, char *name,
+struct space *cmd_html_len(struct list **root, char *name,
 			    struct iosock *in)
 {
   int rc;
@@ -70,7 +71,7 @@ struct space *cmd_html_len(struct space **root, char *name,
   return NULL;
 }
 
-struct space *cmd_html_dummy(struct space **root, char *name,
+struct space *cmd_html_dummy(struct list **root, char *name,
 			    struct iosock *in)
 {
   //  int rc;
@@ -93,88 +94,7 @@ struct space *cmd_html_dummy(struct space **root, char *name,
 
   return NULL;
 }
-// split up multi/space/name
-// look for children of the same name 
-// return found name or new space object
-//    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
 
-struct space *add_space_in(struct space **root, char *name,
-			    struct iosock *in)
-{
-  struct space *parent=NULL;
-  struct space *space=NULL;
-  //struct iobuf * iob;
-  //int cidx = 0;
-  //char *sp = name;
-  int new = 0;
-  int i;
-  //int rc;
-  int idx = 0;
-  int idv = 0;
-  char *valv[64];
-  char *valx[64];
-
-  parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-
-  for (i = 0; i<idv; i++)
-    {
-      printf(" >> Space %d [%s]\n", i, valv[i]);
-    }
-  for (i=0 ; i<idv; i++)
-    {
-      space = NULL;
-      space = find_space(parent?&parent->child:root, valv[i]);
-      printf(" Space %d [%s] %p\n", i, valv[i], space);
-      if(0)in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
-      if (!space)
-	{
-	  new = 1;
-	  if(parent)
-	    {
-	      if(g_debug)
-		printf(" New Space for [%s] parent->name [%s]\n", valv[i], parent->name);
-	      space = new_space(valv[i], parent->child, &parent->child, NULL); 
-	      add_child(parent, space);
-
-	    }
-	  else
-	    {
-	      if(g_debug)
-		printf(" New Space for [%s] at root\n", valv[i]);
-	      space = new_space(valv[i], NULL, &g_space, NULL); 
-	      printf(" New Space for [%s] at root %p\n", valv[i], space);
-
-	    }
-	  if(i == 0)
-	    {
-	      if (*root == NULL)
-		{
-		  *root = space;
-		}
-	      else
-		{
-		  insert_space(*root, space);
-		}
-	    }
-	}
-      else
-	{
-	  if(g_debug)
-	    printf(" Space found [%s]\n", valv[i]);
-	}
-      parent = space;
-    }
-  //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
-
-  if(new)
-    in_snprintf(in, NULL, "Added [%s] added  space [%s] %d\n",name, space->name, idx);
-  else
-    in_snprintf(in, NULL, "Found [%s] found  space [%s] %d\n",name, space->name, idx);
-  
-  free_stuff(idv, valv);
-  free_stuff(idx, valx);
-  return space;
-}
 
 struct node *new_node(char *aport, char *addr)
 {
@@ -195,7 +115,7 @@ struct node *new_node(char *aport, char *addr)
 
 // struct node
 // "NODE name/n/n addr port 
-struct space *add_node_in(struct space **root, char *name,
+struct space *add_node_in(struct list **root, char *name,
 			    struct iosock *in)
 {
   struct space *space=NULL;
@@ -236,7 +156,7 @@ struct space *add_node_in(struct space **root, char *name,
 }
 
 
-struct space *add_space(struct space **root, char *name)
+struct space *add_space(struct list **root, char *name)
 {
   return add_space_in(root, name, NULL);
 }
@@ -360,12 +280,12 @@ int set_up_new_cmds(void)
   return rc;
 }
 
-struct space *help_new_gcmds(struct space **base, char *name, struct iosock *in)
+struct space *help_new_gcmds(struct list **base, char *name, struct iosock *in)
 {
   return help_new_cmds(g_cmds, NUM_CMDS, base, name, in);
 }
 
-struct space *help_new_cmds(struct cmds *cmds, int n,struct space **base, char *name, struct iosock *in)
+struct space *help_new_cmds(struct cmds *cmds, int n,struct list **base, char *name, struct iosock *in)
 {
   //int rc = 0;
   int i = 0;
@@ -412,7 +332,7 @@ int in_new_cmds(struct cmds * cmds, int n, char * name)
   return rc;
 }
 
-struct space *cmd_quit(struct space **base, char *name, struct iosock *in)
+struct space *cmd_quit(struct list **base, char *name, struct iosock *in)
 {
   //main
   printf("quitting\n");
@@ -423,7 +343,7 @@ struct space *cmd_quit(struct space **base, char *name, struct iosock *in)
 
 }
 
-struct space *decode_cmd_in(struct space **base, char *name, struct iosock *in)
+struct space *decode_cmd_in(struct list **base, char *name, struct iosock *in)
 {
   int rc = 0;
   char sbuf[64];
@@ -466,7 +386,7 @@ struct space *decode_cmd_in(struct space **base, char *name, struct iosock *in)
   return NULL;
 }
 // decode reply , TODO look for function to process reply 
-struct space *decode_rep_in(struct space **base, char *name, struct iosock *in)
+struct space *decode_rep_in(struct list **base, char *name, struct iosock *in)
 {
   int rc = 0;
   char sbuf[64];
@@ -517,28 +437,28 @@ int run_str_in(struct iosock *in, char *stuff, char *cmd)
   //struct space *space=NULL;
   //struct space *attr=NULL;
   int rc;
-  rc = run_new_gcmd (cmd, &g_space, stuff, in);
+  rc = run_new_gcmd (cmd, &g_space_list, stuff, in);
   if(rc >= 0) return 0;
   if(strcmp(cmd, "ADD") == 0)
     {
-      add_space_in(&g_space, stuff, in);
+      add_space_in(&g_space_list, stuff, in);
       return 0;
     }
   else if(strcmp(cmd, "SET") == 0)
     {
-      set_space_in(&g_space, stuff, in);
+      set_space_in(&g_space_list, stuff, in);
       return 0 ; 
     }
   else if(strcmp(cmd, "GET") == 0)
     {
       rc = 0;
-      get_space_in(&g_space, stuff, in);
+      get_space_in(&g_space_list, stuff, in);
       return rc;
     }
   else if(strcmp(cmd, "SHOW") == 0)
     {
       rc = 0;
-      show_space_in(&g_space, stuff, in);
+      show_space_in(&g_space_list, stuff, in);
       return rc;
     }
   return rc;
@@ -569,21 +489,21 @@ int init_cmds(struct cmds *cmds, int n)
 
 
 int init_new_gcmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in))
+		 (struct list ** base, char *name, struct iosock *in))
 {
   return init_new_cmd(g_cmds, NUM_CMDS, key, desc, hand);
 
 }
 
 int init_new_hcmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in))
+		 (struct list ** base, char *name, struct iosock *in))
 {
   return init_new_cmd(h_cmds, NUM_CMDS, key, desc, hand);
 }
 
 
 int init_new_cmd(struct cmds *cmds, int ncmds , char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in))
+		 (struct list ** base, char *name, struct iosock *in))
 {
   int i;
   for (i = 0; i< ncmds; i++, cmds++)
@@ -600,18 +520,18 @@ int init_new_cmd(struct cmds *cmds, int ncmds , char *key, char *desc, struct sp
   return i;
 }
 
-int run_new_gcmd(char *key, struct space **base, char *stuff, struct iosock *in)
+int run_new_gcmd(char *key, struct list **list, char *stuff, struct iosock *in)
 {
-  return run_new_cmd(g_cmds, NUM_CMDS, key, base, stuff, in);
+  return run_new_cmd(g_cmds, NUM_CMDS, key, list, stuff, in);
 }
-int run_new_hcmd(char *key, struct space **base, char *stuff, struct iosock *in)
+int run_new_hcmd(char *key, struct list **list, char *stuff, struct iosock *in)
 {
-  return run_new_cmd(h_cmds, NUM_CMDS, key, base, stuff, in);
+  return run_new_cmd(h_cmds, NUM_CMDS, key, list, stuff, in);
 }
 
 
 
-int run_new_cmd(struct cmds *cmds, int ncmds, char *key, struct space **base, char *stuff, struct iosock *in)
+int run_new_cmd(struct cmds *cmds, int ncmds, char *key, struct list **list, char *stuff, struct iosock *in)
 {
   int rc=-1;
   int i;
@@ -621,7 +541,7 @@ int run_new_cmd(struct cmds *cmds, int ncmds, char *key, struct space **base, ch
       if(cmds->key && (strcmp(cmds->key, key) == 0))
 	{
 	  //sp1 =
-	  cmds->new_hand(base, stuff, in);
+	  cmds->new_hand(list, stuff, in);
 	  break;
 	}
     }

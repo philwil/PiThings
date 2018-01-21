@@ -28,33 +28,14 @@ struct space *g_space=NULL;
 int g_space_idx = 1;
 struct space *g_spaces[NUM_IDX];
 struct iobuf *g_iob_store = NULL;
-int g_debug_term = 1;
+int g_debug_term = 0;
 int g_count = 0;
 
 struct node *g_node_store = NULL;
 struct list *g_node_list = NULL;
-int g_node_debug;
-
-int init_g_spaces(void)
-{
-  int i;
-  for (i=0 ; i< NUM_IDX; i++)
-    g_spaces[i]=NULL;
-  return 0;
-
-}
-int init_iosocks(void)
-{
-  int i;
-  struct iosock *in;
-  for (i = 0; i< NUM_SOCKS; i++)
-  {
-
-      in = &g_iosock[i];
-      init_iosock(in);
-  }
-  return i;
-}
+struct list *g_space_list = NULL;
+int g_node_debug= 0;
+int g_list_debug = 0;
 
 int main (int argc, char *argv[])
 {
@@ -66,32 +47,60 @@ int main (int argc, char *argv[])
    //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
    struct space *sp1;
    struct space *sp2;
+   struct list *lp1;
    //struct space *sp3;
    char buf[2048];
    char *sp;
    char *vals[64];
    struct iosock ins;
    struct iosock *in = &ins;
-   test_groups();
-   //return 0;
-   //test_nodes();
-   test_node_list();
-   //eturn 0;
-   
+
+   init_g_spaces();
+   init_iosocks();
+   init_iosock(in);
    init_hands(NUM_HAND);
    init_cmds(g_cmds, NUM_CMDS);
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
-   struct space *help_new_gcmds(struct space **base, char *name, struct iosock *in);
-   help_new_gcmds(NULL, NULL, NULL);
-  
-   
-   init_g_spaces();
-   init_iosocks();
-   init_iosock(in);
+   g_list_debug =1;
+   //add_space_in(&g_space_list, "ADD uav1", NULL);
+   //add_space_in(&g_space_list, "ADD uav2", NULL);
+   //add_space_in(&g_space_list, "ADD uav3", NULL);
+   add_space_in(&g_space_list, "ADD uav1/motor1", NULL);
+   add_space_in(&g_space_list, "ADD uav1/motor2", NULL);
+   sp1 = find_space_new(&g_space_list, "ADD uav1");
+   printf ("UAV1 spacep %p", sp1);
+   if(sp1)
+     printf(" g_space_list data %p match %d uav1->child %p\n"
+	    , g_space_list->data
+	    , (g_space_list->data == sp1)
+	    , sp1->child
+	    );
+   if(sp1->child)
+     {
+       lp1 =sp1->child;
+       sp2 = lp1->data;
+       sp1 = lp1->next->data;
+       printf("sp2 name [%s]\n", sp2?sp2->name:"no name");
+       printf("sp1 name [%s]\n", sp1?sp1->name:"no name");
+     }
+   //add_space_in(&g_space_list, "ADD uav1/motor1/speed", NULL);
+   printf ("spaces from root\n");
+   show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
 
+   //printf ("spaces from sp2\n");
+   //show_spaces_new(NULL,&g_space_list[1], buf, 2048, buf);
+   //add_space
+   //test_groups();
+#if 0
+   //return 0;
+   //test_nodes();
+   //test_node_list();
+   //eturn 0;
+   //help_new_gcmds(NULL, NULL, NULL);
+  
    in->fd = 1;
-   test_find_parents();
+   //test_find_parents();
    //return 0;
    
    if(argc > 1)
@@ -240,5 +249,6 @@ int main (int argc, char *argv[])
        rc = poll_sock(g_lsock);
        //g_count++;
    }
+#endif
    return 0;
 }

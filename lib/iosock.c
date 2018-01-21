@@ -15,11 +15,25 @@
 
 extern struct iosock g_iosock[];
 extern struct iobuf *g_iob_store;
-extern struct space *g_space;
+//extern struct space *g_space;
 extern int g_space_idx;
 extern int g_quit_one;
 extern int g_num_socks;
 extern struct space **g_spaces;
+extern struct list *g_space_list;
+
+int init_iosocks(void)
+{
+  int i;
+  struct iosock *in;
+  for (i = 0; i< NUM_SOCKS; i++)
+  {
+
+      in = &g_iosock[i];
+      init_iosock(in);
+  }
+  return i;
+}
 
 int init_iosock(struct iosock *in)
 {
@@ -497,8 +511,8 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
     }
   else
     {
-      rc = run_new_gcmd (cmd, &g_space, sp, in);
-      rc = run_new_hcmd (cmd, &g_space, sp, in);
+      rc = run_new_gcmd (cmd, &g_space_list, sp, in);
+      rc = run_new_hcmd (cmd, &g_space_list, sp, in);
     }
   return 0;
 }

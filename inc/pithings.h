@@ -60,10 +60,10 @@ struct space {
   char *desc;
   int idx;        // local index
   int ridx;       // remote index
-  struct space *next;
-  struct space *prev;
+  //  struct space *next;
+  //struct space *prev;
   struct space *parent;
-  struct space *child;  // multispace
+  struct list *child;  // multispace
   struct space *attr;  // here are things about this item 
   struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
@@ -116,7 +116,7 @@ struct cmds
   char *key;
   char *cmd;
   char *desc;
-  struct space *(*new_hand)(struct space **b, char *name, struct iosock *in);
+  struct space *(*new_hand)(struct list **b, char *name, struct iosock *in);
   int (*handler)(void *key, int n, char *cmd, int speed, int time);
 };
 
@@ -135,40 +135,40 @@ int add_socket(int sockfd);
 int connect_socket(int portno, char *addr);
 
 int init_iosock(struct iosock *in);
-char *get_space(struct space * base, char *name);
-struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
-struct space *show_space_in(struct space ** base, char *name, struct iosock *in);
-struct space *decode_cmd_in(struct space ** base, char *name, struct iosock *in);
-struct space *decode_rep_in(struct space ** base, char *name, struct iosock *in);
-struct space *help_new_gcmds(struct space ** base, char *name, struct iosock *in);
-struct space *help_new_cmds(struct cmds * cmds, int n,struct space ** base, char *name, struct iosock *in);
-struct space *cmd_quit(struct space **base, char *name, struct iosock *in);
+//char *get_space(struct space * base, char *name);
+//struct space *get_space_in(struct space ** base, char *name, struct iosock *in);
+//struct space *show_space_in(struct space ** base, char *name, struct iosock *in);
+struct space *decode_cmd_in(struct list **base, char *name, struct iosock *in);
+struct space *decode_rep_in(struct list **base, char *name, struct iosock *in);
+struct space *help_new_gcmds(struct list ** base, char *name, struct iosock *in);
+struct space *help_new_cmds(struct cmds *cmds, int n,struct list ** base, char *name, struct iosock *in);
+struct space *cmd_quit(struct list **base, char *name, struct iosock *in);
 
 int init_new_cmd(struct cmds *cmds, int n, char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in));
+		 (struct list ** base, char *name, struct iosock *in));
 int init_new_gcmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in));
+		 (struct list ** base, char *name, struct iosock *in));
 int init_new_hcmd(char *key, char *desc, struct space *(*hand)
-		 (struct space ** base, char *name, struct iosock *in));
+		 (struct list ** base, char *name, struct iosock *in));
 
-int run_new_cmd(struct cmds *cmd, int n,char *key, struct space **base, char *name, struct iosock *in);
+int run_new_cmd(struct cmds *cmd, int n,char *key, struct list **base, char *name, struct iosock *in);
 
-int run_new_gcmd(char *key, struct space **base, char *nam, struct iosock *in);
-int run_new_hcmd(char *key, struct space **base, char *nam, struct iosock *in);
+int run_new_gcmd(char *key, struct list **base, char *nam, struct iosock *in);
+int run_new_hcmd(char *key, struct list **base, char *nam, struct iosock *in);
 
 int run_new_hand (char *key, int fd, char *buf, int len);
 int init_new_hand(char *key, char *desc, int(*hand)
 		  (int fd, char *id,char *buf, int len));
 
 
-int set_space(struct space * base, char *name);
-struct space *set_space_in(struct space **base, char *name, struct iosock *in);
+//int set_space(struct space * base, char *name);
+//struct space *set_space_in(struct space **base, char *name, struct iosock *in);
 
-int insert_space(struct space *parent, struct space *space);
-struct space *add_space(struct space **root, char *name);
-int add_child(struct space *base, struct space *child);
+//int insert_space(struct space *parent, struct space *space);
+struct space *add_space(struct list **root, char *name);
+//int add_child(struct space *base, struct space *child);
 
-int show_spaces(struct iosock *in, struct space *base, char *desc, int indent);
+//int show_spaces(struct iosock *in, struct space *base, char *desc, int indent);
 int parse_stuff(char delim, int num, char **vals, char *stuff, char stop);
 
 int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *name);
@@ -177,8 +177,38 @@ int free_stuff(int num, char **vals);
 struct iobuf *new_iobuf(int len);
 int in_snprintf(struct iosock *in, struct iobuf *iob,const char *fmt, ...);
 int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
-int find_parents(struct space* node, struct space **list, int num, int max);
 
+// space stuff
+int find_parents(struct space* node, struct space **list, int num, int max);
+struct space *setup_space(char *name, struct space*parent);
+struct space *new_space(char *name , struct space *parent, struct list **root_space, struct node *node);
+
+//struct space *find_space_new(struct space *base, char *name);
+
+//int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len, char *bdesc);
+//struct space *find_space(struct space**parent, char *name);
+struct space *new_space_class(char *name , struct space *parent);
+
+int show_spaces(struct iosock *in, struct list **list, char *desc, int indent);
+int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, char *bdesc);
+int show_spaces_new(struct iosock *in, struct list **list, char *desc, int len, char *bdesc);
+
+struct space *find_space_new(struct list **list, char *name);
+int add_child(struct space *parent, struct space *child);
+
+struct space *find_space(struct list**listp, char *name);
+
+int insert_space(struct list **parent, struct space *space);
+struct space *show_space_in(struct list **listp, char *name, struct iosock *in);
+struct space *set_space_in(struct list **list, char *name, struct iosock *in);
+int set_space(struct list **list, char *name);
+
+struct space *get_space_in(struct list **list, char *name, struct iosock *in);
+
+char *get_space(struct list **list, char *name);
+
+struct space *add_space_in(struct list **root, char *name,
+			   struct iosock *in);
 
 typedef unsigned char uint8_t;
 
@@ -242,11 +272,6 @@ int test_iob(void);
 int test_iob_out(void);
 int show_stuff(int rc, char **vals);
 
-struct space *find_space_new(struct space *base, char *name);
-
-int show_spaces_new(struct iosock *in, struct space **basep, char *desc, int len, char *bdesc);
-struct space *find_space(struct space**parent, char *name);
-struct space *new_space(char *name , struct space *parent, struct space **root_space, struct node *node);
 
 extern int g_debug;
 extern int g_debug_term;
@@ -287,6 +312,8 @@ struct list *find_list_item(struct list *master, void *data);
 int print_group_list(char *master);
 int print_group_item(struct list *item);
 int test_groups();
+
+
 #endif
 
 
