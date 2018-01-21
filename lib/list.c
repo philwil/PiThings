@@ -21,6 +21,17 @@
 
 int g_list_debug = 0;
 
+struct list *new_list(void *data)
+{
+  struct list *item;
+  item = (struct list *)malloc(sizeof(struct list));
+  item->next = item;
+  item->prev = item;
+  item->data = data;
+
+  return item;
+}
+
 int push_clist(struct list **root, struct list *citem, struct list *item)
 {
 
@@ -63,3 +74,58 @@ int push_list(struct list **root ,  struct list *item)
 }
 
 
+struct list *pop_clist(struct list **root, struct list *citem, struct list *item)
+{
+
+  struct list *pitem = NULL;
+  struct list *nitem = NULL;
+  //if(iobp)ciob= *iobp;
+  if(citem)
+    {
+      nitem = item->next;
+      pitem = item->prev;
+      if ((pitem == nitem) && (pitem == item))
+	{
+	  if(g_list_debug)printf("zero rem item %p citem %p\n", item , citem); 
+	  if(root)*root=NULL;
+	  item =  item;
+	}
+      else
+	{
+	  if(g_list_debug)printf("before citem rem item %p citem %p\n", item , citem); 
+	  nitem->prev = item->prev;
+	  pitem->next = item->next;
+
+	  item->next = item;
+	  item->prev = item;
+	}
+    }
+  else
+    {
+      if(root)*root=NULL;
+    }
+  return item;
+}
+
+struct list *pop_list(struct list **root ,  struct list *item)
+{
+  struct list *citem = NULL;
+  if(root)citem= *root;
+  return pop_clist(root, citem, item);
+}
+
+
+struct list *find_list_item(struct list *master, void *data)
+{
+  struct list *item = master;
+  struct list *sitem = master;
+  while(item)
+    {
+      if(item->data == data)
+	break;
+      item = item->next;
+      if (item == sitem) item =  NULL;
+    }
+
+  return item;
+}

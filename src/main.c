@@ -72,7 +72,8 @@ int main (int argc, char *argv[])
    char *vals[64];
    struct iosock ins;
    struct iosock *in = &ins;
-
+   test_groups();
+   //return 0;
    //test_nodes();
    test_node_list();
    //eturn 0;

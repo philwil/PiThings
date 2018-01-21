@@ -42,12 +42,10 @@ struct iosock;
 struct list {
   struct list *prev;
   struct list *next;
-  void * data;
+  void *data;
 };
 
 struct node {
-  struct node *prev;
-  struct node *next;
   char *addr;
   int port;
   int fd;
@@ -75,6 +73,7 @@ struct space {
   char *cval;
   int type;
   struct node *node;
+  struct list *group;
   int (*onset)(struct space *this, int idx, char *name, char * value);
   int (*onget)(struct space *this, int idx, char *name);
 
@@ -261,7 +260,6 @@ int count_buf_bytes(struct iobuf *oubuf);
 
 
 // old node interface
-int test_nodes(void);
 int remove_nodes(struct node **root);
 int print_nodes(struct node *item);
 int print_node(struct node *item);
@@ -279,8 +277,16 @@ int push_list(struct list **root ,  struct list *item);
 int push_clist(struct list **root, struct list *citem, struct list *item);
 struct list *get_node_list(struct list**root, char *addr, int port);
 struct list *seek_node_list(struct list **root, char *addr, int port);
-
-
+struct list *new_list(void *data);
+struct list *pop_list(struct list **root ,  struct list *item);
+struct list *pop_clist(struct list **root, struct list *citem, struct list *item);
+// group interface
+int add_group_member(char *master, char *member);
+int rem_group_member(char *master, char *member);
+struct list *find_list_item(struct list *master, void *data);
+int print_group_list(char *master);
+int print_group_item(struct list *item);
+int test_groups();
 #endif
 
 
