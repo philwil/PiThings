@@ -417,7 +417,8 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       , space->name
 	       , space->idx
 	       );
-      if(g_space_debug)
+      if(in)in_snprintf(in, NULL, ">>>>[%s]\n", bdesc);
+      if(1||g_space_debug)
 	printf(" >> [%s] %s %d %d\n"
 	       , bdesc
 	       , space->name
@@ -473,7 +474,7 @@ int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len,
       rc = show_space_new(in, ilist, desc, len, bdesc);
       if(g_space_debug)
 	printf(" dbg >>> [%s] rc %d\n", desc, rc);
-      if(in)in_snprintf(in, NULL, ">>>>[%s]\n", desc);
+      //if(in)in_snprintf(in, NULL, ">>>>[%s]\n", desc);
       //xstart = start->next;
       ilist = ilist->next;
 
