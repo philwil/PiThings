@@ -416,6 +416,14 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       , space->name
 	       , space->idx
 	       );
+      printf(" %s AT END OF KIDS space [%s] desc [%s]\n"
+	     , __FUNCTION__
+	     , space->name
+	     , bdesc
+	     );
+      slen = strlen(sp);
+
+      return slen;
     }
   else
     {
@@ -424,13 +432,6 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       , space->name
 	       );
       printf("    run >> [%s]\n", bdesc);
-    }
-  if(clist == NULL)
-    {
-      //in_snprintf(in, NULL," >> [%s]\n", bdesc);
-      //desc[0]=0;
-      //printf(
-      return 0;
     }
 
   // foreach child do the same
@@ -455,14 +456,12 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len, char *bdesc)
 {
   int rc  = 0;
-  //struct space *base=NULL;
-  //struct space *start=NULL;
   struct list *ilist = NULL;
   struct list *slist = NULL;
   printf("%s listp %p *listp %p\n", __FUNCTION__, listp , *listp);
   //struct space *xstart=NULL;
   ilist = *listp;
-  slist = *listp;
+  slist = ilist;
 
   while (ilist)
     {

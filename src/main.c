@@ -48,6 +48,7 @@ int main (int argc, char *argv[])
    struct space *sp1;
    struct space *sp2;
    struct list *lp1;
+   struct list *lp2;
    //struct space *sp3;
    char buf[2048];
    char *sp;
@@ -78,11 +79,20 @@ int main (int argc, char *argv[])
 	    );
    if(sp1->child)
      {
-       lp1 =sp1->child;
+       lp1 = sp1->child;
        sp2 = lp1->data;
        sp1 = lp1->next->data;
-       printf("sp2 name [%s]\n", sp2?sp2->name:"no name");
-       printf("sp1 name [%s]\n", sp1?sp1->name:"no name");
+       if (sp2)
+	 {
+	   lp2 = sp2->child;
+	   printf("sp2 %p idx %d name [%s] c %p\n"
+		  , sp2 , sp2->idx, sp2->name, sp2->child );
+	 }
+       if (sp1)
+	 {
+	   printf("sp1 %p idx %d name [%s] c %p\n"
+		  , sp1 , sp1->idx, sp1->name, sp1->child);
+	 }
      }
    //add_space_in(&g_space_list, "ADD uav1/motor1/speed", NULL);
    printf ("spaces from root\n");
