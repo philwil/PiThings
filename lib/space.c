@@ -824,9 +824,12 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 char *get_space(struct list **list, char *name)
 {
   char *ret =  NULL;
+  struct space *sp0;
   //TODO
   //struct space *gbase = base;
-  get_space_in(list, name, NULL);
+  sp0 = get_space_in(list, name, NULL);
+  if(sp0)
+    ret = sp0->value;
   return ret;
 }
 

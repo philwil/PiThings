@@ -209,6 +209,9 @@ char *get_space(struct list **list, char *name);
 
 struct space *add_space_in(struct list **root, char *name,
 			   struct iosock *in);
+int run_test_send( struct iosock *in,int argc, char * argv[], char *buf, int blen);
+int run_test_main(struct iosock * in, int argc, char * argv[], char *buf, int blen);
+
 
 typedef unsigned char uint8_t;
 

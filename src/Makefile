@@ -14,16 +14,19 @@ LIBOBJS += ../lib/node.c
 LIBOBJS += ../lib/list.c
 LIBOBJS += ../lib/group.c
 
+SRCOBJS = ../src/main.c
+SRCOBJS += ../src/tests.c
+
 lib:
 	gcc -Wall -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
 	#gcc -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
 
 main: lib
-	gcc -Wall  -o main main.c -L ../lib -lthings $(LIBOBJS)
+	gcc -Wall  -o main $(SRCOBJS) -L ../lib -lthings $(LIBOBJS)
 #pithings.o: pithings.c
 
 clean:
-	rm -f *.o
+	rm -f ../src/*.o ../lib/*.o
 	rm -f pithings
 
 git:

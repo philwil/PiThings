@@ -74,9 +74,10 @@ int push_clist(struct list **root, struct list *citem, struct list *item)
     {
       if(root)
 	{
-	  if(g_list_debug)printf(" %s null root insert item %p citem %p\n"
-				 , __FUNCTION__
-				 , item , citem); 
+	  if(g_list_debug)
+	    printf(" %s null root insert item %p citem %p\n"
+		   , __FUNCTION__
+		   , item , citem); 
 	  *root=item;
 	  item->next = item;
 	  item->prev = item;
