@@ -37,7 +37,8 @@ struct list *g_node_list = NULL;
 struct list *g_space_list = NULL;
 int g_node_debug= 0;
 int g_list_debug = 0;
-int g_space_debug = 1;
+int g_space_debug = 0;
+int g_group_debug = 0;
 
 int main (int argc, char *argv[])
 {
@@ -103,7 +104,10 @@ int main (int argc, char *argv[])
    //printf ("spaces from sp2\n");
    //show_spaces_new(NULL,&g_space_list[1], buf, 2048, buf);
    //add_space
-   //test_groups();
+   test_groups();
+   printf ("spaces from groups\n");
+   show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
+   
    in->fd = 1;
 
 #if 1

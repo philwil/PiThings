@@ -434,7 +434,8 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       "/%s"
 	       , space->name
 	       );
-      printf("    run >> [%s]\n", bdesc);
+      if(g_space_debug)
+	printf("    run >> [%s]\n", bdesc);
     }
 
   // foreach child do the same
@@ -461,7 +462,8 @@ int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len,
   int rc  = 0;
   struct list *ilist = NULL;
   struct list *slist = NULL;
-  printf("%s listp %p *listp %p\n", __FUNCTION__, listp , *listp);
+  if(g_space_debug)
+    printf("%s listp %p *listp %p\n", __FUNCTION__, listp , *listp);
   //struct space *xstart=NULL;
   ilist = *listp;
   slist = ilist;
@@ -469,7 +471,7 @@ int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len,
   while (ilist)
     {
       rc = show_space_new(in, ilist, desc, len, bdesc);
-      if(1 || g_debug)
+      if(g_space_debug)
 	printf(" dbg >>> [%s] rc %d\n", desc, rc);
       if(in)in_snprintf(in, NULL, ">>>>[%s]\n", desc);
       //xstart = start->next;
@@ -521,7 +523,7 @@ struct space *find_space_new(struct list **listp, char *name)
       space = (struct space *)ilist->data;
       spv = valv[i];
       if(*spv == '/')spv++;
-      if(1)
+      if(g_space_debug)
 	printf(" looking for [%s] [%s] found [%s] i %d idx/v %d/%d\n"
 	       , valv[i], spv, space->name
 	       , i
@@ -566,12 +568,15 @@ struct space *find_space_new(struct list **listp, char *name)
 	}
     }
  free_out:
-  // end of name list we are done
-  if(space)
-    printf(" %s we found it seeking [%s] found [%s]\n"
-	   , __FUNCTION__, spv,  space->name);
-  else
-    printf(" %s no luck seeking [%s]\n", __FUNCTION__, spv);
+  if(g_space_debug)
+    {
+      // end of name list we are done
+      if(space)
+	printf(" %s we found it seeking [%s] found [%s]\n"
+	       , __FUNCTION__, spv,  space->name);
+      else
+	printf(" %s no luck seeking [%s]\n", __FUNCTION__, spv);
+    }
   free_stuff(idv, valv);
   free_stuff(idx, valx);
 
@@ -711,6 +716,22 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
   return NULL;
 }
 
+int set_space_value(struct space *sp1, char *spv, char *name)
+{
+  int rc = -1;
+  if(sp1)
+    {
+      if(sp1->value) free(sp1->value);
+      sp1->value = NULL;
+      if(spv && (strlen(spv) > 0))
+	sp1->value = strdup(spv);
+      if(sp1->onset)
+	sp1->onset(sp1, sp1->idx, name, spv);
+      rc = 0;
+    }
+  return rc;
+}
+
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
 int set_spacexx(struct list **list, char *name, char *value)
 {
@@ -724,19 +745,11 @@ int set_spacexx(struct list **list, char *name, char *value)
   sname[2][0]=0;
   rc = sscanf(name,"%s %s %s", sname[0], sname[1], sname[2]);
   sp1 = find_space_new(list, sname[1]);
-  if(sp1)
-    {
-      spv = sname[2];
-      if(value)
-	spv =  value;
-      if(sp1->value) free(sp1->value);
-      sp1->value = NULL;
-      if(spv && (strlen(spv) > 0))
-	sp1->value = strdup(spv);
-      if(sp1->onset)
-	sp1->onset(sp1, sp1->idx, name, spv);
-      rc = 0;
-    }
+  spv = sname[2];
+  if(value)
+    spv =  value;
+  rc = set_space_value(sp1, spv, name);
+
   return rc;
 }
 
@@ -756,15 +769,22 @@ struct space *set_space_in(struct list **list, char *name, struct iosock *in)
   sp1 = find_space_new(list, sname[1]);
   if(sp1)
     {
+      // set_space_value
       spv = sname[2];
       ///if(value)
       //spv =  value;
+      set_space_value(sp1, spv, name);
+      if(sp1->group)
+	set_group_value(name, spv, name);
+#if 0
       if(sp1->value) free(sp1->value);
       sp1->value = NULL;
       if(spv && (strlen(spv) > 0))
 	sp1->value = strdup(spv);
       if(sp1->onset)
 	sp1->onset(sp1, sp1->idx, name, spv);
+#endif
+      
       //rc = 0;
       if(in)in_snprintf(in,NULL,"OK SET %s to [%s]\n",sname[1], sname[2]);
     }

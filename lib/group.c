@@ -20,9 +20,7 @@
 
 #include "../inc/pithings.h"
 
-//extern struct list *g_node_list;
 extern int g_group_debug;
-//extern struct space *g_space;
 extern struct list *g_space_list;
 
 //add group member
@@ -40,7 +38,6 @@ int add_group_member(char *master, char *member)
       rc = 0;
       item = new_list((void*)gmember);
       push_list(&gmaster->group, item);
-
     }
   return rc;
 }
@@ -60,7 +57,6 @@ int rem_group_member(char *master, char *member)
       item = find_list_item(gmaster->group, (void*)gmember);
       if (item)
 	pop_list(&gmaster->group, item);
-
     }
   return rc;
 
@@ -107,6 +103,36 @@ int print_group_list(char *master)
   return rc;
 }
 
+int set_group_value(char *master, char *value, char *name)
+{
+  int rc = 0;
+  struct space *gmaster;
+  struct space *gitem;
+
+  struct list *item = NULL;
+  struct list *sitem = NULL;
+  if(g_group_debug)
+    printf(" %s [%s]\n"
+	   , __FUNCTION__
+	   , master
+	   );
+  gmaster = get_space_in(&g_space_list, master, NULL);
+  item = gmaster->group;
+  sitem = item;//in->iobuf;
+
+  while(item)
+    {
+      rc++;
+      gitem = (struct space *) item->data;
+      set_space_value(gitem, value, name);
+
+      //print_group_item(item);
+      item = item->next;
+      if(item == sitem) item = NULL;
+    }
+  return rc;
+}
+
 
 //
 int test_groups(void)
@@ -120,11 +146,23 @@ int test_groups(void)
   //sp1 = add_space(&g_space, "ADD pine1/gpios/gpio1");
   sp1 = add_space(&g_space_list, "ADD pine1/gpios/gpio2");
   sp1 = add_space(&g_space_list, "ADD pine1/gpios/gpio3");
-  //  sp1 = add_space(&g_space, "ADD red_leds");
-  //sp1 = add_space(&g_space, "ADD green_leds");
-  //sp1 = add_space(&g_space, "ADD blue_leds");
-  //add_group_member("red_leds", "pine1/gpios/gpio1");
-  //print_group_list("red_leds");
+  sp1 = add_space(&g_space_list, "ADD pine1/gpios/gpio4");
+  sp1 = add_space(&g_space_list, "ADD pine1/gpios/gpio5");
+  sp1 = add_space(&g_space_list, "ADD pine1/gpios/gpio6");
+  sp1 = add_space(&g_space_list, "ADD red_leds");
+  sp1 = add_space(&g_space_list, "ADD green_leds");
+  sp1 = add_space(&g_space_list, "ADD blue_leds");
+  add_group_member("red_leds", "pine1/gpios/gpio1");
+  add_group_member("red_leds", "pine1/gpios/gpio3");
+  add_group_member("green_leds", "pine1/gpios/gpio2");
+  add_group_member("green_leds", "pine1/gpios/gpio3");
+  printf(" test_group red_leds\n");
+  print_group_list("red_leds");
+  printf(" test_group green_leds\n");
+  print_group_list("green_leds");
+  printf(" test_group blue_leds\n");
+  print_group_list("blue_leds");
+  set_group_value("red_leds","on", "test code");
   return 0;
 
   add_group_member("red_leds", "pine1/gpios/gpio3");

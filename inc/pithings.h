@@ -317,6 +317,10 @@ int print_group_item(struct list *item);
 int test_groups();
 
 
+int set_space_value(struct space *sp1, char *spv, char *name);
+int set_group_value(char *master, char *value, char *name);
+
+
 #endif
 
 
