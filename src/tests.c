@@ -25,27 +25,28 @@ int run_test_send( struct iosock * in,int argc, char * argv[], char *buf, int bl
   // send arg 2 3 and maybe 4  to local port and listen for reply
   if(argc <4 )
     {
-      snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+      snprintf(buf, blen,"%s %s", argv[2], argv[3]);
     }
   else
     {
-      snprintf(buf, sizeof(buf),"%s %s %s", argv[2], argv[3], argv[4]);
+      snprintf(buf, blen,"%s %s %s", argv[2], argv[3], argv[4]);
     }	       
   csock = connect_socket(5432, NULL);
   printf ("sending [%s] to server %s res %d \n", buf, "localhost", csock);
   if(csock > 0)
     {
+      //int len = sizeof(buf);
       //int dummy_hand(int fd, char *id, char *buf, int len)
       init_new_hand("some_id", "Dummy Handler",  dummy_handler);
       // run_new_gcmd
       add_socket(csock);
       in->fd = -1;
-      csize = snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+      csize = snprintf(buf, blen,"%s %s", argv[2], argv[3]);
       //TODO check buf csize
       // register_handler("some_id", dummy_handler);
-      snprintf(buf, sizeof(buf),"CMD %s %d\n\n", "some_id", csize);
+      snprintf(buf, blen,"CMD %s %d\n\n", "some_id", csize);
       rc = write(csock, buf, strlen(buf)); 
-      snprintf(buf, sizeof(buf),"%s %s", argv[2], argv[3]);
+      snprintf(buf, blen,"%s %s", argv[2], argv[3]);
       rc = write(csock, buf, strlen(buf)); 
       //snprintf(buf, sizeof(buf),"QUIT\n\n");
       //rc = write(csock, buf, strlen(buf)); 
