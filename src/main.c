@@ -36,6 +36,7 @@ struct list *g_node_list = NULL;
 struct list *g_space_list = NULL;
 int g_node_debug= 0;
 int g_list_debug = 0;
+int g_space_debug = 1;
 
 int main (int argc, char *argv[])
 {

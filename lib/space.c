@@ -17,6 +17,7 @@ extern struct cmds h_cmds[];
 extern struct space *g_space;
 extern struct space *g_spaces[];
 extern int g_space_idx;
+extern int g_space_debug;
 
 extern struct list *g_space_list;
 
@@ -416,11 +417,13 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       , space->name
 	       , space->idx
 	       );
-      printf(" %s AT END OF KIDS space [%s] desc [%s]\n"
-	     , __FUNCTION__
-	     , space->name
-	     , bdesc
-	     );
+      if(g_space_debug)
+	printf(" >> [%s] %s %d %d\n"
+	       , bdesc
+	       , space->name
+	       , space->idx
+	       , space->ridx
+	       );
       slen = strlen(sp);
 
       return slen;
