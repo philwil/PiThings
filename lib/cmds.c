@@ -14,10 +14,15 @@
 
 extern struct cmds g_cmds[];
 extern  struct cmds h_cmds[];
-//extern struct space *g_space;
-//xtern struct node *g_node_store;
+
 extern struct list *g_node_list;
+extern struct list *g_conn_list;
 extern struct list *g_space_list;
+
+extern char *g_myname;
+extern char *g_myaddr;
+extern int g_port_no;
+
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);
@@ -100,7 +105,7 @@ struct node *new_node(char *aport, char *addr)
 {
   struct list *item;
   struct node * node;
-  item = get_node_list(&g_node_list,addr, atoi(aport));
+  item = get_node_list(&g_node_list, addr, atoi(aport));
   node = (struct node *) item->data;
   //node->addr = strdup(addr);
   //node->port = atoi(aport);
@@ -113,8 +118,45 @@ struct node *new_node(char *aport, char *addr)
   return node;
 }
 
+// CONN pine1 127.0.0.1 5432 
+struct node *new_conn(char *aport, char *addr, char *name)
+{
+  struct list *item;
+  struct node * node;
+  char cmd[1024];
+  item = get_node_list(&g_conn_list, addr, atoi(aport));
+  node = (struct node *) item->data;
+  //node->addr = strdup(addr);
+  //node->port = atoi(aport);
+
+  if(node->fd == -1)
+    {
+      node->fd = connect_socket(node->port, node->addr);;
+    }
+  if(node->fd > 0)
+    {
+      snprintf(cmd, 1024, "NODE %s %s %d\n\n"
+	       , name
+	       , g_myaddr
+	       , g_port_no
+	       );
+	printf("sending command [%s] to %s:%d fd:%d g_conn_list %p\n"
+	       , cmd
+	       , node->addr
+	       , node->port
+	       , node->fd
+	       , g_conn_list
+	       );
+
+	write(node->fd, cmd, strlen(cmd));
+    }
+  //TODO 
+  node->in = NULL;
+  return node;
+}
+
 // struct node
-// "NODE name/n/n addr port 
+// "NODE name addr port 
 struct space *add_node_in(struct list **root, char *name,
 			    struct iosock *in)
 {
@@ -140,6 +182,52 @@ struct space *add_node_in(struct list **root, char *name,
   if(idx >= 3)
     {
       node =  new_node(valx[3], valx[2]);
+      fd = node->fd;
+    }
+  space->node =  node;
+  printf(" %s space name %s idx %d fd %d @%s:%s\n"
+	 , __FUNCTION__
+	 , space->name
+	 , idx
+	 , fd
+	 , valx[2]
+	 , valx[3]
+	 );
+
+  return space;  
+}
+// struct node
+// "NODE name/n/n addr port 
+struct space *add_conn_in(struct list **root, char *name,
+			    struct iosock *in)
+{
+  struct space *space=NULL;
+  int idv = 0;
+  int idx = 0;
+  char *valv[64];
+  char *valx[64];
+  //int rc = 0;
+  int i = 0;
+  int fd = 0;
+  struct node *node = NULL;
+
+  if(g_myname == NULL )
+    {
+      printf(" name not set up for connect\n");
+      return space;
+    }
+  parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
+
+  for (i = 0; i<idx; i++)
+    {
+      printf(" %s >> Arg %d [%s]\n", __FUNCTION__ , i, valx[i]);
+    }
+  // connect
+  space = add_space_in(root, name, in);
+
+  if(idx >= 3)
+    {
+      node =  new_conn(valx[3], valx[2], g_myname);
       fd = node->fd;
     }
   space->node =  node;
@@ -262,7 +350,8 @@ int set_up_new_cmds(void)
   init_new_gcmd("CMD", "determine command id and len", decode_cmd_in);
   init_new_gcmd("REP", "determine  replyid and len",    decode_rep_in);
   init_new_gcmd("SHOW", "Show spaces from a root",      show_space_in);
-  init_new_gcmd("NODE", "Show spaces from a root",      add_node_in);
+  init_new_gcmd("NODE", "Allow remote items",           add_node_in);
+  init_new_gcmd("CONN", "Register with this NODE",      add_conn_in);
   init_new_gcmd("QUIT", "quit",      cmd_quit);
 
   init_new_hcmd("POST",            "Post",            get_space_in);

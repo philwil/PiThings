@@ -32,22 +32,53 @@ struct iobuf *g_iob_store = NULL;
 int g_debug_term = 0;
 int g_count = 0;
 
-struct node *g_node_store = NULL;
+//struct node *g_node_list = NULL;
 struct list *g_node_list = NULL;
+struct list *g_conn_list = NULL;
 struct list *g_space_list = NULL;
+
 int g_node_debug= 0;
+int g_conn_debug= 0;
 int g_list_debug = 0;
 int g_space_debug = 0;
 int g_group_debug = 0;
+int g_port_no = 5432;
+char *g_myname = NULL;
+char *g_myaddr = NULL;
+
+/*
+  NOTE on port num myname (command line also specifies myname )
+ g_port_no
+
+  NOTES on CONN
+  CONN addr port name
+  sets up a connection under name
+  on set up we'll send a NODE commans to the CONN (NODE myaddr port myname 
+  add <space> will also set up  and send an ADD to the conn as name/<space>
+  all cons 
+
+  sh ./runme (port 5432)
+  sh ./runme port 4321 pigpios
+     CONN pigpios1 127.0.0.1 5432 foo
+   Subsequent ADD commands will add a duplicate tot eh conn node 
+   if the names match
+   ADD pigpios1/bank1/pgpio1
+   will add the name to both systems
+
+   SET pigpios1/bank1/pgopi1 on
+  on either system will send the same commands to the remote node 
+  GET locally will just get the local value
+  GET from the remote will fetch the remote value 
+
+*/
+
+
+
 
 int main (int argc, char *argv[])
 {
-  //int i;
-  //int csock;
-  //int csize;
+
    int rc = 1;
-   //int depth=0;
-   //struct space * sp1 = new_space("Space1", struct space *parent, struct space** root, char *node)
    struct space *sp1;
    struct space *sp2;
    struct list *lp1;
@@ -59,6 +90,7 @@ int main (int argc, char *argv[])
    struct iosock ins;
    struct iosock *in = &ins;
 
+   g_myaddr = strdup("127.0.0.1");
    init_g_spaces();
    init_iosocks();
    init_iosock(in);
@@ -123,18 +155,37 @@ int main (int argc, char *argv[])
    
    if(argc > 1)
      {
-       if (strcmp(argv[1], "test_iob_out") == 0)
+       if (strcmp(argv[1], "port") == 0)
+	 {
+	   if(argc > 3)
+	     {
+	       g_port_no = atoi(argv[2]);
+	       g_myname = strdup(argv[3]);
+	       printf(" Set up port to %d myname [%s] \n" 
+		      , g_port_no
+		      , g_myname
+		      );
+	     }
+	   else
+	     {
+	       printf(" \"port\" needs number and name \n");
+	       return 0;
+	     }
+	   //test_iob_out();
+	   //return 0;
+	 }
+       else if (strcmp(argv[1], "test_iob_out") == 0)
 	 {
 	   test_iob_out();
 	   return 0;
 	 }
-       if (strcmp(argv[1], "test_iob") == 0)
+       else if (strcmp(argv[1], "test_iob") == 0)
 	 {
 	      test_iob();
 	      return 0;
 	 }
 
-       if (strcmp(argv[1], "send") == 0)
+       else if (strcmp(argv[1], "send") == 0)
 	 {
 
 	   run_test_send( in, argc, argv, buf, sizeof(buf));
@@ -150,7 +201,7 @@ int main (int argc, char *argv[])
    if(g_lsock == 0)
      {
        accept_socket(STDIN_FILENO);
-       g_lsock = listen_socket(5432);
+       g_lsock = listen_socket(g_port_no);
      }
    rc = 1;
    while(rc>0 && g_count < 10)

@@ -57,6 +57,8 @@ struct list *get_node_list(struct list **root, char *addr, int port)
       item->data = node;
       item->prev = item;
       item->next = item;
+      push_list(root, item);
+
     }
   return item;
 }

@@ -20,6 +20,7 @@ extern int g_space_idx;
 extern int g_space_debug;
 
 extern struct list *g_space_list;
+extern struct list *g_conn_list;
 
 int init_g_spaces(void)
 {
@@ -33,8 +34,8 @@ int init_g_spaces(void)
 // look for children of the same name 
 // return found name or new space object
 //    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
-
-struct space *add_space_in(struct list **root, char *name,
+// local nodes only
+struct space *_add_space_in(struct list **root, char *name,
 			    struct iosock *in)
 {
   struct space *parent=NULL;
@@ -113,6 +114,16 @@ struct space *add_space_in(struct list **root, char *name,
   return space;
 }
 
+struct space *add_space_in(struct list **root, char *name,
+			    struct iosock *in)
+{
+  if(g_conn_list)
+    {
+      printf("%s adding [%s] to each connection\n", __FUNCTION__, name);
+    }
+
+  return _add_space_in(root, name, in);
+}
 
 int test_find_parents(void)
 {
@@ -641,7 +652,8 @@ struct space *find_space(struct list**list, char *name)
   while (ilist)
     {
       space = (struct space *)ilist->data;
-      printf(" %s looking at space [%s]\n", __FUNCTION__, space->name);
+      if(g_space_debug)
+	printf(" %s looking at space [%s]\n", __FUNCTION__, space->name);
       if(strcmp(space->name, name)==0)
 	{
 	  break;

@@ -316,6 +316,13 @@ int print_group_list(char *master);
 int print_group_item(struct list *item);
 int test_groups();
 
+struct node *new_node(char *aport, char *addr);
+struct node *new_conn(char *aport, char *addr, char *name);
+struct space *add_node_in(struct list **root, char *name,
+			  struct iosock *in);
+struct space *add_conn_in(struct list **root, char *name,
+			  struct iosock *in);
+
 
 int set_space_value(struct space *sp1, char *spv, char *name);
 int set_group_value(char *master, char *value, char *name);
