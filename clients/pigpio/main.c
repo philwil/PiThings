@@ -190,11 +190,14 @@ int main (int argc, char *argv[])
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
    g_list_debug =1;
+   g_debug = 0;
+   g_debug_term = 0;
    rc = test_file("config.txt");
    if(rc< 0)
      {
        def_config();
      }
+   g_debug = 0;
 
    in->fd = 1;
 

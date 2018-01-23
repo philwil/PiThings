@@ -35,6 +35,7 @@ int init_g_spaces(void)
 // return found name or new space object
 //    sp1 = add_space(&g_space, "ADD uav1/motor1/speed");
 // local nodes only
+// bug error in reading from file
 struct space *_add_space_in(struct list **root, char *name,
 			    struct iosock *in)
 {
@@ -54,7 +55,8 @@ struct space *_add_space_in(struct list **root, char *name,
   struct list *item;
   struct list **clist = root;
   parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-  printf(" ===========\n>>> %s name [%s] idv %d \n", __FUNCTION__, name, idv );
+  if(g_debug)
+    printf(" ===========\n>>> %s name [%s] idv %d \n", __FUNCTION__, name, idv );
 
   for (i = 0; i<idv; i++)
     {

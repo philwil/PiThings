@@ -60,14 +60,27 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
   int  rc = 1;
   char *sp;
   *idx = parse_stuff(' ', size, (char **)valx, name, 0);
-  if(0)printf(" parse_name 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
-	      , valx[0], valx[1]); 
-
-  sp = valx[0];
+  if(g_debug)
+    {
+      printf(" parse_name 1 name [%s] *idx %d valx[0/1] %p/%p\n", name, *idx
+	     , valx[0], valx[1]); 
+      if(*idx>0)
+	{
+	  printf(" parse_name 1 valx[0] [%s]\n"
+		 , valx[0]);
+	}
+      if(*idx>1)
+	{
+	  printf(" parse_name 1 valx[1] [%s]\n"
+		 , valx[1]);
+	}
+    }
+    sp = valx[0];
   if(*idx >= 2)sp = valx[1];
 
   *idy = parse_stuff('/', size, (char **)valy, sp,'?');
-  if(0)printf(" parse_name 2 name [%s] *idy %d valy[0/1] %p/%p [%s]-[%s]\n"
+  if(g_debug)
+    printf(" parse_name 2 name [%s] *idy %d valy[0/1] %p/%p [%s]-[%s]\n"
 	      , name, *idy
 	      , valy[0], valy[1]
 	      , valy[0], (*idy>1)?valy[1]:"none"
@@ -290,10 +303,20 @@ int free_stuff(int num, char **vals)
   return 0;
 }
 
+// look ofr the double terms
+int spisterm (char sp)
+{
+  int rc  = 0;
+  if((sp == 0xa) || (sp == 0xd))
+    rc = 1;
+  return rc;
+}
 // This will do for now
 // TODO dynamic sizing
 //      allow escape
 //
+//  *idx = parse_stuff(' ', size, (char **)valx, name, 0);
+
 int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 {
   int idx = 0;
@@ -305,6 +328,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
   int val_size;
   int skip = 0;
   int done = 0;
+
   val_size = 64;
   val = malloc(64);  //TODO fix this
   val[0]=0;
@@ -317,22 +341,33 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
     {
       skip = 1;
     }
+  
   while(*sp && (rc>0) && (idx < num) && !done)
     {
       rc = 0;
       spv = val;
+      // used to break if term found and we did not have a delim
       while (*sp && (*sp!= cstop) && ((skip == 1) || (*sp != delim)) && (rc < (val_size-1)))
 	{
 	  skip = 0;
-	  if ((*sp != 0xa)&&(*sp != 0xd) &&(*sp != cstop))
+	  //	  if ((*sp != 0xa)&&(*sp != 0xd) &&(*sp != cstop))
+	  if (!spisterm(sp[0]) && (*sp != cstop))
 	    {
 	      rc++;
-	      *spv++ = *sp++;
+	      if(g_debug)
+		printf(" xxx processing %x \n", *sp);
+	      *spv++ = *sp;
+
 	    }
-	  else
-	    sp++;
 	  if(*sp && *sp == cstop) done = 1;
-  
+	  if(*sp && spisterm(sp[1]))
+	    {
+	      sp++;
+	      rc++;
+	      done = 1;
+	      break;
+	    }
+	  if(*sp)sp++;
 	}
       if(*sp)sp++;
       *spv = 0;
@@ -341,7 +376,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 	{
 	  vals[idx] = strdup(val);
 	  if(g_debug)
-	    printf("rc %d val [%s] val[%d] [%s] %x %x"
+	    printf("rc %d val [%s] val[%d] [%s] %x %x\n"
 		   , rc
 		   , val
 		   , idx
@@ -775,6 +810,8 @@ The input buffer is relocatable anyway.
 
 a cmd terminates with a double \a\a 
 note run_str_in should return the length string used 
+OK Watch files they terminate with a single 0xa
+
 */
 int find_cmd_term(struct iosock *in, int len, int last)// input buffer
 {
@@ -813,8 +850,19 @@ int find_cmd_term(struct iosock *in, int len, int last)// input buffer
 		     , __FUNCTION__, *sp, *sp ,rc , lend);
 	    }
 	}
-      if ((*sp == 0xa) ||(*sp == 0xd))
+      if ((*sp == 0xa) || (*sp == 0xd))
+	{
+	  //if(lend > 1)
+	  //{
+	  //  found++;
+	  //  if ((sp[1] == 0xa) ||(sp[1] == 0xd))
+	  //	{
+	  //	  sp++;
+	  //	  lend--;
+	  //	}
+	  //}
 	found++;
+	}
       else
 	found = 0;
 

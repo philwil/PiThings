@@ -560,6 +560,7 @@ int handle_input_norm(struct iosock *in)
     char uri[1024];
     char vers[1024];
     char *sp;
+    char savch;
     //char buf[1024];
     //char *bres;
     //int lres;
@@ -578,16 +579,26 @@ int handle_input_norm(struct iosock *in)
     else
       in->tlen = 0;
     //if tlen == 1 we found one terminator
-    // the next char must also be a terminator
+    // the next char may also be a terminator
+    savch = 0;
+    if(0 &&(tlen > 1))
+      {
+	savch = sp[tlen-1];
+	if((savch == 0x0a) || (savch == 0x0d))
+	  {
+	    sp[tlen-1]=0;
+	  }
+      }
     if(g_debug)
       {
-	printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
+	printf("%s read len %d tlen %d sp[] %x outptr/len %d/%d\n==>sp [%s] \n"
 	       , __FUNCTION__
 	       , len
-	       , sp
 	       , tlen
+	       , sp[tlen-1]
 	       , inbf->outptr
 	       , inbf->outlen
+	       , sp
 	       );
 
       }
@@ -597,7 +608,6 @@ int handle_input_norm(struct iosock *in)
 	cmd[0]=0;
 	uri[0]=0;
 	vers[0]=0;
-
 	n = sscanf(sp, "%s %s %s", cmd, uri, vers);   //TODO use better sscanf
 	//if(1)in_snprintf(in, NULL
 	printf(		 " %s message received [%s] ->"
@@ -615,8 +625,21 @@ int handle_input_norm(struct iosock *in)
 	  }
 	else
 	  {
+	    if((savch == 0x0a) || (savch == 0x0d))
+	      {
+		sp[tlen-1]=savch;
+		savch = 0;
+	      }
+	    //printf(" start run_str_in\n");
 	    run_str_in(in, sp, cmd);
+	    //printf(" done run_str_in\n");
+
 	  }
+	if((savch == 0x0a) || (savch == 0x0d))
+	  {
+	    sp[tlen-1]=savch;
+	  }
+	
 	tosend = count_buf_bytes(in->iobuf);
 	if(g_debug)
 	  {
@@ -737,7 +760,7 @@ int handle_output(struct iosock *in)
 #if 0
   if(in->outptr != in->outlen)
     {
-      if(1)printf(" %s running the old way\n", __FUNCTION__);
+      if(g_debug)printf(" %s running the old way\n", __FUNCTION__);
       rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
       if(rc >0)
 	{
