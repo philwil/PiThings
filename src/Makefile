@@ -22,7 +22,8 @@ lib:
 	#gcc -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
 
 main: lib
-	gcc -Wall  -o main $(SRCOBJS) -L ../lib -lthings $(LIBOBJS)
+	gcc -Wall  -o main $(SRCOBJS) -L ../lib -lthings
+#$(LIBOBJS)
 #pithings.o: pithings.c
 
 clean:
