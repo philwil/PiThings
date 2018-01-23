@@ -1,36 +1,35 @@
 COMMENT ?=no comment
 
-all: pithings lib main
+all: lib main
 
-pithings: pithings.c
-	cc -g pithings.c -o pithings
+BASEDIR = ../..
 
-LIBOBJS = ../lib/space.c
-LIBOBJS += ../lib/cmds.c
-LIBOBJS += ../lib/hands.c
-LIBOBJS += ../lib/iosock.c
-LIBOBJS += ../lib/iobuf.c
-LIBOBJS += ../lib/node.c
-LIBOBJS += ../lib/list.c
-LIBOBJS += ../lib/group.c
+LIBOBJS = $(BASEDIR)/lib/space.c
+LIBOBJS += $(BASEDIR)/lib/cmds.c
+LIBOBJS += $(BASEDIR)/lib/hands.c
+LIBOBJS += $(BASEDIR)/lib/iosock.c
+LIBOBJS += $(BASEDIR)/lib/iobuf.c
+LIBOBJS += $(BASEDIR)/lib/node.c
+LIBOBJS += $(BASEDIR)/lib/list.c
+LIBOBJS += $(BASEDIR)/lib/group.c
 
-SRCOBJS = ../src/main.c
-SRCOBJS += ../src/tests.c
+SRCOBJS = $(BASEDIR)/clients/pigpio/main.c
+#SRCOBJS += ../src/tests.c
 
 lib:
-	gcc -Wall -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
+	gcc -Wall -Werror -fpic -shared -o $(BASEDIR)/lib/libthings.so $(LIBOBJS)
 	#gcc -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
 
 main: lib
-	gcc -Wall  -o main $(SRCOBJS) -L ../lib -lthings
+	gcc -Wall  -o main $(SRCOBJS) -L $(BASEDIR)/lib -lthings
 #$(LIBOBJS)
 #pithings.o: pithings.c
 
 clean:
-	rm -f ../src/*.o ../lib/*.o
+	rm -f $(BASEDIR)/clients/pigpio/*.o $(BASEDIR)/lib/*.o
 	rm -f pithings
 
 git:
-	git add runme *.c ../inc/*.h ../lib/*.c ../clients Makefile
+	git add runme *.c $(BASEDIR)/inc/*.h $(BASEDIR)/lib/*.c $(BASEDIR)/clients Makefile
 	git commit -m "$(COMMENT)"
 	git push
