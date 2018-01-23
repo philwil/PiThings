@@ -19,7 +19,7 @@ extern struct iobuf *g_iob_store;
 extern int g_space_idx;
 extern int g_quit_one;
 extern int g_num_socks;
-extern struct space **g_spaces;
+extern struct space *g_spaces[];
 extern struct list *g_space_list;
 
 int init_iosocks(void)
@@ -184,7 +184,7 @@ int accept_socket_fd(int sockfd)
 	 clilen = sizeof(cli_addr);
 	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr, (socklen_t*) &clilen) ) < 0 )
 	   {
-	     printf("ERROR on accept");
+	     printf("ERROR on accept\n");
 	     return -1;
 	   }
 	 printf( "opened new communication with client \n" );
@@ -207,7 +207,7 @@ int accept_socket(int sockfd)
 	 clilen = sizeof(cli_addr);
 	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr, (socklen_t*) &clilen) ) < 0 )
 	   {
-	     printf("ERROR on accept");
+	     printf("ERROR on accept\n");
 	     return -1;
 	   }
 	 printf( "opened new communication with client \n" );
@@ -506,23 +506,40 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
-  printf(" %s >>>> rc %d cmd [%s] sp [%s]\n"
-	 , __FUNCTION__
-	 , rc
-	 , cmd
-	 , sp
-	 );
+  if(0)printf(" %s >>>> rc %d cmd [%s] sp [%s]\n"
+	      , __FUNCTION__
+	      , rc
+	      , cmd
+	      , sp
+	      );
+  
+  if(0)printf(" %s sp0 [%x] \n"
+	      , __FUNCTION__
+	      , sp[0]
+	      );
+  if(0)printf(" %s sp0 [%x] in %p \n"
+	      , __FUNCTION__
+	      , sp[0]
+	      , in
+	      );
+      
+  if(0)printf(" %s sp0 [%x] in->hidx %d \n"
+	      , __FUNCTION__
+	      , sp[0]
+	      , in->hidx
+	      );
+      if(in->hidx >= 0)
+	{
+	  if(0)printf(" %s sp0 [%x] in->hidx %d %p\n"
+		      , __FUNCTION__
+		      , sp[0]
+		      , in->hidx
+		      , g_spaces[in->hidx]
+		      );
+	}
   
   if((sp[0] == 0xd) || (sp[0] == 0xa))
     {
-      printf(" %s start of data from 0x%x 0x%x hlen %d hidx %d name [%s]\n"
-	     , __FUNCTION__
-	     , sp[0]
-	     , sp[1]
-	     , in->hlen
-	     , in->hidx
-	     , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
-	     );
       sp1 = NULL;
       if(in->hidx >= 0)
 	{
@@ -530,6 +547,15 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 	}
       if(sp1)
 	{
+	  printf(" %s start of data from 0x%x 0x%x hlen %d hidx %d name [%s]\n"
+		 , __FUNCTION__
+		 , sp[0]
+		 , sp[1]
+		 , in->hlen
+		 , in->hidx
+		 , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
+		 );
+	  
 	  if (sp1->value) free(sp1->value);
 	  sp1->value = malloc(in->hlen+1);
 	  memcpy(sp1->value,&sp[2],in->hlen);
@@ -630,9 +656,7 @@ int handle_input_norm(struct iosock *in)
 		sp[tlen-1]=savch;
 		savch = 0;
 	      }
-	    //printf(" start run_str_in\n");
 	    run_str_in(in, sp, cmd);
-	    //printf(" done run_str_in\n");
 
 	  }
 	if((savch == 0x0a) || (savch == 0x0d))

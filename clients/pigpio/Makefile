@@ -17,11 +17,11 @@ SRCOBJS = $(BASEDIR)/clients/pigpio/main.c
 #SRCOBJS += ../src/tests.c
 
 lib:
-	gcc -Wall -Werror -fpic -shared -o $(BASEDIR)/lib/libthings.so $(LIBOBJS)
+	gcc -g -Wall -Werror -fpic -shared -o $(BASEDIR)/lib/libthings.so $(LIBOBJS)
 	#gcc -Werror -fpic -shared -o ../lib/libthings.so $(LIBOBJS)
 
 main: lib
-	gcc -Wall  -o main $(SRCOBJS) -I$(BASEDIR)/src -L $(BASEDIR)/lib -lthings
+	gcc -g -Wall  -o main $(SRCOBJS) -I$(BASEDIR)/src -L $(BASEDIR)/lib -lthings
 #$(LIBOBJS)
 #pithings.o: pithings.c
 

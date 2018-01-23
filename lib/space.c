@@ -837,6 +837,11 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
   spv[0][0]=0;
   spv[1][0]=0;
   rc = sscanf(name,"%s %s", spv[0], spv[1]);
+  if(0)printf(" %s looking for [%s] [%s]\n"
+	      , __FUNCTION__
+	      , spv[0]
+	      , spv[1]
+	      );
   sp = spv[0];
   if( rc == 2 ) sp = spv[1];
   sp1 = find_space_new(listp, sp);
@@ -849,6 +854,14 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 	{
 	  in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
 	  in->hidx = sp1->idx;
+	  if(g_debug)
+	    printf(" %s found [%s] [%s] in->hidx=%p->%d\n"
+		   , __FUNCTION__
+		   , spv[0]
+		   , spv[1]
+		   , in
+		   , in->hidx
+		   );
 	}
     }
   else
