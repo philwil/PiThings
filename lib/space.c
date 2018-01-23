@@ -85,8 +85,9 @@ struct space *_add_space_in(struct list **root, char *name,
 	      clist = &parent->child;
 	    }
 	  if(g_debug)
-	    printf(" New Space for [%s] at root\n", valv[i]);
-
+	    {
+	      printf(" New Space for [%s] at root\n", valv[i]);
+	    }
 	  item = new_list(space);
 	  push_list(clist, item);
 
@@ -669,7 +670,9 @@ struct space *find_space(struct list**list, char *name)
     }
   
   if(g_debug)
-    printf(" >>> find space name [%s] space %p... \n", name, space);
+    {
+      printf(" >>> find space name [%s] space %p... \n", name, space);
+    }
   return space;
 }
 
@@ -694,10 +697,12 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
   char *sp = name;
   sscanf(name,"%s ", sbuf);  // TODO use more secure option
   if(g_debug)
-    printf("%s 1 name [%s]\n"
-	   ,__FUNCTION__
-	   ,name
-	   );
+    {
+      printf("%s 1 name [%s]\n"
+	     ,__FUNCTION__
+	     ,name
+	     );
+    }
   if(in_new_cmds(g_cmds, NUM_CMDS, sbuf)>=0)
     {
       sp = strstr(name, sbuf);
@@ -709,13 +714,15 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
 	      sp++;
 	    }
 	  if(g_debug)
-	    printf("%s 2 name [%s] len %lu sp [%s] %x\n"
-		   , __FUNCTION__
-		   , name
-		   , (long unsigned int)strlen(sp)
-		   , sp
-		   , *sp
-		   );
+	    {
+	      printf("%s 2 name [%s] len %lu sp [%s] %x\n"
+		     , __FUNCTION__
+		     , name
+		     , (long unsigned int)strlen(sp)
+		     , sp
+		     , *sp
+		     );
+	    }
 	  if ((*sp != 0xa) && (*sp != 0xd)) 
 	    sp1 = find_space_new(&g_space_list, sp);
 	}
