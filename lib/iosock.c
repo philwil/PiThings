@@ -803,7 +803,7 @@ int poll_sock(int lsock)
 	
 	for( i = 0; i < idx; i++) 
 	{
-	  if(g_debug)
+	  if(g_debug>0)
 	    printf(" idx %d fd %d revents 0x%08x\n",i, fds[i].fd, fds[i].revents);  
 	    if (fds[i].revents & POLLOUT) 
 	    {
