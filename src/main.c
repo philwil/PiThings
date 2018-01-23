@@ -69,6 +69,12 @@ char *g_myaddr = NULL;
   on either system will send the same commands to the remote node 
   GET locally will just get the local value
   GET from the remote will fetch the remote value 
+When talking to a remote we should set up a context and use "send_command" to 
+encapsulate the command and the response
+CMD <clen> <id>\n\n<actual command>
+The REMOTE will respond REP <rlen> <id><actual response>
+The handler registered with <id> will get the response.
+.. more later
 
 */
 
