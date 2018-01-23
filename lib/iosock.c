@@ -341,7 +341,9 @@ int handle_input_rep(struct iosock *in)
     rsize = in->cmdbytes - in->cmdlen;
     bytesin = inbf->outlen - inbf->outptr;
     if(g_debug)
-      printf("%s rsize  %d bytesin %d\n", __FUNCTION__, rsize, bytesin);
+      {
+	printf("%s rsize  %d bytesin %d\n", __FUNCTION__, rsize, bytesin);
+      }
     if (bytesin >= rsize)
       {
 	in->cmdlen = 0;
@@ -352,8 +354,9 @@ int handle_input_rep(struct iosock *in)
       {
 	rsize -= bytesin;
 	if(g_debug)
-	  printf("%s adjusted rsize  %d\n", __FUNCTION__, rsize);
-
+	  {
+	    printf("%s adjusted rsize  %d\n", __FUNCTION__, rsize);
+	  }
       }
     // we need more
     if(rsize > 0)
@@ -361,15 +364,16 @@ int handle_input_rep(struct iosock *in)
 	return 0;
       }
     if(g_debug)
-      printf("%s read sp [%s] outptr/len %d/%d/ cmd/bytes %d/%d\n"
-	     , __FUNCTION__
-	     , sp
-	     , inbf->outptr
-	     , inbf->outlen
-	     , in->cmdlen
-	     , in->cmdbytes
-	     );
-	
+      {
+	printf("%s read sp [%s] outptr/len %d/%d/ cmd/bytes %d/%d\n"
+	       , __FUNCTION__
+	       , sp
+	       , inbf->outptr
+	       , inbf->outlen
+	       , in->cmdlen
+	       , in->cmdbytes
+	       );
+      }
 
 	sp = &inbf->outbuf[inbf->outptr];
     //TODO only run this if we have received all of the command
@@ -392,20 +396,24 @@ int handle_input_rep(struct iosock *in)
 	in->cmdbytes = 0;
 	    
 	if(g_debug)
-	  printf(" %s rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
-		 , __FUNCTION__
-		 , rc, n, cmd, tosend
-		 , in->cmdid ? in->cmdid :"no id"
-		 );
+	  {
+	    printf(" %s rc %d n %d cmd [%s] tosend %d cmdid [%s]\n"
+		   , __FUNCTION__
+		   , rc, n, cmd, tosend
+		   , in->cmdid ? in->cmdid :"no id"
+		   );
+	  }
 	// TODO consume just the current cmd
 	inbf->outptr += rsize;
 	if(g_debug)
-	  printf(" %s reset buffers rsize %d ptr/len %d/%d\n"
-		 , __FUNCTION__
-		 , rsize
-		 , inbf->outptr
-		 , inbf->outlen
-		 );
+	  {
+	    printf(" %s reset buffers rsize %d ptr/len %d/%d\n"
+		   , __FUNCTION__
+		   , rsize
+		   , inbf->outptr
+		   , inbf->outlen
+		   );
+	  }
 	if(in->cmdbytes > 0)
 	  {
 	    printf("%s >>>>>reply still needs %d bytes\n"
@@ -416,10 +424,12 @@ int handle_input_rep(struct iosock *in)
 	if(g_quit_one)
 	  {
 	    if(g_debug)
-	      printf("%s >>>>>forcing quit in->fd %d\n"
-		     , __FUNCTION__
-		     , in->fd
-		     );
+	      {
+		printf("%s >>>>>forcing quit in->fd %d\n"
+		       , __FUNCTION__
+		       , in->fd
+		       );
+	      }
 	    len = 0;
 	    
 	    if(in->fd>0) close(in->fd);
@@ -547,15 +557,17 @@ int handle_input_norm(struct iosock *in)
     //if tlen == 1 we found one terminator
     // the next char must also be a terminator
     if(g_debug)
-      printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
-	     , __FUNCTION__
-	     , len
-	     , sp
-	     , tlen
-	     , inbf->outptr
-	     , inbf->outlen
-	     );
-    
+      {
+	printf("%s read len %d  sp [%s] tlen %d outptr/len %d/%d\n"
+	       , __FUNCTION__
+	       , len
+	       , sp
+	       , tlen
+	       , inbf->outptr
+	       , inbf->outlen
+	       );
+
+      }
     if(tlen > 1)
       {
 	sp = &inbf->outbuf[inbf->outptr];
@@ -584,9 +596,11 @@ int handle_input_norm(struct iosock *in)
 	  }
 	tosend = count_buf_bytes(in->iobuf);
 	if(g_debug)
-	  printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
-		 , rc, n, cmd, tlen, tosend
-		 );
+	  {
+	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
+		   , rc, n, cmd, tlen, tosend
+		   );
+	  }
 	// TODO consume just the current cmd
 	// flag the fact that we got more
 	
@@ -594,12 +608,14 @@ int handle_input_norm(struct iosock *in)
 	if(inbf->outptr < inbf->outlen)
 	  rc  = 1;
 	if(g_debug)
-	  printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
-		 , tlen
-		 , inbf->outptr
-		 , inbf->outlen
-		 , rc
-		 );
+	  {
+	    printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
+		   , tlen
+		   , inbf->outptr
+		   , inbf->outlen
+		   , rc
+		   );
+	  }
 	if (inbf->outptr == inbf->outlen)
 	  {
 	    inbf->outptr = 0;
@@ -648,10 +664,12 @@ int handle_input(struct iosock *in)
       while(more)
 	{
 	  if(g_debug)
-	    printf(" %s running more %d\n"
-		   , __FUNCTION__
-		   , more
-		   );
+	    {
+	      printf(" %s running more %d\n"
+		     , __FUNCTION__
+		     , more
+		     );
+	    }
 	  if (in->instate == STATE_IN_CMD)
 	    {
 	      more = handle_input_cmd(in);
@@ -673,10 +691,12 @@ int handle_input(struct iosock *in)
 	      more = handle_input_norm(in);
 	    }
 	  if(g_debug)
-	    printf(" %s done more %d\n"
-		   , __FUNCTION__
-		   , more
-		   );
+	    {
+	      printf(" %s done more %d\n"
+		     , __FUNCTION__
+		     , more
+		     );
+	    }
 	}
       
     }
@@ -775,11 +795,13 @@ int poll_sock(int lsock)
 	if (g_iosock[i].fd >= 0)
 	  {
 	    if(g_debug)
-	      printf(" setup fd i %d idx %d fd %d\n"
-		     , i
-		     , idx
-		     , g_iosock[i].fd
-		     );
+	      {
+		printf(" setup fd i %d idx %d fd %d\n"
+		       , i
+		       , idx
+		       , g_iosock[i].fd
+		       );
+	      }
 	    
 	    fds[idx].fd = g_iosock[i].fd;
 	    fds[idx].events = POLLIN;
@@ -803,7 +825,7 @@ int poll_sock(int lsock)
 	
 	for( i = 0; i < idx; i++) 
 	{
-	  if(g_debug>0)
+	  if(g_debug)
 	    {
 	      printf(" idx %d fd %d revents 0x%08x\n",i, fds[i].fd, fds[i].revents);
 	    }
@@ -841,22 +863,25 @@ int poll_sock(int lsock)
 			if (n <= 0) 
 			{
 			  if(g_debug)
-			    printf("error reading (n=%d), "
-				   "closing fd %d in->fd %d\n"
-				   , n
-				   ,fds[i].fd
-				   , in->fd
-				   );
-			    close(fds[i].fd);
-			    close_fds(fds[i].fd);
-			    fds[i].fd = -1;
-			    in->fd = -1; 
+			    {
+			      printf("error reading (n=%d), "
+				     "closing fd %d in->fd %d\n"
+				     , n
+				     ,fds[i].fd
+				     , in->fd
+				     );
+			    }
+			  close(fds[i].fd);
+			  close_fds(fds[i].fd);
+			  fds[i].fd = -1;
+			  in->fd = -1; 
 			}
 			else 
 			{
 			  if(g_debug)
-			    printf("message len %d\n", n);
-			    
+			    {
+			      printf("message len %d\n", n);
+			    }			    
 			}
 		    }
 		}
