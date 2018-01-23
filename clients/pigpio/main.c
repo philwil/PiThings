@@ -11,6 +11,11 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <poll.h>
+
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
 #include "../inc/pithings.h"
 
 //int num_socks=0;
@@ -95,9 +100,73 @@ GPIO name type dir(in/out/pwm/pulse/servo) pin
 POST name value
 GET name
 
-
+We'll help ourselves by using a config file "./config.txt"
+Lets see if the standard parser can cope
+ 
+O_RDONLY
 */
 
+int test_file(char *name)
+{
+  int fd;
+  fd = open(name, O_RDONLY);
+  if (fd >=0)
+    {
+      add_socket(fd);
+    }
+  return fd;
+}
+
+int def_config(void)
+{
+   char buf[2048];
+   struct space *sp1;
+   struct space *sp2;
+   struct list *lp1;
+   struct list *lp2;
+  //add_space_in(&g_space_list, "ADD uav1", NULL);
+  //add_space_in(&g_space_list, "ADD uav2", NULL);
+  //add_space_in(&g_space_list, "ADD uav3", NULL);
+  add_space_in(&g_space_list, "ADD uav1/motor1", NULL);
+  add_space_in(&g_space_list, "ADD uav1/motor2", NULL);
+  sp1 = find_space_new(&g_space_list, "ADD uav1");
+  printf ("UAV1 spacep %p", sp1);
+  if(sp1)
+    printf(" g_space_list data %p match %d uav1->child %p\n"
+	   , g_space_list->data
+	   , (g_space_list->data == sp1)
+	   , sp1->child
+	   );
+  if(sp1->child)
+    {
+      lp1 = sp1->child;
+      sp2 = lp1->data;
+      sp1 = lp1->next->data;
+      if (sp2)
+	{
+	  lp2 = sp2->child;
+	  printf("sp2 %p idx %d name [%s] c %p lp2 %p\n"
+		 , sp2 , sp2->idx, sp2->name, sp2->child, lp2 );
+	}
+      if (sp1)
+	{
+	  printf("sp1 %p idx %d name [%s] c %p\n"
+		 , sp1 , sp1->idx, sp1->name, sp1->child);
+	}
+    }
+  //add_space_in(&g_space_list, "ADD uav1/motor1/speed", NULL);
+  printf ("spaces from root\n");
+  show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
+  
+  //printf ("spaces from sp2\n");
+  //show_spaces_new(NULL,&g_space_list[1], buf, 2048, buf);
+  //add_space
+  test_groups();
+  printf ("spaces from groups\n");
+  show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
+  
+  return 0;
+}
 
 
 
@@ -105,12 +174,8 @@ int main (int argc, char *argv[])
 {
 
    int rc = 1;
-   struct space *sp1;
-   struct space *sp2;
-   struct list *lp1;
-   struct list *lp2;
    //struct space *sp3;
-   char buf[2048];
+   //char buf[2048];
    //char *sp;
    //char *vals[64];
    struct iosock ins;
@@ -125,47 +190,12 @@ int main (int argc, char *argv[])
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
    g_list_debug =1;
-   //add_space_in(&g_space_list, "ADD uav1", NULL);
-   //add_space_in(&g_space_list, "ADD uav2", NULL);
-   //add_space_in(&g_space_list, "ADD uav3", NULL);
-   add_space_in(&g_space_list, "ADD uav1/motor1", NULL);
-   add_space_in(&g_space_list, "ADD uav1/motor2", NULL);
-   sp1 = find_space_new(&g_space_list, "ADD uav1");
-   printf ("UAV1 spacep %p", sp1);
-   if(sp1)
-     printf(" g_space_list data %p match %d uav1->child %p\n"
-	    , g_space_list->data
-	    , (g_space_list->data == sp1)
-	    , sp1->child
-	    );
-   if(sp1->child)
+   rc = test_file("config.txt");
+   if(rc< 0)
      {
-       lp1 = sp1->child;
-       sp2 = lp1->data;
-       sp1 = lp1->next->data;
-       if (sp2)
-	 {
-	   lp2 = sp2->child;
-	   printf("sp2 %p idx %d name [%s] c %p lp2 %p\n"
-		  , sp2 , sp2->idx, sp2->name, sp2->child, lp2 );
-	 }
-       if (sp1)
-	 {
-	   printf("sp1 %p idx %d name [%s] c %p\n"
-		  , sp1 , sp1->idx, sp1->name, sp1->child);
-	 }
+       def_config();
      }
-   //add_space_in(&g_space_list, "ADD uav1/motor1/speed", NULL);
-   printf ("spaces from root\n");
-   show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
 
-   //printf ("spaces from sp2\n");
-   //show_spaces_new(NULL,&g_space_list[1], buf, 2048, buf);
-   //add_space
-   test_groups();
-   printf ("spaces from groups\n");
-   show_spaces_new(NULL,&g_space_list, buf, 2048, buf);
-   
    in->fd = 1;
 
 #if 1
@@ -214,15 +244,16 @@ int main (int argc, char *argv[])
        else if (strcmp(argv[1], "send") == 0)
 	 {
 
-	   run_test_send( in, argc, argv, buf, sizeof(buf));
+	   //run_test_send( in, argc, argv, buf, sizeof(buf));
 	 }
      
        else if (strcmp(argv[1], "test") == 0)
 	 {
-	   run_test_main(in, argc, argv, buf, sizeof(buf));
+	   //run_test_main(in, argc, argv, buf, sizeof(buf));
 	 }
      }
 #endif
+
 #if 1
    if(g_lsock == 0)
      {

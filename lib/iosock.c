@@ -174,6 +174,29 @@ int add_socket(int sockfd)
   return sockfd;
 }
 
+int accept_socket_fd(int sockfd)
+{
+     int newsock, clilen;
+     struct sockaddr_in cli_addr;
+     //int i;
+     if (sockfd != STDIN_FILENO)
+     {
+	 clilen = sizeof(cli_addr);
+	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr, (socklen_t*) &clilen) ) < 0 )
+	   {
+	     printf("ERROR on accept");
+	     return -1;
+	   }
+	 printf( "opened new communication with client \n" );
+     }
+     else
+     {
+	 newsock = sockfd;
+     }
+     return add_socket(newsock);
+}
+
+
 int accept_socket(int sockfd)
 {
      int newsock, clilen;
