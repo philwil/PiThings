@@ -709,7 +709,7 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
 	      sp++;
 	    }
 	  if(g_debug)
-	    printf("%s 2 name [%s] len %lu sp [%s] %x\n"
+	    printf("%s 2 name [%s] len %u sp [%s] %x\n"
 		   , __FUNCTION__
 		   , name
 		   , strlen(sp)
