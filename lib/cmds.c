@@ -23,6 +23,35 @@ extern char *g_myname;
 extern char *g_myaddr;
 extern int g_port_no;
 
+//  sock = connect_socket(iport, addr);
+//int dummy_hand(int fd, char *id, char *buf, int len)
+//      init_new_hand("some_id", "Dummy Handler",  dummy_handler);
+// run_new_gcmd
+//      add_socket(csock);
+//      in->fd = -1;
+int send_command(int sock, char *buf, int blen, char *id)
+{
+  char sbuf[128];
+  int rc;
+  int ret = 0;
+  snprintf(sbuf, blen,"CMD %s %d\n\n", id, blen);
+  rc = write(sock, buf, strlen(buf)); 
+  ret =  rc;
+  if(rc >0)
+    {
+      rc = write(sock, buf, blen);
+    }
+    if(rc >0)
+      {
+	ret += rc;
+      }
+    else
+      {
+	ret =  rc;
+      }
+    return ret;
+}
+
 
 //   idx = parse_stuff(' ', 64, (char **)valx, name);
 //   rc = parse_name(&idx (char **)valx, &idy (char **)valy, 64, name);

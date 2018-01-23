@@ -42,12 +42,14 @@ int run_test_send( struct iosock * in,int argc, char * argv[], char *buf, int bl
       add_socket(csock);
       in->fd = -1;
       csize = snprintf(buf, blen,"%s %s", argv[2], argv[3]);
+      rc = send_command(csock, buf, csize, "some_id");
+
       //TODO check buf csize
       // register_handler("some_id", dummy_handler);
-      snprintf(buf, blen,"CMD %s %d\n\n", "some_id", csize);
-      rc = write(csock, buf, strlen(buf)); 
-      snprintf(buf, blen,"%s %s", argv[2], argv[3]);
-      rc = write(csock, buf, strlen(buf)); 
+      //snprintf(buf, blen,"CMD %s %d\n\n", "some_id", csize);
+      //rc = write(csock, buf, strlen(buf)); 
+      //snprintf(buf, blen,"%s %s", argv[2], argv[3]);
+      //rc = write(csock, buf, strlen(buf)); 
       //snprintf(buf, sizeof(buf),"QUIT\n\n");
       //rc = write(csock, buf, strlen(buf)); 
       rc = 1;

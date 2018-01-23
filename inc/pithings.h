@@ -326,6 +326,8 @@ struct space *add_conn_in(struct list **root, char *name,
 
 int set_space_value(struct space *sp1, char *spv, char *name);
 int set_group_value(char *master, char *value, char *name);
+//Sends a command to a remote node
+int send_command(int sock, char *buf, int blen, char *id);
 
 
 #endif
