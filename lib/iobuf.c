@@ -453,7 +453,11 @@ int print_iob_list(struct list **item, char *why)
   struct list *titem;
   struct iobuf *iob= NULL;
   sitem = NULL;
-
+  if(!*item)
+    {
+      printf("%s ERROR test item [%p] %s\n", __FUNCTION__, *item, why);
+      return 0;
+    }
   printf("%s test item [%p] %s\n", __FUNCTION__, *item, why);
 
   while(foreach_item(&sitem, item))
@@ -524,6 +528,14 @@ int handle_noutput(struct iosock *in)
 		  in->outbptr = 0;
 		  in->outblen = 0;
 		}
+	      iob->outptr+=rc;
+	      if(iob->outptr == iob->outlen)
+		{
+		  iob->outptr= 0;
+		  iob->outlen= 0;
+		  push_list(&g_iob_list, item);
+		}
+	      
 	    }
 	}
       //TODO push_iob(&g_iob_list, iob);
@@ -579,11 +591,16 @@ int test_niob(void)
   item = in->oubuf_list;
   print_iob_list(&item, "full list");
   item = pull_in_iob(in, &sp, &len);
+  push_list(&g_iob_list, item);
+  
   // must correct size in->outbptr
   iob = item->data;
   in->outbptr += iob->outlen;
   if(g_debug)
     printf(" After pull 1 data [%s] len %d iob %p\n", sp, len, iob);
+  iob->outlen = 0;
+  iob->outptr = 0;
+  
   item = in->oubuf_list;
 
   printf(" after pull list  [%p]\n", item);
@@ -593,6 +610,7 @@ int test_niob(void)
 
   handle_noutput(in);
   printf("\n============================handle_noutput=========\n");
+  print_iob_list(&g_iob_list,"after handle_noutput");
 
   return 0;
 
