@@ -832,6 +832,7 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
   //struct list *list;
   //struct space *base = NULL;
   char *sp;
+  char buf[2048];
   char spv[2][128];
   int rc=0;
   spv[0][0]=0;
@@ -852,7 +853,27 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
       sret = sp1->value;
       if(in)
 	{
-	  in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
+	  if (in->hproto)
+	    {
+	      snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n\r\n"
+		       "Content-Type: text/html\r\n\r\n"
+		       "<html><head>"
+		       //"<style>"
+		       //"body{font-family: monospace; font-size: 13px;}"
+		       //"td {padding: 1.5px 6px;}"
+		       //"</style>"
+		       "</head><body>\n"
+		       "OK GET %s value [%s]\n"
+		       "</body></html>\r\n\r\n"
+		       , sp, sret);
+	      write(in->fd, buf, strlen(buf));
+	      //send_html_head(in, NULL);
+	    }
+	  else
+	    {
+	      in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
+	    }
+		//send_html_tail(in, NULL);
 	  in->hidx = sp1->idx;
 	  if(g_debug)
 	    printf(" %s found [%s] [%s] in->hidx=%p->%d\n"
@@ -868,7 +889,24 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
     {
       if(in)
 	{
-	  in_snprintf(in, NULL, "?? GET [%s] not found \n",sp);
+	  if (in->hproto)
+	    {
+	      snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n"
+			  "Content-Type: text/html\r\n\r\n"
+			  "<html><head><style>"
+			  "body{font-family: monospace; font-size: 13px;}"
+			  "td {padding: 1.5px 6px;}"
+			  "</style></head><body>\n "
+			  "ERR GET %s not found\n"
+			  "</body></html>\n\n"
+			  , sp);
+	      write(in->fd, buf, strlen(buf));
+	      //send_html_head(in, NULL);
+	    }
+	  else
+	    {
+	      in_snprintf(in, NULL, "ERR GET [%s] not found \n",sp);
+	    }
 	  in->hidx = -2;
 	}
     }

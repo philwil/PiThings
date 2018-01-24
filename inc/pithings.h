@@ -104,6 +104,7 @@ struct iosock
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
   int hlen;
+  int hproto;     // for now indicates html protocol
   int hidx;
   char *cmdid;    // current command id
   int tlen;       // term
@@ -329,6 +330,8 @@ int set_group_value(char *master, char *value, char *name);
 //Sends a command to a remote node
 int send_command(int sock, char *buf, int blen, char *id);
 
+int send_html_head(struct iosock *in, char *msg);
+int send_html_tail(struct iosock *in, char *msg);
 
 #endif
 

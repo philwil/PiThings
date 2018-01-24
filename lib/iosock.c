@@ -47,6 +47,8 @@ int init_iosock(struct iosock *in)
   in->cmdlen = 0;
   in->hlen = 0;
   in->hidx = -1;
+  in->hproto = 0;
+
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
   in->cmdid = NULL;
@@ -479,19 +481,19 @@ void url_decode(char* src, char* dest, int max) {
 int send_html_head(struct iosock *in, char *msg)
 {
   int len = 0;
-  len = in_snprintf(in, NULL, "HTTP/1.1 200 OK\r\n%s%s%s%s%s",
-		    "Content-Type: text/html\r\n\r\n",
-		    "<html><head><style>",
-		    "body{font-family: monospace; font-size: 13px;}",
-		    "td {padding: 1.5px 6px;}",
-		    "</style></head><body>\n");
+  len = in_snprintf(in, NULL, "HTTP/1.1 200 OK\r\n"
+		    "Content-Type: text/html\r\n\r\n"
+		    "<html><head><style>"
+		    "body{font-family: monospace; font-size: 13px;}"
+		    "td {padding: 1.5px 6px;}"
+		    "</style></head><body>\n ");
   return len;
 }
 
 int send_html_tail(struct iosock *in, char *msg)
 {
   int len;
-  len = in_snprintf(in, NULL, "</table></body></html>");
+  len = in_snprintf(in, NULL, "</body></html>");
  
   return len;
 }
@@ -641,9 +643,11 @@ int handle_input_norm(struct iosock *in)
 			 , __FUNCTION__
 			 , sp //&in->inbuf[in->inptr]
 			 , n, cmd, uri, vers );
+	in->hproto = 0;  // Default
 	if(strstr(vers,"HTTP/"))
 	  {
 	    in->instate = STATE_IN_HTTP;
+	    in->hproto = 1;
 	  }
 	if (in->instate == STATE_IN_HTTP)
 	  {
@@ -780,24 +784,7 @@ int handle_output(struct iosock *in)
   char *sp;
   int len;
   int bcount = 0;
-  // old way
-#if 0
-  if(in->outptr != in->outlen)
-    {
-      if(g_debug)printf(" %s running the old way\n", __FUNCTION__);
-      rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
-      if(rc >0)
-	{
-	  in->outptr += rc;
-	  if (in->outptr == in->outlen)
-	    {
-	      in->outptr = 0;
-	      in->outlen = 0;
-	    }
-	}
-    }
-#endif
-  // iobway
+
   while((bcount++ < 1024) && (in->outbptr != in->outblen))
     {
       len = 0;
@@ -830,6 +817,14 @@ int handle_output(struct iosock *in)
 		{
 		  in->outbptr = 0;
 		  in->outblen = 0;
+		  if((in->hproto) && (in->iobuf == NULL))
+		  {
+		    printf(" sent the last buffer to fd %d\n",
+			   in->fd);
+		    in->hproto = 0;
+		    shutdown(in->fd, SHUT_WR);
+		  //  in->fd = -1;
+		  }
 		}
 	    }
 	}
