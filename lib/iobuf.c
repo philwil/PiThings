@@ -22,8 +22,10 @@ extern struct iobuf *g_iob_store;
 extern struct list *g_iob_list;
 extern int g_new_iob_size;
 
+int g_debug_iob_list=0;
+
 // deprecated
-struct iobuf *seek_iob(struct iobuf **inp, int len)
+struct iobuf *seek_iob_deprecated(struct iobuf **inp, int len)
 {
   struct iobuf *iob = *inp;
   struct iobuf *iobs = *inp;
@@ -45,8 +47,12 @@ struct iobuf *seek_iob(struct iobuf **inp, int len)
   return iob;
 }
 
-extern struct list *g_iob_list;
-//foreach
+// foreach neat list cycle function
+// look in the list for a suitable item based on a size match (len)
+// int push_list(struct list **listp, struct list*item);
+// struct list *pop_list(struct list **listp, struct list*item);
+// used in new_iobuf in cmds.c:in_snprintf
+// test_niob for full test
 struct list *seek_new_iob_item(struct list **listp, int len)
 {
   struct iobuf *iob = NULL;
@@ -56,18 +62,19 @@ struct list *seek_new_iob_item(struct list **listp, int len)
 
   item = *listp;
 
-  printf(" test item [%p]\n", item);
+  if(g_debug_iob_list)
+    printf(" test item [%p]\n", item);
   slist = NULL;
   while(foreach_item(&slist, &item))
     {
       
       iob = item->data;
-      
-      printf(" iob %p data len/size %d/%d->[%s]\n"
-	     , iob
-	     , iob->outlen
-	     , iob->outsize
-	     , iob->outbuf
+      if( g_debug_iob_list)
+	printf(" iob %p data len/size %d/%d->[%s]\n"
+	       , iob
+	       , iob->outlen
+	       , iob->outsize
+	       , iob->outbuf
 	     );
       if(iob->outsize>len)
 	{
@@ -76,22 +83,24 @@ struct list *seek_new_iob_item(struct list **listp, int len)
 	}
     }
   if(fitem)
-    pop_list(listp,fitem);
+    pop_list(listp, fitem);
   return fitem;
 }
 
 
 
-struct iobuf *new_iobuf(int len)
+struct list *new_iobuf_item(int len)
 {
   struct iobuf *iob = NULL;
-  printf(" %s running 1 len %d\n" , __FUNCTION__, len );
+  if(g_debug_iob_list)
+    printf(" %s running 1 len %d\n" , __FUNCTION__, len );
   struct list *item = seek_new_iob_item(&g_iob_list, len);
+
   if(item)
     {
       iob = item->data;
-      // for now
-      free(item);
+      // for now we just need the IOB TODO pass around the list
+      //free(item);
     }
   if(!iob)
     {
@@ -108,8 +117,9 @@ struct iobuf *new_iobuf(int len)
       iob->outlen=0;
       iob->prev = iob;
       iob->next = iob;
+      item = new_list(iob);
     }
-  return iob;
+  return item;
 }
 
 
@@ -177,26 +187,28 @@ int xadd_iob(struct iosock *in, char *buf, int len)
 {
   int need_push = 0;
   struct iobuf *iob = NULL;
+  struct list *item;
   //struct iobuf *ciob = NULL;
-  if (in->iobuf != NULL)
+  if (in->oubuf_list != NULL)
     {
-      iob = in->iobuf;
+      item = in->oubuf_list;
     }
   else
     {
-      iob = new_iobuf(len);
+      item = new_iobuf_item(len);
       need_push = 1;
     }
-
+  iob = item->data;
   if (iob->outlen+len >= iob->outsize)
     {
-      iob = new_iobuf(len);
+      item = new_iobuf_item(len);
+      iob = item->data;
       need_push = 1;
     }
   extend_iobuf(iob, buf, len);
   if(need_push)
     {
-      push_iob(&in->iobuf, iob);
+      push_list(&in->oubuf_list, item);
     }
   return 0;
 }
@@ -305,15 +317,16 @@ int test_iob(void)
 {
   struct iosock inx;
   struct iosock *in = &inx;
-  char *sp;
-  int len;
-  struct iobuf *iob= NULL;
-  struct iobuf *iob1= NULL;
-  struct iobuf *iob2= NULL;
-  struct iobuf *iob3= NULL;
+  //char *sp;
+  //int len;
+  //struct iobuf *iob= NULL;
+  //  struct iobuf *iob1= NULL;
+  //struct iobuf *iob2= NULL;
+  //struct iobuf *iob3= NULL;
 
   init_iosock(in);
 
+#if 0
   if(g_debug)
     printf(" After init :-\n");
   print_iobs(in->iobuf);
@@ -369,13 +382,13 @@ int test_iob(void)
   if(g_debug)
     printf("\n\n iobstore follows\n");
   print_iobs(g_iob_store);
-  iob = new_iobuf(12);
+  iob = new_iobuf_item(12);
   if(g_debug)
     printf("\n\n iobstore after small pull %p\n", iob);
   print_iobs(g_iob_store);
 
   if(iob) store_iob(&g_iob_store, iob);
-  iob = new_iobuf(120);
+  iob = new_iobuf_item(120);
   if(g_debug)
     printf("\n\n iobstore after large pull %p\n", iob);
   print_iobs(g_iob_store);
@@ -384,7 +397,7 @@ int test_iob(void)
     printf("\n\n iobstore after store %p\n", iob);
   print_iobs(g_iob_store);
   remove_iobs(&g_iob_store);
-  iob1 = new_iobuf(12);
+  iob1 = new_iobuf_item(12);
   in_snprintf(NULL, iob1, "the name [%s] value is %d ", "some_name", 22);
   in_snprintf(NULL, iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
   if(g_debug)
@@ -410,7 +423,8 @@ int test_iob(void)
 	   , iob3->next
 	   , iob3->prev
 	   );
-
+#endif
+  
   return 0;
 }
 
@@ -434,7 +448,85 @@ struct iobuf *pull_in_iob(struct iosock *in, char **spp, int*len)
   return iob;
 }
 
+int print_iob_list(struct list **item, char *why)
+{
+  int rc = 0;
+  struct list *sitem;
+  struct list *titem;
+  struct iobuf *iob= NULL;
+  sitem = NULL;
+
+  printf("%s test item [%p] %s\n", __FUNCTION__, *item, why);
+
+  while(foreach_item(&sitem, item))
+    {
+      titem = *item;
+      iob = titem->data;
+      
+      printf(" iob %p data len/size %d/%d->[%s]\n"
+	     , iob
+	     , iob->outlen
+	     , iob->outsize
+	     , iob->outbuf
+	     );
+    }
+  return rc;
+}
+
+int handle_noutput(struct iosock *in)
+{
+  int rc = 0;
+  struct iobuf *iob;
+  char *sp;
+  int len;
+  int bcount = 0;
+  // iobway
+  while((bcount++ < 1024) && (in->outbptr != in->outblen))
+    {
+      len = 0;
+      iob = pull_in_iob(in, &sp, &len);
+      //iob = pull_iob(&in->iobuf, &sp, &len);
+      if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
+		  , __FUNCTION__, iob, len, sp);
+      if(iob)
+	{
+	  if(0)print_iob(iob);
+	}
+      else
+	{
+	  in->outbptr = 0;
+	  in->outblen = 0;
+	}
+      if(len > 0)
+	{
+	  rc = write(in->fd, sp, len);
+	  if(rc <= 0)
+	    {
+	      // shutdown iobuffer
+	      // TODO unload iobs
+	      in->outbptr = 0;
+	      in->outblen = 0;
+	    }
+	  if(rc >0)
+	    {
+	      in->outbptr += rc;
+	      if (in->outbptr == in->outblen)
+		{
+		  in->outbptr = 0;
+		  in->outblen = 0;
+		}
+	    }
+	}
+      //TODO push_iob(&g_iob_list, iob);
+    }
+  return rc;
+}
+
+
+
 // test new list interface
+// TODO check stash on g_iob_list
+// check handle_noutput
 int test_niob(void)
 {
   struct iosock inx;
@@ -442,63 +534,50 @@ int test_niob(void)
   char *sp;
   int len;
   struct iobuf *iob= NULL;
-  struct iobuf *iob1= NULL;
-  struct iobuf *iob2= NULL;
-  struct iobuf *iob3= NULL;
+  //  struct iobuf *iob1= NULL;
+  //struct iobuf *iob2= NULL;
+  //struct iobuf *iob3= NULL;
 
-  struct list *slist;
   struct list *item;
-  g_new_iob_size =  16;
+  g_new_iob_size =  24;
   init_iosock(in);
-  sp = "first inblock";
-  printf(" test sp [%s]\n", sp);
+  sp = "<<dont send this block>>";
+  //printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
+  printf(" test sp [%s] in->outblen %lu sp len (%lu)\n"
+	 , sp, (long unsigned int)in->outblen, (long unsigned int)strlen(sp));
+
+  sp = "first inblock ";
+  //printf(" test sp [%s]\n", sp);
+  in_snprintf(in, NULL, "%s", sp);
+  printf(" test sp [%s] in->outblen %lu sp len (%lu)\n"
+	 , sp, (long unsigned int)in->outblen, (long unsigned int)strlen(sp));
+
   //printf(" test sp [%s] done\n", sp);
 
   sp = "second longer inblock ";
-  printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
+  printf(" test sp [%s] in->outblen %lu sp len (%lu)\n"
+	 , sp, (long unsigned int)in->outblen, (long unsigned int)strlen(sp));
 
   sp = "end!!";
-  printf(" test sp [%s]\n", sp);
+  //printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
+  printf(" test sp [%s] in->outblen %lu sp len (%lu)\n"
+	 , sp, (long unsigned int)in->outblen, (long unsigned int)strlen(sp));
 
   item = in->oubuf_list;
-  printf(" test item [%p]\n", item);
-  slist = NULL;
-  while(foreach_item(&slist, &item))
-    {
-      
-      iob = item->data;
-      
-      printf(" iob %p data len/size %d/%d->[%s]\n"
-	     , iob
-	     , iob->outlen
-	     , iob->outsize
-	     , iob->outbuf
-	     );
-    }
+  print_iob_list(&item, "full list");
   iob = pull_in_iob(in, &sp, &len);
   if(g_debug)
     printf(" After pull 1 data [%s] len %d iob %p\n", sp, len, iob);
   item = in->oubuf_list;
-  printf(" after pull list  [%p]\n", item);
-  slist = NULL;
-  while(foreach_item(&slist, &item))
-    {
-      
-      iob = item->data;
-      
-      printf(" iob %p data len/size %d/%d->[%s]\n"
-	     , iob
-	     , iob->outlen
-	     , iob->outsize
-	     , iob->outbuf
-	     );
-    }
 
+  printf(" after pull list  [%p]\n", item);
+  print_iob_list(&item,"after first pull");
   return 0;
-  
+
+#if 0  
   init_iosock(in);
 
   if(g_debug)
@@ -557,13 +636,13 @@ int test_niob(void)
   if(g_debug)
     printf("\n\n iobstore follows\n");
   print_iobs(g_iob_store);
-  iob = new_iobuf(12);
+  iob = new_iobuf_item(12);
   if(g_debug)
     printf("\n\n iobstore after small pull %p\n", iob);
   print_iobs(g_iob_store);
 
   if(iob) store_iob(&g_iob_store, iob);
-  iob = new_iobuf(120);
+  iob = new_iobuf_item(120);
   if(g_debug)
     printf("\n\n iobstore after large pull %p\n", iob);
   print_iobs(g_iob_store);
@@ -572,7 +651,7 @@ int test_niob(void)
     printf("\n\n iobstore after store %p\n", iob);
   print_iobs(g_iob_store);
   remove_iobs(&g_iob_store);
-  iob1 = new_iobuf(12);
+  iob1 = new_iobuf_item(12);
   in_snprintf(NULL, iob1, "the name [%s] value is %d ", "some_name", 22);
   in_snprintf(NULL, iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
   if(g_debug)
@@ -598,7 +677,8 @@ int test_niob(void)
 	   , iob3->next
 	   , iob3->prev
 	   );
-
+#endif
+  
   return 0;
 }
 

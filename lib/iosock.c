@@ -720,9 +720,9 @@ int handle_input(struct iosock *in)
   char *sp;
   struct iobuf *inbf;  // input buffer
   
-  if (in->inbuf == NULL)
-    in->inbuf = new_iobuf(1024);
-  inbf = in->inbuf;
+  if (in->inbuf_list == NULL)
+    in->inbuf_list = new_iobuf_item(1024);
+  inbf = in->inbuf_list->data;
   rsize = get_rsize(in);
   // TODO create a new inbuf
   

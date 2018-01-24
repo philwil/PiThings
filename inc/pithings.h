@@ -336,7 +336,7 @@ int send_command(int sock, char *buf, int blen, char *id);
 int test_niob(void);
 // interesting see iobuf:iob_ntest
 struct list *foreach_item(struct list **start, struct list **item);
-
+struct list *new_iobuf_item(int len);
 #endif
 
 
