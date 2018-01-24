@@ -855,7 +855,7 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 	{
 	  if (in->hproto)
 	    {
-	      snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n\r\n"
+	      snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n"
 		       "Content-Type: text/html\r\n\r\n"
 		       "<html><head>"
 		       //"<style>"
@@ -864,9 +864,10 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 		       //"</style>"
 		       "</head><body>\n"
 		       "OK GET %s value [%s]\n"
-		       "</body></html>\r\n\r\n"
+		       "</body></html>\r\n"
 		       , sp, sret);
 	      write(in->fd, buf, strlen(buf));
+	      close(in->fd);
 	      //send_html_head(in, NULL);
 	    }
 	  else
