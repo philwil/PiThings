@@ -87,8 +87,6 @@ struct list *seek_new_iob_item(struct list **listp, int len)
   return fitem;
 }
 
-
-
 struct list *new_iobuf_item(int len)
 {
   struct iobuf *iob = NULL;
@@ -428,7 +426,7 @@ int test_iob(void)
   return 0;
 }
 
-struct iobuf *pull_in_iob(struct iosock *in, char **spp, int*len)
+struct list *pull_in_iob(struct iosock *in, char **spp, int*len)
 {
   struct iobuf *iob=NULL;
   struct list *item;
@@ -445,7 +443,7 @@ struct iobuf *pull_in_iob(struct iosock *in, char **spp, int*len)
 
   //if(g_debug)
 
-  return iob;
+  return item;
 }
 
 int print_iob_list(struct list **item, char *why)
@@ -477,6 +475,7 @@ int handle_noutput(struct iosock *in)
 {
   int rc = 0;
   struct iobuf *iob;
+  struct list *item;
   char *sp;
   int len;
   int bcount = 0;
@@ -484,7 +483,8 @@ int handle_noutput(struct iosock *in)
   while((bcount++ < 1024) && (in->outbptr != in->outblen))
     {
       len = 0;
-      iob = pull_in_iob(in, &sp, &len);
+      item = pull_in_iob(in, &sp, &len);
+      iob = item->data;
       //iob = pull_iob(&in->iobuf, &sp, &len);
       if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
 		  , __FUNCTION__, iob, len, sp);
@@ -568,7 +568,8 @@ int test_niob(void)
 
   item = in->oubuf_list;
   print_iob_list(&item, "full list");
-  iob = pull_in_iob(in, &sp, &len);
+  item = pull_in_iob(in, &sp, &len);
+  iob = item->data;
   if(g_debug)
     printf(" After pull 1 data [%s] len %d iob %p\n", sp, len, iob);
   item = in->oubuf_list;
