@@ -19,8 +19,10 @@
 #include "../inc/pithings.h"
 
 extern struct iobuf *g_iob_store;
+extern struct list *g_iob_list;
 extern int g_new_iob_size;
 
+// deprecated
 struct iobuf *seek_iob(struct iobuf **inp, int len)
 {
   struct iobuf *iob = *inp;
@@ -43,11 +45,54 @@ struct iobuf *seek_iob(struct iobuf **inp, int len)
   return iob;
 }
 
+extern struct list *g_iob_list;
+//foreach
+struct list *seek_new_iob_item(struct list **listp, int len)
+{
+  struct iobuf *iob = NULL;
+  struct list *slist;
+  struct list *item;
+  struct list *fitem=NULL;
+
+  item = *listp;
+
+  printf(" test item [%p]\n", item);
+  slist = NULL;
+  while(foreach_item(&slist, &item))
+    {
+      
+      iob = item->data;
+      
+      printf(" iob %p data len/size %d/%d->[%s]\n"
+	     , iob
+	     , iob->outlen
+	     , iob->outsize
+	     , iob->outbuf
+	     );
+      if(iob->outsize>len)
+	{
+	  fitem=item;
+	  break;
+	}
+    }
+  if(fitem)
+    pop_list(listp,fitem);
+  return fitem;
+}
+
+
+
 struct iobuf *new_iobuf(int len)
 {
   struct iobuf *iob = NULL;
   printf(" %s running 1 len %d\n" , __FUNCTION__, len );
-  iob = seek_iob(&g_iob_store, len); 
+  struct list *item = seek_new_iob_item(&g_iob_list, len);
+  if(item)
+    {
+      iob = item->data;
+      // for now
+      free(item);
+    }
   if(!iob)
     {
       int xlen = len+5;
@@ -369,6 +414,26 @@ int test_iob(void)
   return 0;
 }
 
+struct iobuf *pull_in_iob(struct iosock *in, char **spp, int*len)
+{
+  struct iobuf *iob=NULL;
+  struct list *item;
+  item = in->oubuf_list;
+  printf(" test item [%p]\n", item);
+  if(item)
+    {
+      iob = item->data;
+      *len = iob->outlen;
+      *spp = iob->outbuf;
+      printf(" After pull [%s] len %d iob %p\n", *spp, *len, iob);
+      pop_list(&in->oubuf_list, item);
+    }
+
+  //if(g_debug)
+
+  return iob;
+}
+
 // test new list interface
 int test_niob(void)
 {
@@ -394,7 +459,7 @@ int test_niob(void)
   printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
 
-  sp = "end";
+  sp = "end!!";
   printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
 
@@ -413,6 +478,25 @@ int test_niob(void)
 	     , iob->outbuf
 	     );
     }
+  iob = pull_in_iob(in, &sp, &len);
+  if(g_debug)
+    printf(" After pull 1 data [%s] len %d iob %p\n", sp, len, iob);
+  item = in->oubuf_list;
+  printf(" after pull list  [%p]\n", item);
+  slist = NULL;
+  while(foreach_item(&slist, &item))
+    {
+      
+      iob = item->data;
+      
+      printf(" iob %p data len/size %d/%d->[%s]\n"
+	     , iob
+	     , iob->outlen
+	     , iob->outsize
+	     , iob->outbuf
+	     );
+    }
+
   return 0;
   
   init_iosock(in);

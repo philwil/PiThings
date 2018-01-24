@@ -758,7 +758,7 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 {
   int size;
   struct iobuf *iob = NULL;
-  struct iobuf *ciob;
+  //struct iobuf *ciob;
   struct list *item;
   va_list args;
 
@@ -769,47 +769,52 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 	 );
 
   if(xiob)
-    iob = xiob;
-      
-  if((!in || !in->iobuf) && !xiob)
     {
-      iob = new_iobuf(g_new_iob_size);
-      printf(" %s got iob %p size %d\n"
-	     , __FUNCTION__
-	     , iob, iob->outsize);
-      item=new_list(iob);
-      push_list(&in->oubuf_list, item);
+      iob = xiob;
     }
-  if(in)
+  else
     {
-      if(in->iobuf)
-	iob = in->iobuf;
-      else
-	in->iobuf=iob;
-    }
-  if (iob)
-    {
-      va_start(args, fmt);
-      size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
-      va_end(args);
-      if(g_debug)
-	printf(" size found %d len %d\n"
-	       , size
-	       , iob->outlen);
-      
-      if(iob->outlen+ size > iob->outsize)
-        {
-	  ciob = iob;
-	  iob = new_iobuf(ciob->outlen+size);
-	  push_ciob(NULL, ciob, iob);
+      if(!in) return -1;
+    
+      if(!in->iobuf)
+	{
+	  iob = new_iobuf(g_new_iob_size);
+	  printf(" %s got iob %p size %d\n"
+		 , __FUNCTION__
+		 , iob, iob->outsize);
 	  item=new_list(iob);
 	  push_list(&in->oubuf_list, item);
+	  in->iobuf = iob;
 	}
-	va_start(args, fmt);
-	size = vsnprintf(&iob->outbuf[iob->outlen], iob->outsize-iob->outlen, fmt, args);
-	va_end(args);
-	iob->outlen+= size;
     }
+
+  iob= in->iobuf;
+  va_start(args, fmt);
+  size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
+  va_end(args);
+  if(g_debug)
+    printf(" size found %d space left %d\n"
+	   , size
+	   , iob->outsize - iob->outlen
+	   
+	   );
+  
+  if(iob->outlen+ size > iob->outsize)
+    {
+      //ciob = iob;
+      iob = new_iobuf(iob->outlen+size);
+      //push_ciob(NULL, ciob, iob);
+      item=new_list(iob);
+      push_list(&in->oubuf_list, item);
+      in->iobuf = iob;
+      
+    }
+  printf("%s starting output\n",__FUNCTION__);
+  
+  va_start(args, fmt);
+  size = vsnprintf(&iob->outbuf[iob->outlen], iob->outsize-iob->outlen, fmt, args);
+  va_end(args);
+  iob->outlen+= size;
   if(in)in->outblen += size;
   return size;
   

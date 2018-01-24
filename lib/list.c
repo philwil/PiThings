@@ -136,6 +136,8 @@ struct list *pop_clist(struct list **root, struct list *citem, struct list *item
 
 	  item->next = item;
 	  item->prev = item;
+	  if(root)*root=nitem;
+
 	}
     }
   else
