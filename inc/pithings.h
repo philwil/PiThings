@@ -109,6 +109,9 @@ struct iosock
   int tlen;       // term
   int nosend;       // term
   int instate;
+  struct list *inbuf_list;
+  struct list *oubuf_list;
+  
 };
 
 struct cmds
@@ -329,6 +332,10 @@ int set_group_value(char *master, char *value, char *name);
 //Sends a command to a remote node
 int send_command(int sock, char *buf, int blen, char *id);
 
+// new iob test
+int test_niob(void);
+// interesting see iobuf:iob_ntest
+struct list *foreach_item(struct list **start, struct list **item);
 
 #endif
 

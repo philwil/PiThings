@@ -19,6 +19,7 @@
 #include "../inc/pithings.h"
 
 extern struct iobuf *g_iob_store;
+extern int g_new_iob_size;
 
 struct iobuf *seek_iob(struct iobuf **inp, int len)
 {
@@ -45,20 +46,24 @@ struct iobuf *seek_iob(struct iobuf **inp, int len)
 struct iobuf *new_iobuf(int len)
 {
   struct iobuf *iob = NULL;
-
+  printf(" %s running 1 len %d\n" , __FUNCTION__, len );
   iob = seek_iob(&g_iob_store, len); 
   if(!iob)
-    iob = (struct iobuf *)malloc(sizeof (struct iobuf));
+    {
+      int xlen = len+5;
+      printf(" %s running, create iob\n" , __FUNCTION__);
+      
+      iob = (struct iobuf *)malloc(sizeof (struct iobuf));
 
-  int xlen = len+5;
 
-  iob->outbuf = (char *)malloc(xlen);
-  iob->outbuf[0] = 0;
-  iob->outsize=xlen;
-  iob->outptr=0;
-  iob->outlen=0;
-  iob->prev = iob;
-  iob->next = iob;
+      iob->outbuf = (char *)malloc(xlen);
+      iob->outbuf[0] = 0;
+      iob->outsize=xlen;
+      iob->outptr=0;
+      iob->outlen=0;
+      iob->prev = iob;
+      iob->next = iob;
+    }
   return iob;
 }
 
@@ -363,6 +368,156 @@ int test_iob(void)
 
   return 0;
 }
+
+// test new list interface
+int test_niob(void)
+{
+  struct iosock inx;
+  struct iosock *in = &inx;
+  char *sp;
+  int len;
+  struct iobuf *iob= NULL;
+  struct iobuf *iob1= NULL;
+  struct iobuf *iob2= NULL;
+  struct iobuf *iob3= NULL;
+
+  struct list *slist;
+  struct list *item;
+  g_new_iob_size =  16;
+  init_iosock(in);
+  sp = "first inblock";
+  printf(" test sp [%s]\n", sp);
+  in_snprintf(in, NULL, "%s", sp);
+  //printf(" test sp [%s] done\n", sp);
+
+  sp = "second longer inblock ";
+  printf(" test sp [%s]\n", sp);
+  in_snprintf(in, NULL, "%s", sp);
+
+  sp = "end";
+  printf(" test sp [%s]\n", sp);
+  in_snprintf(in, NULL, "%s", sp);
+
+  item = in->oubuf_list;
+  printf(" test item [%p]\n", item);
+  slist = NULL;
+  while(foreach_item(&slist, &item))
+    {
+      
+      iob = item->data;
+      
+      printf(" iob %p data len/size %d/%d->[%s]\n"
+	     , iob
+	     , iob->outlen
+	     , iob->outsize
+	     , iob->outbuf
+	     );
+    }
+  return 0;
+  
+  init_iosock(in);
+
+  if(g_debug)
+    printf(" After init :-\n");
+  print_iobs(in->iobuf);
+  
+  sp = "1 first inblock\n";
+  in_snprintf(in, NULL, "%s", sp);
+
+  //add_iob(in, sp, strlen(sp));
+  if(g_debug)
+    printf(" After 1 :-\n");
+  print_iobs(in->iobuf);
+  sp = "2 next inblock\n";
+  in_snprintf(in, NULL, "%s", sp);
+
+  //add_iob(in, sp, strlen(sp));
+  if(g_debug)
+    printf(" After 2 :-\n");
+  print_iobs(in->iobuf);
+
+  sp = "3 lastst inblock\n";
+  in_snprintf(in, NULL, "%s", sp);
+  //add_iob(in, sp, strlen(sp));
+  if(g_debug)
+    printf(" After last :-\n");
+  print_iobs(in->iobuf);
+  //ciob = in->iobuf;
+
+  iob = pull_iob(&in->iobuf, &sp, &len);
+  if(g_debug)
+    printf(" After pull 1 [%s] len %d iob %p\n", sp, len, iob);
+  print_iobs(in->iobuf);
+  store_iob(&g_iob_store, iob);
+  printf("\n\n");
+
+  iob = pull_iob(&in->iobuf, &sp, &len);
+  if(g_debug)
+    printf(" After pull 2 [%s] len %d iob %p\n", sp, len, iob);
+  print_iobs(in->iobuf);
+  store_iob(&g_iob_store, iob);
+  if(g_debug)
+    printf("\n\n");
+  iob = pull_iob(&in->iobuf, &sp, &len);
+  if(g_debug)
+    printf(" After pull 3 [%s] len %d iob %p\n", sp, len, iob);
+  print_iobs(in->iobuf);
+  store_iob(&g_iob_store, iob);
+  if(g_debug)
+    printf("\n\n");
+  iob = pull_iob(&in->iobuf, &sp, &len);
+  if(g_debug)
+    printf(" After pull 4 [%s] len %d iob %p\n", sp, len, iob);
+  print_iobs(in->iobuf);
+  store_iob(&g_iob_store, iob);
+  if(g_debug)
+    printf("\n\n iobstore follows\n");
+  print_iobs(g_iob_store);
+  iob = new_iobuf(12);
+  if(g_debug)
+    printf("\n\n iobstore after small pull %p\n", iob);
+  print_iobs(g_iob_store);
+
+  if(iob) store_iob(&g_iob_store, iob);
+  iob = new_iobuf(120);
+  if(g_debug)
+    printf("\n\n iobstore after large pull %p\n", iob);
+  print_iobs(g_iob_store);
+  if(iob) store_iob(&g_iob_store, iob);
+  if(g_debug)
+    printf("\n\n iobstore after store %p\n", iob);
+  print_iobs(g_iob_store);
+  remove_iobs(&g_iob_store);
+  iob1 = new_iobuf(12);
+  in_snprintf(NULL, iob1, "the name [%s] value is %d ", "some_name", 22);
+  in_snprintf(NULL, iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
+  if(g_debug)
+    printf("\n\n iob 1 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob1
+	   , iob1->outbuf
+	   , iob1->next
+	   , iob1->prev
+	   );
+  iob2 = iob1->next;
+  if(g_debug)
+    printf("\n\n iob 2 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob2
+	   , iob2->outbuf
+	   , iob2->next
+	   , iob2->prev
+	   );
+  iob3 = iob2->next;
+  if(g_debug)
+    printf("\n\n iob 3 %p after snprintf  [%s] prev %p next %p \n"
+	   , iob3
+	   , iob3->outbuf
+	   , iob3->next
+	   , iob3->prev
+	   );
+
+  return 0;
+}
+
 int count_buf_bytes(struct iobuf *oubuf)
 {
   int rc=0;

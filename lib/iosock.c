@@ -53,6 +53,8 @@ int init_iosock(struct iosock *in)
   in->tlen = 0;
   in->nosend = 0;
   in->instate = STATE_IN_NORM;
+  in->inbuf_list=NULL;
+  in->oubuf_list=NULL;
   return 0;
 }
 

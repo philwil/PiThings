@@ -751,20 +751,35 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...)
     }
     return size;
 }
+int g_new_iob_size = 128;
 //in
+// now uses iobuf_list
 int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 {
   int size;
   struct iobuf *iob = NULL;
   struct iobuf *ciob;
+  struct list *item;
   va_list args;
+
+  printf(" %s starting in (%p) xiob %p in->iobuf (%p)\n"
+	 , __FUNCTION__
+	 , in, xiob
+	 , in->iobuf
+	 );
 
   if(xiob)
     iob = xiob;
       
   if((!in || !in->iobuf) && !xiob)
-    iob = new_iobuf(128);
-
+    {
+      iob = new_iobuf(g_new_iob_size);
+      printf(" %s got iob %p size %d\n"
+	     , __FUNCTION__
+	     , iob, iob->outsize);
+      item=new_list(iob);
+      push_list(&in->oubuf_list, item);
+    }
   if(in)
     {
       if(in->iobuf)
@@ -787,6 +802,8 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 	  ciob = iob;
 	  iob = new_iobuf(ciob->outlen+size);
 	  push_ciob(NULL, ciob, iob);
+	  item=new_list(iob);
+	  push_list(&in->oubuf_list, item);
 	}
 	va_start(args, fmt);
 	size = vsnprintf(&iob->outbuf[iob->outlen], iob->outsize-iob->outlen, fmt, args);
