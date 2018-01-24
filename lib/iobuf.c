@@ -484,6 +484,15 @@ int handle_noutput(struct iosock *in)
     {
       len = 0;
       item = pull_in_iob(in, &sp, &len);
+      if(!item)
+	{
+	  printf(" %s term nothing left outbptr/blen %u/%u \n"
+		 , __FUNCTION__
+		 , in->outbptr
+		 , in->outblen
+		 );
+	  break;
+	}
       iob = item->data;
       //iob = pull_iob(&in->iobuf, &sp, &len);
       if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
@@ -541,6 +550,7 @@ int test_niob(void)
   struct list *item;
   g_new_iob_size =  24;
   init_iosock(in);
+  in->fd = 1;
   sp = "<<dont send this block>>";
   //printf(" test sp [%s]\n", sp);
   in_snprintf(in, NULL, "%s", sp);
@@ -569,13 +579,21 @@ int test_niob(void)
   item = in->oubuf_list;
   print_iob_list(&item, "full list");
   item = pull_in_iob(in, &sp, &len);
+  // must correct size in->outbptr
   iob = item->data;
+  in->outbptr += iob->outlen;
   if(g_debug)
     printf(" After pull 1 data [%s] len %d iob %p\n", sp, len, iob);
   item = in->oubuf_list;
 
   printf(" after pull list  [%p]\n", item);
   print_iob_list(&item,"after first pull");
+
+  printf("============================handle_noutput=========\n");
+
+  handle_noutput(in);
+  printf("\n============================handle_noutput=========\n");
+
   return 0;
 
 #if 0  
