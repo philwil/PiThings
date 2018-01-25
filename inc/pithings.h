@@ -110,6 +110,9 @@ struct iosock
   int tlen;       // term
   int nosend;       // term
   int instate;
+  struct list *inbuf_list;
+  struct list *oubuf_list;
+  
 };
 
 struct cmds

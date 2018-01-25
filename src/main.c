@@ -36,6 +36,7 @@ int g_count = 0;
 struct list *g_node_list = NULL;
 struct list *g_conn_list = NULL;
 struct list *g_space_list = NULL;
+struct list *g_iob_list = NULL;
 
 int g_node_debug= 0;
 int g_conn_debug= 0;
@@ -116,6 +117,7 @@ int main (int argc, char *argv[])
    struct iosock ins;
    struct iosock *in = &ins;
 
+
    g_myaddr = strdup("127.0.0.1");
    init_g_spaces();
    init_iosocks();
@@ -124,6 +126,9 @@ int main (int argc, char *argv[])
    init_cmds(g_cmds, NUM_CMDS);
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
+   //test_niob(); //
+   //return 0;
+
    g_list_debug =1;
    //add_space_in(&g_space_list, "ADD uav1", NULL);
    //add_space_in(&g_space_list, "ADD uav2", NULL);
@@ -202,12 +207,17 @@ int main (int argc, char *argv[])
 	 }
        else if (strcmp(argv[1], "test_iob_out") == 0)
 	 {
-	   test_iob_out();
+	   //test_iob_out();
 	   return 0;
 	 }
        else if (strcmp(argv[1], "test_iob") == 0)
 	 {
-	      test_iob();
+	   //test_iob();
+	      return 0;
+	 }
+       else if (strcmp(argv[1], "test_niob") == 0)
+	 {
+	      test_niob();
 	      return 0;
 	 }
 

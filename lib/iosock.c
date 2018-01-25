@@ -19,8 +19,11 @@ extern struct iobuf *g_iob_store;
 extern int g_space_idx;
 extern int g_quit_one;
 extern int g_num_socks;
+
+
 extern struct space *g_spaces[];
 extern struct list *g_space_list;
+extern struct list *g_iob_list;
 
 int init_iosocks(void)
 {
@@ -55,6 +58,8 @@ int init_iosock(struct iosock *in)
   in->tlen = 0;
   in->nosend = 0;
   in->instate = STATE_IN_NORM;
+  in->inbuf_list=NULL;
+  in->oubuf_list=NULL;
   return 0;
 }
 
@@ -252,11 +257,13 @@ int close_fds(int fsock)
       }
     return rc;
 }
+
 int get_rsize(struct iosock *in)
 {
   //int rc=0;
   int rlen = 0;
   struct iobuf *inbf;  // input buffer
+
   inbf = in->inbuf;
   rlen = inbf->outsize-inbf->outlen;
   return rlen;
@@ -286,11 +293,11 @@ int handle_input_cmd(struct iosock *in)
       {
 	in->cmdlen = 0;
       }
-    
-    printf("%s bytesin %d cmdlen %d\n"
-	   , __FUNCTION__
-	   , bytesin
-	   , in->cmdlen);
+    if(g_debug)
+      printf("%s bytesin %d cmdlen %d\n"
+	     , __FUNCTION__
+	     , bytesin
+	     , in->cmdlen);
 
     sp = &inbf->outbuf[inbf->outptr];
 
@@ -312,14 +319,15 @@ int handle_input_cmd(struct iosock *in)
 	run_str_in(in, sp, cmd);
 	// TODO consume just the current cmd
 	inbf->outptr += in->tlen;
-	tosend = count_buf_bytes(in->iobuf);
-
-	printf(" %s rc %d n %d  cmd [%s] tosend %d tlen %d cmdid [%s]\n"
-	       , __FUNCTION__
-	       , rc, n, cmd, tosend
-	       , in->tlen
-	       , in->cmdid ? in->cmdid :"no id"
-	       );
+	tosend = count_iob_bytes(&in->oubuf_list);
+	if(g_debug)
+	  printf(" %s rc %d n %d  cmd [%s] tosend %d tlen %d cmdid [%s]\n"
+		 , __FUNCTION__
+		 , rc, n, cmd, tosend
+		 , in->tlen
+		 , in->cmdid ? in->cmdid :"no id"
+		 );
+	//TODO use in_sprintf
 	snprintf(cmd, sizeof(cmd), "REP %s %d\n\n"
 		, in->cmdid
 		, tosend
@@ -400,7 +408,7 @@ int handle_input_rep(struct iosock *in)
 	       );
       }
 
-	sp = &inbf->outbuf[inbf->outptr];
+    sp = &inbf->outbuf[inbf->outptr];
     //TODO only run this if we have received all of the command
     // use in->cmdbytes to count remaining bytes if any
     if(in->cmdlen <= 0)
@@ -458,11 +466,12 @@ int handle_input_rep(struct iosock *in)
 	    len = 0;
 	    
 	    if(in->fd>0) close(in->fd);
-	    in->fd = -1;
+	    // Allow the next read to reset in->fd = -1;
 	  }
       }
     return len;
 }
+
 void url_decode(char* src, char* dest, int max) {
     char *p = src;
     char code[3] = { 0 };
@@ -668,7 +677,7 @@ int handle_input_norm(struct iosock *in)
 	    sp[tlen-1]=savch;
 	  }
 	
-	tosend = count_buf_bytes(in->iobuf);
+	tosend = count_iob_bytes(&in->oubuf_list);
 	if(g_debug)
 	  {
 	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
@@ -714,27 +723,40 @@ int handle_input_norm(struct iosock *in)
 // once we get an input untill we can process no more
 //
 
+int g_def_input_len = 1024;
+
 int handle_input(struct iosock *in)
 {
   int more = 1;
   int len = 0;
   int rsize;
   char *sp;
-  struct iobuf *inbf;  // input buffer
-  
-  if (in->inbuf == NULL)
-    in->inbuf = new_iobuf(1024);
-  inbf = in->inbuf;
-  rsize = get_rsize(in);
-  // TODO create a new inbuf
-  
+  struct iobuf *inbf=NULL;  // input buffer
+  struct list * item;  
+  if (in->inbuf_list == NULL)
+    {
+      item = new_iobuf_item(g_def_input_len);
+      in->inbuf_list = item;
+      in->inbuf = item->data;
+      inbf = item->data;
+    }
+  item = in->inbuf_list; 
+  inbf = item->data;
+
+  rsize = get_rsize(in);  // get remainig size
+  printf(" %s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
+
   sp = &inbf->outbuf[inbf->outlen];
+
   len = read(in->fd, sp, rsize);
   
   if(len > 0)
     {
       sp[len] = 0;
       inbf->outlen += len;
+      printf(" %s rsize %d len %d inbf->outptr/len %d/%d\n"
+	     , __FUNCTION__, rsize, len, inbf->outptr, inbf->outlen);
+
       while(more)
 	{
 	  if(g_debug)
@@ -781,14 +803,26 @@ int handle_output(struct iosock *in)
 {
   int rc = 0;
   struct iobuf *iob;
+  struct list *item;
   char *sp;
   int len;
   int bcount = 0;
-
+  // iobway
   while((bcount++ < 1024) && (in->outbptr != in->outblen))
     {
       len = 0;
-      iob = pull_iob(&in->iobuf, &sp, &len);
+      item = pull_in_iob(in, &sp, &len);
+      if(!item)
+	{
+	  printf(" %s term nothing left outbptr/blen %u/%u \n"
+		 , __FUNCTION__
+		 , in->outbptr
+		 , in->outblen
+		 );
+	  break;
+	}
+      iob = item->data;
+      //iob = pull_iob(&in->iobuf, &sp, &len);
       if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
 		  , __FUNCTION__, iob, len, sp);
       if(iob)
@@ -826,9 +860,17 @@ int handle_output(struct iosock *in)
 		  //  in->fd = -1;
 		  }
 		}
+	      iob->outptr+=rc;
+	      if(iob->outptr == iob->outlen)
+		{
+		  iob->outptr= 0;
+		  iob->outlen= 0;
+		  push_list(&g_iob_list, item);
+		}
+	      
 	    }
 	}
-      store_iob(&g_iob_store, iob);
+      //TODO push_iob(&g_iob_list, iob);
     }
   return rc;
 }

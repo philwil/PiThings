@@ -21,6 +21,23 @@
 
 extern int g_list_debug;
 
+struct list *foreach_item(struct list **start, struct list **item)
+{
+  struct list *ret;
+  ret = *item;
+
+  if(*start == NULL)
+    {
+      *start = *item;
+    }
+  else
+    {
+      *item = ret->next;
+      if(*item == *start) ret = NULL;
+    }
+  return ret;
+}
+
 struct list *new_list(void *data)
 {
   struct list *item;
@@ -119,6 +136,8 @@ struct list *pop_clist(struct list **root, struct list *citem, struct list *item
 
 	  item->next = item;
 	  item->prev = item;
+	  if(root)*root=nitem;
+
 	}
     }
   else
