@@ -124,6 +124,7 @@ struct cmds
 };
 
 struct node;
+
 struct hands
 {
   char *key;
