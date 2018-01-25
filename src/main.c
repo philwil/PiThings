@@ -126,8 +126,8 @@ int main (int argc, char *argv[])
    init_cmds(g_cmds, NUM_CMDS);
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
-   test_niob(); //
-   return 0;
+   //test_niob(); //
+   //return 0;
 
    g_list_debug =1;
    //add_space_in(&g_space_list, "ADD uav1", NULL);

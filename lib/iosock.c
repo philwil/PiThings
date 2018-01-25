@@ -19,8 +19,11 @@ extern struct iobuf *g_iob_store;
 extern int g_space_idx;
 extern int g_quit_one;
 extern int g_num_socks;
+
+
 extern struct space *g_spaces[];
 extern struct list *g_space_list;
+extern struct list *g_iob_list;
 
 int init_iosocks(void)
 {
@@ -252,11 +255,13 @@ int close_fds(int fsock)
       }
     return rc;
 }
+
 int get_rsize(struct iosock *in)
 {
   //int rc=0;
   int rlen = 0;
   struct iobuf *inbf;  // input buffer
+
   inbf = in->inbuf;
   rlen = inbf->outsize-inbf->outlen;
   return rlen;
@@ -718,21 +723,33 @@ int handle_input(struct iosock *in)
   int len = 0;
   int rsize;
   char *sp;
-  struct iobuf *inbf;  // input buffer
-  
+  struct iobuf *inbf=NULL;  // input buffer
+  struct list * item;  
   if (in->inbuf_list == NULL)
-    in->inbuf_list = new_iobuf_item(1024);
-  inbf = in->inbuf_list->data;
+    {
+      item =new_iobuf_item(1024);
+      in->inbuf_list = item;
+      in->inbuf = item->data;
+      inbf = item->data;
+    }
+  item = in->inbuf_list; 
+  inbf = item->data;
+
   rsize = get_rsize(in);
   // TODO create a new inbuf
-  
+  printf(" %s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
+
   sp = &inbf->outbuf[inbf->outlen];
+
   len = read(in->fd, sp, rsize);
   
   if(len > 0)
     {
       sp[len] = 0;
       inbf->outlen += len;
+      printf(" %s rsize %d len %d inbf->outptr/len %d/%d\n"
+	     , __FUNCTION__, rsize, len, inbf->outptr, inbf->outlen);
+
       while(more)
 	{
 	  if(g_debug)
@@ -776,6 +793,74 @@ int handle_input(struct iosock *in)
 }
 
 int handle_output(struct iosock *in)
+{
+  int rc = 0;
+  struct iobuf *iob;
+  struct list *item;
+  char *sp;
+  int len;
+  int bcount = 0;
+  // iobway
+  while((bcount++ < 1024) && (in->outbptr != in->outblen))
+    {
+      len = 0;
+      item = pull_in_iob(in, &sp, &len);
+      if(!item)
+	{
+	  printf(" %s term nothing left outbptr/blen %u/%u \n"
+		 , __FUNCTION__
+		 , in->outbptr
+		 , in->outblen
+		 );
+	  break;
+	}
+      iob = item->data;
+      //iob = pull_iob(&in->iobuf, &sp, &len);
+      if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
+		  , __FUNCTION__, iob, len, sp);
+      if(iob)
+	{
+	  if(0)print_iob(iob);
+	}
+      else
+	{
+	  in->outbptr = 0;
+	  in->outblen = 0;
+	}
+      if(len > 0)
+	{
+	  rc = write(in->fd, sp, len);
+	  if(rc <= 0)
+	    {
+	      // shutdown iobuffer
+	      // TODO unload iobs
+	      in->outbptr = 0;
+	      in->outblen = 0;
+	    }
+	  if(rc >0)
+	    {
+	      in->outbptr += rc;
+	      if (in->outbptr == in->outblen)
+		{
+		  in->outbptr = 0;
+		  in->outblen = 0;
+		}
+	      iob->outptr+=rc;
+	      if(iob->outptr == iob->outlen)
+		{
+		  iob->outptr= 0;
+		  iob->outlen= 0;
+		  push_list(&g_iob_list, item);
+		}
+	      
+	    }
+	}
+      //TODO push_iob(&g_iob_list, iob);
+    }
+  return rc;
+}
+
+int old_handle_output(struct iosock *in)
 {
   int rc = 0;
   struct iobuf *iob;
