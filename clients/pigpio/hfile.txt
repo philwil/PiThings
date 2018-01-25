@@ -1,0 +1,22 @@
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------03a7eca1908d6585
+

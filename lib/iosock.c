@@ -763,6 +763,9 @@ int handle_input(struct iosock *in)
       in->initem = item;
       in->inbuf = item->data;
       inbf = item->data;
+      inbf->outlen = 0;
+      inbf->outptr = 0;
+      push_list(&in->inbuf_list, item);
     }
   // this is OK
   item = in->inbuf_list; 
@@ -795,9 +798,17 @@ int handle_input(struct iosock *in)
     {
       sp[len] = 0;
       inbf->outlen += len;
-      printf(" %s rsize %d len %d inbf->outptr/len %d/%d\n"
+      printf(" %s READ rsize %d len %d inbf->outptr/len %d/%d\n"
 	     , __FUNCTION__, rsize, len, inbf->outptr, inbf->outlen);
+      {
+	FILE * xfp;
 
+	xfp = fopen ("hfile.txt", "a");
+	if(0)fwrite(sp, len, 1, xfp);
+	   
+	fclose(xfp);
+   
+      }
       while(more)
 	{
 	  if(g_debug)

@@ -354,8 +354,8 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 	  if (!spisterm(sp[0]) && (*sp != cstop))
 	    {
 	      rc++;
-	      if(g_debug)
-		printf(" xxx processing %x \n", *sp);
+	      //if(g_debug)
+	      //printf(" xxx processing %x \n", *sp);
 	      *spv++ = *sp;
 
 	    }
