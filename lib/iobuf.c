@@ -66,6 +66,8 @@ struct list *seek_new_iob_item(struct list **listp, int len)
 // returns a list object
 struct list *new_iobuf_item(int len)
 {
+  int xlen = len;
+
   struct iobuf *iob = NULL;
   if(g_debug_iob_list)
     printf(" %s running 1 len %d\n" , __FUNCTION__, len );
@@ -74,13 +76,25 @@ struct list *new_iobuf_item(int len)
   if(item)
     {
       iob = item->data;
+      printf(" %s, found iob from list, data %p\n"
+	     , __FUNCTION__
+	     , item->data
+	     );
+
+      printf(" %s, found iob from list, size %d/%d p/l %d/%d\n"
+	     , __FUNCTION__
+	     , xlen
+	     , iob->outsize
+	     , iob->outptr
+	     , iob->outlen
+	     );
+
       // for now we just need the IOB TODO pass around the list
       //free(item);
     }
   if(!iob)
     {
-      int xlen = len+5;
-      printf(" %s running, create iob\n" , __FUNCTION__);
+      printf(" %s running, create new iob size %d\n" , __FUNCTION__, xlen);
       
       iob = (struct iobuf *)malloc(sizeof (struct iobuf));
 
@@ -334,18 +348,33 @@ int count_iob_bytes(struct list **listp)
   struct list *slist;
   struct list *item;
   int len =0;
+  int count = 0;
   item = *listp;
 
-  if(g_debug_iob_list)
-    printf(" test item [%p]\n", item);
+  if(g_debug || g_debug_iob_list)
+    printf(" %s test item [%p]\n", __FUNCTION__, item);
+  if (!item) return 0;
+  if(g_debug || g_debug_iob_list)
+    printf(" %s test item->data [%p]\n", __FUNCTION__, item->data);
+  if (!item->data) return 0;
+
   slist = NULL;
   while(foreach_item(&slist, &item))
     {
-      
+      count++;
+      if(g_debug || g_debug_iob_list)
+	printf(" %s count %d test item [%p]\n", __FUNCTION__, count, item);
+      if (!item) return 0;
+      if(g_debug || g_debug_iob_list)
+	printf(" %s test item->data [%p]\n"
+	       , __FUNCTION__
+	       , item->data);
+      if (!item->data) return 0;
+
       iob = item->data;
       len += iob->outlen - iob->outptr;
 
-      if( g_debug_iob_list)
+      if( g_debug || g_debug_iob_list)
 	printf(" iob %p data len/size %d/%d->[%s]\n"
 	       , iob
 	       , iob->outlen

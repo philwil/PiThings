@@ -408,8 +408,6 @@ int show_spaces(struct iosock *in, struct list **list, char *desc, int indent)
 
 int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, char *bdesc)
 {
-  //struct space *start=base;
-  //struct space *child=NULL;
   struct space *space=NULL;
   struct list *clist=NULL;
   struct list *slist=NULL;
@@ -432,7 +430,7 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	       , space->idx
 	       );
       if(in)in_snprintf(in, NULL, ">>>>[%s]\n", bdesc);
-      if(1||g_space_debug)
+      if(g_space_debug)
 	printf(" >> [%s] %s %d %d\n"
 	       , bdesc
 	       , space->name
@@ -462,7 +460,7 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
     {
       //child = (struct space *)slist->data;
 
-      slen += show_space_new(in, slist, sp, slen, bdesc);
+      slen -= show_space_new(in, slist, sp, slen, bdesc);
       slist = slist->next;
       if (slist == clist) 
 	slist = NULL;
@@ -697,12 +695,15 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
   struct space *sp1=NULL;
   //struct space **spb=&g_space;
   char *sp = name;
+  sbuf[0]=0;
   sscanf(name,"%s ", sbuf);  // TODO use more secure option
+
   if(g_debug)
     {
-      printf("%s 1 name [%s]\n"
-	     ,__FUNCTION__
-	     ,name
+      printf("%s 1 name [%s] sbuf [%s]\n"
+	     , __FUNCTION__
+	     , name
+	     , sbuf
 	     );
     }
   if(in_new_cmds(g_cmds, NUM_CMDS, sbuf)>=0)
@@ -731,7 +732,7 @@ struct space *show_space_in(struct list **list, char *name, struct iosock *in)
     }
   if(sp1)
   {
-    printf(" got sp1\n");
+    printf(" %s got sp1 name [%s]\n", __FUNCTION__,sp1->name);
   //  spb = &sp1;
   }
   show_spaces_new(in, &g_space_list, sbuf, 4096, sbuf);

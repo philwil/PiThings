@@ -151,6 +151,7 @@ struct list *pop_list(struct list **root ,  struct list *item)
 {
   struct list *citem = NULL;
   if(root)citem= *root;
+  if(!citem) return NULL;   // nothing on the list
   return pop_clist(root, citem, item);
 }
 

@@ -757,6 +757,12 @@ int g_new_iob_size = 128;
 
 //in
 // now uses iobuf_list
+// need to populate three pointers
+// in->oubuf_list
+// in->ouitem
+// in->oubuf
+
+
 int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 {
   int size;
@@ -765,10 +771,11 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
   struct list *item;
   va_list args;
   if(g_debug)
-    printf(" %s starting in (%p) xiob %p in->iobuf (%p)\n"
+    printf(" %s starting in (%p) xiob %p oubuf (%p) ouitem (%p)\n"
 	   , __FUNCTION__
 	 , in, xiob
-	 , in->iobuf
+	 , in->oubuf
+	 , in->ouitem
 	 );
 
   if(xiob)
@@ -779,38 +786,48 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
     {
       if(!in) return -1;
     
-      if(!in->iobuf)
+      if(!in->ouitem)
 	{
 	  item = new_iobuf_item(g_new_iob_size);
+	  in->ouitem = item;
+	  in->oubuf = item->data;
+	  iob = item->data;
+	  iob->outptr = 0;
+	  iob->outlen = 0;
 	  if(g_debug)
 	    printf(" %s got iob %p size %d\n"
 		   , __FUNCTION__
 		   , iob, iob->outsize);
 	  //item=new_list(iob);
 	  push_list(&in->oubuf_list, item);
-	  in->iobuf = item->data;
+
 	}
     }
 
-  iob = in->iobuf;
+  iob = in->oubuf;
   va_start(args, fmt);
   size = vsnprintf(iob->outbuf, 0, fmt, args) +1;
   va_end(args);
   if(g_debug)
-    printf(" size found %d space left %d\n"
+    printf(" size needed %d iob size %d space left %d\n"
 	   , size
+	   , iob->outsize 
 	   , iob->outsize - iob->outlen
 	   
 	   );
   
-  if(iob->outlen+ size > iob->outsize)
+  if(iob->outlen+ size >= iob->outsize)
     {
       //ciob = iob;
       item = new_iobuf_item(iob->outlen+size);
+      in->ouitem = item;
+      in->oubuf = item->data;
+      iob = item->data;
+      iob->outptr = 0;
+      iob->outlen = 0;
       //push_ciob(NULL, ciob, iob);
       //item=new_list(iob);
       push_list(&in->oubuf_list, item);
-      in->iobuf = item->data;
       
     }
   

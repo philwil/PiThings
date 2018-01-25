@@ -44,7 +44,7 @@ int init_iosock(struct iosock *in)
   in->fd = -1;
   in->outbptr = 0;
   in->outblen = 0;
-  in->iobuf = NULL;
+  in->oubuf = NULL;
   in->inbuf = NULL;
   //in->cmdptr = NULL;
   in->cmdlen = 0;
@@ -58,8 +58,13 @@ int init_iosock(struct iosock *in)
   in->tlen = 0;
   in->nosend = 0;
   in->instate = STATE_IN_NORM;
+
   in->inbuf_list=NULL;
   in->oubuf_list=NULL;
+
+  in->initem=NULL;
+  in->ouitem=NULL;
+
   return 0;
 }
 
@@ -517,7 +522,7 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
-  if(0)printf(" %s >>>> rc %d cmd [%s] sp [%s]\n"
+  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n"
 	      , __FUNCTION__
 	      , rc
 	      , cmd
@@ -567,10 +572,10 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 		 , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
 		 );
 	  
-	  if (sp1->value) free(sp1->value);
-	  sp1->value = malloc(in->hlen+1);
-	  memcpy(sp1->value,&sp[2],in->hlen);
-	  sp1->value[in->hlen] = 0;
+	  //if (sp1->value) free(sp1->value);
+	  //sp1->value = malloc(in->hlen+1);
+	  //memcpy(sp1->value,&sp[2],in->hlen);
+	  //sp1->value[in->hlen] = 0;
 	}
       in->cmdlen = in->hlen;
       in->cmdbytes = in->hlen;
@@ -652,6 +657,16 @@ int handle_input_norm(struct iosock *in)
 			 , __FUNCTION__
 			 , sp //&in->inbuf[in->inptr]
 			 , n, cmd, uri, vers );
+	if(g_debug)
+	  {
+	    printf(" %s oubuf_list #1 %p item %p buf %p\n"
+		   , __FUNCTION__
+		   , in->oubuf_list
+		   , in->ouitem
+		   , in->oubuf
+		   );
+	  }
+
 	in->hproto = 0;  // Default
 	if(strstr(vers,"HTTP/"))
 	  {
@@ -676,11 +691,19 @@ int handle_input_norm(struct iosock *in)
 	  {
 	    sp[tlen-1]=savch;
 	  }
-	
+	if(g_debug)
+	  {
+	    printf(" %s oubuf_list #2 list %p item  %p buf %p\n"
+		   , __FUNCTION__
+		   , in->oubuf_list
+		   , in->ouitem
+		   , in->oubuf
+		   );
+	  }
 	tosend = count_iob_bytes(&in->oubuf_list);
 	if(g_debug)
 	  {
-	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
+	    printf(" ... rc %d n %d cmd [%s] tlen %d tosend %d \n"
 		   , rc, n, cmd, tlen, tosend
 		   );
 	  }
@@ -723,7 +746,7 @@ int handle_input_norm(struct iosock *in)
 // once we get an input untill we can process no more
 //
 
-int g_def_input_len = 1024;
+int g_def_input_len = 4096;
 
 int handle_input(struct iosock *in)
 {
@@ -737,15 +760,33 @@ int handle_input(struct iosock *in)
     {
       item = new_iobuf_item(g_def_input_len);
       in->inbuf_list = item;
+      in->initem = item;
       in->inbuf = item->data;
       inbf = item->data;
     }
+  // this is OK
   item = in->inbuf_list; 
   inbf = item->data;
 
-  rsize = get_rsize(in);  // get remainig size
-  printf(" %s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
-
+  
+  rsize = inbf->outsize-inbf->outlen;  // get remainig size
+  printf(" ====>%s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
+  if(rsize == 0)
+    {
+      // oops we need to get another buffer
+      item = new_iobuf_item(g_def_input_len);
+      
+      in->initem = item;
+      in->inbuf = item->data;
+      inbf = item->data;
+      inbf->outlen = 0;
+      inbf->outptr = 0;
+      
+      rsize = inbf->outsize-inbf->outlen;  // get remainig size
+      printf(" ====>%s NEW rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
+      push_list(&in->inbuf_list, item);
+      
+    }
   sp = &inbf->outbuf[inbf->outlen];
 
   len = read(in->fd, sp, rsize);
@@ -799,78 +840,97 @@ int handle_input(struct iosock *in)
   return len;
 }
 
+// TODOTODOTODO
+// WHen we overflow the initial list we
+// do not send the first list
+// we refer to in->ouitem but when we send we should start with in->oubuf_list
+// ALSO when in_snprintf  needs more room is should push the old buffer
+// in fact is should push any new buffer
+// onto in->oubuf_list
+// we may have an in progress iobuf
+// so we also need to keep the item we pulled
 int handle_output(struct iosock *in)
 {
   int rc = 0;
-  struct iobuf *iob;
-  struct list *item;
+  struct iobuf *iob = NULL;
+  struct list *item=NULL;
   char *sp;
-  int len;
-  int bcount = 0;
+  int len=0;
+  //int bcount = 0;
   // iobway
-  while((bcount++ < 1024) && (in->outbptr != in->outblen))
+ try_again:
+  if(in->outbptr == in->outblen)
     {
-      len = 0;
-      item = pull_in_iob(in, &sp, &len);
-      if(!item)
-	{
-	  printf(" %s term nothing left outbptr/blen %u/%u \n"
-		 , __FUNCTION__
-		 , in->outbptr
-		 , in->outblen
-		 );
-	  break;
-	}
-      iob = item->data;
-      //iob = pull_iob(&in->iobuf, &sp, &len);
-      if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
-		  , __FUNCTION__, iob, len, sp);
-      if(iob)
-	{
-	  if(0)print_iob(iob);
-	}
-      else
+      printf("%s >>> no data to send\n", __FUNCTION__);
+      in->outbptr = 0;
+      in->outblen = 0;
+      return 0; // no data to send
+    }
+  in->ouitem = in->oubuf_list;
+  if(!in->ouitem)
+    {
+      in->outbptr = 0;
+      in->outblen = 0;
+      printf("%s >>> no list queued\n", __FUNCTION__);
+      return 0; // no data to send
+    }
+  item = in->ouitem;
+  in->oubuf = item->data;
+  iob = item->data;
+  // for now just send one iob at a time
+  if (iob)
+    {
+      len = iob->outlen - iob->outptr;
+    }
+  if(len == 0)
+    {
+      iob->outlen = 0;
+      iob->outptr = 0;
+      pop_list(&in->oubuf_list, item);
+      push_list(&g_iob_list, item);
+      goto try_again;
+    }
+
+  item = in->ouitem;  // keep it till we run out of data
+  iob = item->data;
+  sp = &iob->outbuf[iob->outptr];
+  //len = iob->outlen -iob->outptr;
+  //iob = pull_iob(&in->iobuf, &sp, &len);
+  if(g_debug)
+    printf(" %s running the new way item %p iob %p len %d sp [%s]\n"
+	   , __FUNCTION__, item, iob, len, sp);
+
+  rc = write(in->fd, sp, len);
+  if(rc <= 0)
+    {
+      // shutdown iobuffer
+      // TODO unload iobs
+      in->outbptr = 0;
+      in->outblen = 0;
+      iob->outlen = 0;
+      iob->outptr = 0;
+      rc = -1;
+    }
+  if(rc >0)
+    {
+      in->outbptr += rc;
+      iob->outptr+=rc;      
+      if (in->outbptr == in->outblen)
 	{
 	  in->outbptr = 0;
 	  in->outblen = 0;
-	}
-      if(len > 0)
-	{
-	  rc = write(in->fd, sp, len);
-	  if(rc <= 0)
+	  iob->outlen = 0;
+	  iob->outptr = 0;
+	  
+	  if((in->hproto) && (in->oubuf_list == NULL))
 	    {
-	      // shutdown iobuffer
-	      // TODO unload iobs
-	      in->outbptr = 0;
-	      in->outblen = 0;
-	    }
-	  if(rc >0)
-	    {
-	      in->outbptr += rc;
-	      if (in->outbptr == in->outblen)
-		{
-		  in->outbptr = 0;
-		  in->outblen = 0;
-		  if((in->hproto) && (in->iobuf == NULL))
-		  {
-		    printf(" sent the last buffer to fd %d\n",
-			   in->fd);
-		    in->hproto = 0;
-		    shutdown(in->fd, SHUT_WR);
-		  //  in->fd = -1;
-		  }
-		}
-	      iob->outptr+=rc;
-	      if(iob->outptr == iob->outlen)
-		{
-		  iob->outptr= 0;
-		  iob->outlen= 0;
-		  push_list(&g_iob_list, item);
-		}
-	      
+	      printf(" sent the last buffer to fd %d\n",
+		     in->fd);
+	      in->hproto = 0;
+	      shutdown(in->fd, SHUT_WR);
+	      //  in->fd = -1;
 	    }
 	}
-      //TODO push_iob(&g_iob_list, iob);
     }
   return rc;
 }
@@ -942,7 +1002,7 @@ int poll_sock(int lsock)
 		if(in)
 		{
 		    n = handle_output(in);
-		    if (n <= 0) 
+		    if (n < 0) 
 		    {
 			printf("error writing (n=%d), closing fd %d \n"
 			       ,n,fds[i].fd);

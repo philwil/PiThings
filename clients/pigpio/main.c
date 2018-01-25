@@ -198,7 +198,7 @@ int main (int argc, char *argv[])
      {
        def_config();
      }
-   g_debug = 0;
+   g_debug = 1;
 
    in->fd = 1;
 

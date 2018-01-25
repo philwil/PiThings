@@ -97,10 +97,19 @@ struct iosock
   int fd;
   unsigned int inbptr;
   unsigned int inblen;
+
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
-  struct iobuf *iobuf;  // output buffers
-  struct iobuf *inbuf;  // input buffers
+
+  struct iobuf *oubuf;  // output buffer from list
+  struct list *ouitem;  // current output item
+  struct list *oubuf_list;
+
+  struct iobuf *inbuf;  // input buffer from list
+  struct list *initem;  // current input buffer
+  struct list *inbuf_list;
+  
+  
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
   int hlen;
@@ -110,8 +119,6 @@ struct iosock
   int tlen;       // term
   int nosend;       // term
   int instate;
-  struct list *inbuf_list;
-  struct list *oubuf_list;
   
 };
 
