@@ -83,8 +83,8 @@ struct iobuf;
 
 struct iobuf
 {
-  struct iobuf *prev;
-  struct iobuf *next;
+  //  struct iobuf *prev;
+  //struct iobuf *next;
   char *outbuf;
   int outsize;
   int outlen;
@@ -99,15 +99,15 @@ struct iosock
   unsigned int inblen;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
-  struct iobuf *iobuf;  // output buffers
-  struct iobuf *inbuf;  // input buffers
-  int cmdlen;   // number of bytes left for curent command
-  int cmdbytes;   // number of bytes expected curent command
+  struct iobuf *iobuf;  // current output buffer
+  struct iobuf *inbuf;  // current input buffer
+  int cmdlen;   // number of bytes left for curent command 
+  int cmdbytes; // number of bytes expected curent command
   int hlen;
   int hidx;
   char *cmdid;    // current command id
   int tlen;       // term
-  int nosend;       // term
+  int nosend;     // term
   int instate;
   struct list *inbuf_list;
   struct list *oubuf_list;
@@ -339,6 +339,8 @@ int test_niob(void);
 struct list *foreach_item(struct list **start, struct list **item);
 struct list *new_iobuf_item(int len);
 struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
+
+int count_iob_bytes(struct list **listp);
 
 #endif
 

@@ -207,12 +207,12 @@ int main (int argc, char *argv[])
 	 }
        else if (strcmp(argv[1], "test_iob_out") == 0)
 	 {
-	   test_iob_out();
+	   //test_iob_out();
 	   return 0;
 	 }
        else if (strcmp(argv[1], "test_iob") == 0)
 	 {
-	      test_iob();
+	   //test_iob();
 	      return 0;
 	 }
        else if (strcmp(argv[1], "test_niob") == 0)

@@ -291,11 +291,11 @@ int handle_input_cmd(struct iosock *in)
       {
 	in->cmdlen = 0;
       }
-    
-    printf("%s bytesin %d cmdlen %d\n"
-	   , __FUNCTION__
-	   , bytesin
-	   , in->cmdlen);
+    if(g_debug)
+      printf("%s bytesin %d cmdlen %d\n"
+	     , __FUNCTION__
+	     , bytesin
+	     , in->cmdlen);
 
     sp = &inbf->outbuf[inbf->outptr];
 
@@ -317,18 +317,19 @@ int handle_input_cmd(struct iosock *in)
 	run_str_in(in, sp, cmd);
 	// TODO consume just the current cmd
 	inbf->outptr += in->tlen;
-	tosend = count_buf_bytes(in->iobuf);
-
-	printf(" %s rc %d n %d  cmd [%s] tosend %d tlen %d cmdid [%s]\n"
-	       , __FUNCTION__
-	       , rc, n, cmd, tosend
-	       , in->tlen
-	       , in->cmdid ? in->cmdid :"no id"
-	       );
+	tosend = count_iob_bytes(&in->oubuf_list);
+	if(g_debug)
+	  printf(" %s rc %d n %d  cmd [%s] tosend %d tlen %d cmdid [%s]\n"
+		 , __FUNCTION__
+		 , rc, n, cmd, tosend
+		 , in->tlen
+		 , in->cmdid ? in->cmdid :"no id"
+		 );
+	//TODO use in_sprintf
 	snprintf(cmd, sizeof(cmd), "REP %s %d\n\n"
-		, in->cmdid
-		, tosend
-		);
+		 , in->cmdid
+		 , tosend
+		 );
 	write (in->fd, cmd, strlen(cmd));
 	if (inbf->outptr < inbf->outlen)
 	  {
@@ -405,7 +406,7 @@ int handle_input_rep(struct iosock *in)
 	       );
       }
 
-	sp = &inbf->outbuf[inbf->outptr];
+    sp = &inbf->outbuf[inbf->outptr];
     //TODO only run this if we have received all of the command
     // use in->cmdbytes to count remaining bytes if any
     if(in->cmdlen <= 0)
@@ -463,11 +464,12 @@ int handle_input_rep(struct iosock *in)
 	    len = 0;
 	    
 	    if(in->fd>0) close(in->fd);
-	    in->fd = -1;
+	    // Allow the next read to reset in->fd = -1;
 	  }
       }
     return len;
 }
+
 void url_decode(char* src, char* dest, int max) {
     char *p = src;
     char code[3] = { 0 };
@@ -633,7 +635,7 @@ int handle_input_norm(struct iosock *in)
 	       , inbf->outlen
 	       , sp
 	       );
-
+	
       }
     if(tlen > 1)
       {
@@ -664,14 +666,14 @@ int handle_input_norm(struct iosock *in)
 		savch = 0;
 	      }
 	    run_str_in(in, sp, cmd);
-
+	    
 	  }
 	if((savch == 0x0a) || (savch == 0x0d))
 	  {
 	    sp[tlen-1]=savch;
 	  }
 	
-	tosend = count_buf_bytes(in->iobuf);
+	tosend = count_iob_bytes(&in->oubuf_list);
 	if(g_debug)
 	  {
 	    printf(" rc %d n %d cmd [%s] tlen %d tosend %d \n"
@@ -717,6 +719,8 @@ int handle_input_norm(struct iosock *in)
 // once we get an input untill we can process no more
 //
 
+int g_def_input_len = 1024;
+
 int handle_input(struct iosock *in)
 {
   int more = 1;
@@ -727,7 +731,7 @@ int handle_input(struct iosock *in)
   struct list * item;  
   if (in->inbuf_list == NULL)
     {
-      item =new_iobuf_item(1024);
+      item = new_iobuf_item(g_def_input_len);
       in->inbuf_list = item;
       in->inbuf = item->data;
       inbf = item->data;
@@ -735,8 +739,7 @@ int handle_input(struct iosock *in)
   item = in->inbuf_list; 
   inbf = item->data;
 
-  rsize = get_rsize(in);
-  // TODO create a new inbuf
+  rsize = get_rsize(in);  // get remainig size
   printf(" %s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
 
   sp = &inbf->outbuf[inbf->outlen];
@@ -859,72 +862,6 @@ int handle_output(struct iosock *in)
     }
   return rc;
 }
-
-int old_handle_output(struct iosock *in)
-{
-  int rc = 0;
-  struct iobuf *iob;
-  char *sp;
-  int len;
-  int bcount = 0;
-  // old way
-#if 0
-  if(in->outptr != in->outlen)
-    {
-      if(g_debug)printf(" %s running the old way\n", __FUNCTION__);
-      rc = write(in->fd,&in->outbuf[in->outptr],in->outlen-in->outptr);
-      if(rc >0)
-	{
-	  in->outptr += rc;
-	  if (in->outptr == in->outlen)
-	    {
-	      in->outptr = 0;
-	      in->outlen = 0;
-	    }
-	}
-    }
-#endif
-  // iobway
-  while((bcount++ < 1024) && (in->outbptr != in->outblen))
-    {
-      len = 0;
-      iob = pull_iob(&in->iobuf, &sp, &len);
-      if(0)printf(" %s running the new way iob %p len %d sp [%s]\n"
-		  , __FUNCTION__, iob, len, sp);
-      if(iob)
-	{
-	  if(0)print_iob(iob);
-	}
-      else
-	{
-	  in->outbptr = 0;
-	  in->outblen = 0;
-	}
-      if(len > 0)
-	{
-	  rc = write(in->fd, sp, len);
-	  if(rc <= 0)
-	    {
-	      // shutdown iobuffer
-	      // TODO unload iobs
-	      in->outbptr = 0;
-	      in->outblen = 0;
-	    }
-	  if(rc >0)
-	    {
-	      in->outbptr += rc;
-	      if (in->outbptr == in->outblen)
-		{
-		  in->outbptr = 0;
-		  in->outblen = 0;
-		}
-	    }
-	}
-      store_iob(&g_iob_store, iob);
-    }
-  return rc;
-}
-
 
 // read stdin, listen_sock and all accept_socks
 int poll_sock(int lsock)
