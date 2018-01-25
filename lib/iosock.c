@@ -840,8 +840,8 @@ int handle_input(struct iosock *in)
   return len;
 }
 
-// TODOTODOTODO
-// WHen we overflow the initial list we
+// DONE
+// Wen we overflow the initial list we
 // do not send the first list
 // we refer to in->ouitem but when we send we should start with in->oubuf_list
 // ALSO when in_snprintf  needs more room is should push the old buffer
