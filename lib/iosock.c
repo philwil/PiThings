@@ -1053,6 +1053,18 @@ int poll_sock(int lsock)
 		    }
 		}
 	    }
+
+	    if (fds[i].revents & POLLNVAL) 
+	    {
+	      in = find_fd(fds[i].fd);
+	      if(in)
+		{
+		  close(fds[i].fd);
+		  close_fds(fds[i].fd);
+		  fds[i].fd = -1;
+		  in->fd = -1; 
+		}
+	    }
 	}
     }
     return rc;
