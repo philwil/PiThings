@@ -83,8 +83,6 @@ struct iobuf;
 
 struct iobuf
 {
-  //  struct iobuf *prev;
-  //struct iobuf *next;
   char *outbuf;
   int outsize;
   int outlen;
