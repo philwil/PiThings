@@ -83,8 +83,6 @@ struct iobuf;
 
 struct iobuf
 {
-  //  struct iobuf *prev;
-  //struct iobuf *next;
   char *outbuf;
   int outsize;
   int outlen;
@@ -99,16 +97,16 @@ struct iosock
   unsigned int inblen;
   unsigned int outbptr; // num sent
   unsigned int outblen; // num to send
-  struct iobuf *iobuf;  // output buffers
-  struct iobuf *inbuf;  // input buffers
-  int cmdlen;   // number of bytes left for curent command
-  int cmdbytes;   // number of bytes expected curent command
+  struct iobuf *iobuf;  // current output buffer
+  struct iobuf *inbuf;  // current input buffer
+  int cmdlen;   // number of bytes left for curent command 
+  int cmdbytes; // number of bytes expected curent command
   int hlen;
   int hproto;     // for now indicates html protocol
   int hidx;
   char *cmdid;    // current command id
   int tlen;       // term
-  int nosend;       // term
+  int nosend;     // term
   int instate;
   struct list *inbuf_list;
   struct list *oubuf_list;
@@ -125,6 +123,7 @@ struct cmds
 };
 
 struct node;
+
 struct hands
 {
   char *key;
@@ -333,9 +332,10 @@ int set_group_value(char *master, char *value, char *name);
 //Sends a command to a remote node
 int send_command(int sock, char *buf, int blen, char *id);
 
+<<<<<<< HEAD
 int send_html_head(struct iosock *in, char *msg);
 int send_html_tail(struct iosock *in, char *msg);
-
+=======
 // new iob test
 int test_niob(void);
 // interesting see iobuf:iob_ntest
@@ -344,6 +344,7 @@ struct list *new_iobuf_item(int len);
 struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
 
 int count_iob_bytes(struct list **listp);
+>>>>>>> master
 
 #endif
 

@@ -83,8 +83,8 @@ struct iobuf;
 
 struct iobuf
 {
-  //  struct iobuf *prev;
-  //struct iobuf *next;
+  struct iobuf *prev;
+  struct iobuf *next;
   char *outbuf;
   int outsize;
   int outlen;
@@ -104,15 +104,11 @@ struct iosock
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
   int hlen;
-  int hproto;     // for now indicates html protocol
   int hidx;
   char *cmdid;    // current command id
   int tlen;       // term
   int nosend;       // term
   int instate;
-  struct list *inbuf_list;
-  struct list *oubuf_list;
-  
 };
 
 struct cmds
@@ -333,17 +329,6 @@ int set_group_value(char *master, char *value, char *name);
 //Sends a command to a remote node
 int send_command(int sock, char *buf, int blen, char *id);
 
-int send_html_head(struct iosock *in, char *msg);
-int send_html_tail(struct iosock *in, char *msg);
-
-// new iob test
-int test_niob(void);
-// interesting see iobuf:iob_ntest
-struct list *foreach_item(struct list **start, struct list **item);
-struct list *new_iobuf_item(int len);
-struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
-
-int count_iob_bytes(struct list **listp);
 
 #endif
 

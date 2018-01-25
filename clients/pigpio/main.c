@@ -41,6 +41,7 @@ int g_count = 0;
 struct list *g_node_list = NULL;
 struct list *g_conn_list = NULL;
 struct list *g_space_list = NULL;
+struct list *g_iob_list = NULL;
 
 int g_node_debug= 0;
 int g_conn_debug= 0;
@@ -235,12 +236,17 @@ int main (int argc, char *argv[])
 	 }
        else if (strcmp(argv[1], "test_iob_out") == 0)
 	 {
-	   test_iob_out();
+	   //test_iob_out();
 	   return 0;
 	 }
        else if (strcmp(argv[1], "test_iob") == 0)
 	 {
-	      test_iob();
+	   //test_iob();
+	      return 0;
+	 }
+       else if (strcmp(argv[1], "test_niob") == 0)
+	 {
+	      test_niob();
 	      return 0;
 	 }
 
