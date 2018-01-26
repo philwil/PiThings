@@ -284,12 +284,14 @@ void execute_cgi(int client, const char *path,
   close(cgi_output[1]);
   close(cgi_input[0]);
   if (strcasecmp(method, "POST") == 0)
-    printf("cgi_input\n");
-    for (i = 0; i < content_length; i++) {
-    recv(client, &c, 1, 0);
-    printf("%c",c);
-    write(cgi_input[1], &c, 1);
-   }
+    {
+      printf("cgi_input\n");
+      for (i = 0; i < content_length; i++) {
+	recv(client, &c, 1, 0);
+	printf("%c",c);
+	write(cgi_input[1], &c, 1);
+      }
+    }
   while (read(cgi_output[0], &c, 1) > 0)
    send(client, &c, 1, 0);
 

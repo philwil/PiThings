@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 char evars[20][80]={"SERVER_SOFTWARE", "SERVER_NAME", "SERVER_PROTOCOL", 
                     "SERVER_PORT",
@@ -12,11 +14,32 @@ char evars[20][80]={"SERVER_SOFTWARE", "SERVER_NAME", "SERVER_PROTOCOL",
 
 
 int main(void) {
-    const numvars=20;
+    int numvars=20;
     int i;
-  
+    char *sp;
+    int content=0;
+    char c;
+    int rc;
     printf("Content-type: text/plain\n\n");
-    for (i=0;i<numvars;i++) printf("%s = %s\n", evars[i], getenv(evars[i]));
+    sp = getenv("CONTENT_LENGTH");
+    if (sp)
+      content = atoi(sp);
+    
+    for (i=0;i<numvars;i++)
+      {
+	sp = getenv(evars[i]);
+	printf("%s = %s\n", evars[i]
+	       , sp?sp:"no val"
+	       );
+      }
+    printf("content ... %d\n", content);
+    while(content--)
+      {
+	rc =read(0,&c, 1);
+	printf("%c",c);
+	if(rc<=0) return 0;
+      }
+    printf("content done ... %d\n\n", content);
     return 0;
 }
  
