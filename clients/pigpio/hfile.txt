@@ -14,200 +14,29 @@ SET pine1/gpios/gpio3/type serve
 SET pine1/gpios/gpio1 off
 
 ==================
-POST /pine1/gpios/gpio1 HTTP/1.1
+GET /pine1/gpios/gpio2 HTTP/1.1
 Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Content-Type: multipart/form-data; boundary=------------------------5488c71f84e5e12a
+Connection: keep-alive
+Cache-Control: max-age=0
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Upgrade-Insecure-Requests: 1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
 
 ==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
+GET /favicon.ico HTTP/1.1
 Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------d6b1dbe26955d03d
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------c74063b68790722c
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------07318259406059ee
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------c43ecdf76b1552e2
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------3beb4ccf5834f492
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.1
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------12ce32cb9990f126
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.0
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Content-Type: multipart/form-data; boundary=------------------------8cbb128d5e9abf68
-
-==================
-ADD pine1/gpios/gpio1/type
-
-ADD pine1/gpios/gpio2/type
-
-ADD pine1/gpios/gpio3/type
-
-SET pine1/gpios/gpio1/type output
-
-SET pine1/gpios/gpio2/type input
-
-SET pine1/gpios/gpio3/type serve
-
-SET pine1/gpios/gpio1 off
-
-==================
-POST /pine1/gpios/gpio1 HTTP/1.0
-Host: pine64.extron.com:5432
-User-Agent: curl/7.47.0
-Accept: */*
-Content-Length: 144
-Content-Type: multipart/form-data; boundary=------------------------108cafe790da9dda
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
 

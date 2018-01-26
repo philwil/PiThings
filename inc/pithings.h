@@ -352,6 +352,7 @@ struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
 
 int count_iob_bytes(struct list **listp);
 int send_html_continue(struct iosock *in, char *msg);
+int send_html_form(struct iosock *in, char *url, char *name, char *value);
 
 #endif
 

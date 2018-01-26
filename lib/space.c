@@ -833,6 +833,7 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
   //struct list *list;
   //struct space *base = NULL;
   char *sp;
+  char *vers="HTTP/1.1";
   char buf[2048];
   char spv[2][128];
   int rc=0;
@@ -856,17 +857,25 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 	{
 	  if (in->hproto)
 	    {
-	      snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n"
+	      snprintf(buf, 2048, "%s 200 OK\r\n"
 		       "Content-Type: text/html\r\n\r\n"
 		       "<html><head>"
-		       //"<style>"
-		       //"body{font-family: monospace; font-size: 13px;}"
-		       //"td {padding: 1.5px 6px;}"
-		       //"</style>"
-		       "</head><body>\n"
-		       "OK GET %s value [%s]\n"
-		       "</body></html>\r\n"
-		       , sp, sret);
+		       "</head>\n"
+		       ,vers);
+	      write(in->fd, buf, strlen(buf));
+	      snprintf(buf, 2048,
+		       "<!DOCTYPE html>"
+		       "<html>"
+		       "<body>"
+		       "<form action=\"/%s\">"
+		       "Variable %s:<br>"
+		       "<input type=\"text\" name=\"value\" value=\"%s\"><br>"
+		       "<input type=\"submit\" value=\"Change\">"
+		       "</form>" 
+		       "</body>"
+		       "</html>"
+		       , spv[1], sp1->name, sp1->value);
+	      //send_html_form(in, spv[1], sp1->name, sp1->value);
 	      write(in->fd, buf, strlen(buf));
 	      close(in->fd);
 	      //send_html_head(in, NULL);

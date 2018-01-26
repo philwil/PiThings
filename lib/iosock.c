@@ -494,12 +494,37 @@ void url_decode(char* src, char* dest, int max) {
     }
     *dest = '\0';
 }
-				     
+
+//<p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+
+int send_html_form(struct iosock *in, char *url, char *name, char *value)
+{
+  int len;
+  len = in_snprintf(in, NULL,
+		    "<!DOCTYPE html>"
+		    "<html>"
+		    "<body>"
+		    "<form action=\"/%s\">"
+		    "Variable %s:<br>"
+		    "<input type=\"text\" name=\"value\" value=\"%s\"><br>"
+		    "<input type=\"submit\" value=\"Change\">"
+		    "</form>" 
+		    "</body>"
+		    "</html>"
+		    , url
+		    , name
+		    , value
+		    );
+  return len;
+}
+
+
+//"HTTP/1.1 200 OK\r\n"
 int send_html_continue(struct iosock *in, char *msg)
 {
   int len = 0;
   len = in_snprintf(in, NULL,
-		    "HTTP/1.1 100 Continue\r\n"
+		    "HTTP/1.1 200 OK\r\n"
 		    "Content-Type: text/html\r\n\r\n"
 		    );
   return len;
