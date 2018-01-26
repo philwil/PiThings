@@ -351,6 +351,7 @@ struct list *new_iobuf_item(int len);
 struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
 
 int count_iob_bytes(struct list **listp);
+int send_html_continue(struct iosock *in, char *msg);
 
 #endif
 

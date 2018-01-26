@@ -1,3 +1,4 @@
+==================
 ADD pine1/gpios/gpio1/type
 
 ADD pine1/gpios/gpio2/type
@@ -12,11 +13,201 @@ SET pine1/gpios/gpio3/type serve
 
 SET pine1/gpios/gpio1 off
 
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Content-Type: multipart/form-data; boundary=------------------------5488c71f84e5e12a
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
 POST /pine1/gpios/gpio1 HTTP/1.1
 Host: pine64.extron.com:5432
 User-Agent: curl/7.47.0
 Accept: */*
 Content-Length: 144
 Expect: 100-continue
-Content-Type: multipart/form-data; boundary=------------------------03a7eca1908d6585
+Content-Type: multipart/form-data; boundary=------------------------d6b1dbe26955d03d
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------c74063b68790722c
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------07318259406059ee
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------c43ecdf76b1552e2
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------3beb4ccf5834f492
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Expect: 100-continue
+Content-Type: multipart/form-data; boundary=------------------------12ce32cb9990f126
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.0
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Content-Type: multipart/form-data; boundary=------------------------8cbb128d5e9abf68
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.0
+Host: pine64.extron.com:5432
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 144
+Content-Type: multipart/form-data; boundary=------------------------108cafe790da9dda
 

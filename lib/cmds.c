@@ -88,6 +88,64 @@ int parse_name(int *idx, char **valx, int *idy , char **valy, int size, char *na
   return rc;
 }
 
+struct space *cmd_html_expect(struct list **root, char *name,
+			    struct iosock *in)
+{
+  int i;
+  int idx = 0;
+  char *valx[64];
+
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  //in->hlen = 0;
+  
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+  
+  if(idx>1)
+    {
+      if(strstr(valx[1],"100-continue"))
+	{
+	  
+	  send_html_continue(in, NULL);
+	}
+    }
+  // TODO free vals
+  return NULL;
+}
+
+struct space *cmd_html_cont(struct list **root, char *name,
+			    struct iosock *in)
+{
+  int i;
+  int idx = 0;
+  char *valx[64];
+  char *spm = "multipart/form-data;";
+  char *spb = "boundary=";
+  char *spv = NULL;
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  //in->hlen = 0;
+  
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+  
+  if(idx>2)
+    {
+      if(strstr(valx[1],spm))
+	{
+	  spv = valx[2];
+	  spv += strlen(spb);
+	  printf(" >> >>found boundary as [%s]\n", spv);
+		 
+	}
+    }
+  // TODO free vals
+  return NULL;
+}
+
 struct space *cmd_html_len(struct list **root, char *name,
 			    struct iosock *in)
 {
@@ -422,8 +480,10 @@ int set_up_new_cmds(void)
   init_new_hcmd("Host:",           "Host: Port",      cmd_html_dummy);
   init_new_hcmd("User-Agent:",     "User Agent",      cmd_html_dummy);
   init_new_hcmd("Accept:",         "Accept",          cmd_html_dummy);
-  init_new_hcmd("Content-Type:",   "Content type",    cmd_html_dummy);
+  init_new_hcmd("Content-Type:",   "Content type",    cmd_html_cont);
   init_new_hcmd("Content-Length:", "Content length",  cmd_html_len);
+  init_new_hcmd("Expect:",         "100-continue",    cmd_html_expect);
+  //init_new_hcmd("multipart/form-data;", "form boundary",cmd_html_mpf);
 
   //  Host: 127.0.0.1:5432
   //User-Agent: curl/7.47.0

@@ -11,6 +11,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <time.h>
+
 #include "../inc/pithings.h"
 
 extern struct iosock g_iosock[];
@@ -492,6 +495,15 @@ void url_decode(char* src, char* dest, int max) {
     *dest = '\0';
 }
 				     
+int send_html_continue(struct iosock *in, char *msg)
+{
+  int len = 0;
+  len = in_snprintf(in, NULL,
+		    "HTTP/1.1 100 Continue\r\n"
+		    "Content-Type: text/html\r\n\r\n"
+		    );
+  return len;
+}
 int send_html_head(struct iosock *in, char *msg)
 {
   int len = 0;
@@ -796,17 +808,24 @@ int handle_input(struct iosock *in)
   
   if(len > 0)
     {
+      
       sp[len] = 0;
       inbf->outlen += len;
       printf(" %s READ rsize %d len %d inbf->outptr/len %d/%d\n"
 	     , __FUNCTION__, rsize, len, inbf->outptr, inbf->outlen);
       {
+	struct stat sb;
+	char *lfile = "hfile.txt";
+	char *lhead = "==================\n";
 	FILE * xfp;
-
-	xfp = fopen ("hfile.txt", "a");
-	if(0)fwrite(sp, len, 1, xfp);
-	   
-	fclose(xfp);
+	if (stat(lfile, &sb) >= 0 )
+	  {
+	    
+	    xfp = fopen ("hfile.txt", "a");
+	    fwrite(lhead, strlen(lhead), 1, xfp);
+	    fwrite(sp, len, 1, xfp);
+	    fclose(xfp);
+	  }
    
       }
       while(more)
