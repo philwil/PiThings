@@ -17,9 +17,10 @@ SET pine1/gpios/gpio1 off
 GET /pine1/gpios/gpio2 HTTP/1.1
 Host: pine64.extron.com:5432
 Connection: keep-alive
-Cache-Control: max-age=0
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Pragma: no-cache
+Cache-Control: no-cache
 Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
 DNT: 1
 Accept-Encoding: gzip, deflate

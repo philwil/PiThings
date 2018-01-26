@@ -176,6 +176,66 @@ struct space *cmd_html_len(struct list **root, char *name,
   return NULL;
 }
 
+struct space *cmd_html_host(struct list **root, char *name,
+			    struct iosock *in)
+{
+  int i;
+  int idx = 0;
+  char *valx[64];
+
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  in->hlen = 0;
+  
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+  
+  if(idx>1)
+    {
+      if(in->host)free(in->host);
+      in->host = strdup(valx[1]);
+      printf(" %s setting in %p host  [%s]\n"
+	     , __FUNCTION__
+	     , in
+	     , in->host
+	     );
+      
+    }
+
+  return NULL;
+}
+
+struct space *cmd_html_refer(struct list **root, char *name,
+			    struct iosock *in)
+{
+  int i;
+  int idx = 0;
+  char *valx[64];
+
+  idx = parse_stuff(' ', 64, (char **)valx, name,'\n');
+  in->hlen = 0;
+  
+  for (i = 0; i<idx; i++)
+    {
+      printf(" >> String %d [%s]\n", i, valx[i]);
+    }
+  
+  if(idx>1)
+    {
+      if(in->referer)free(in->referer);
+      in->referer = strdup(valx[1]);
+      printf(" %s setting in %p referer  [%s]\n"
+	     , __FUNCTION__
+	     , in
+	     , in->referer
+	     );
+      
+    }
+
+  return NULL;
+}
+
 struct space *cmd_html_dummy(struct list **root, char *name,
 			    struct iosock *in)
 {
@@ -477,7 +537,8 @@ int set_up_new_cmds(void)
   init_new_gcmd("QUIT", "quit",      cmd_quit);
 
   init_new_hcmd("POST",            "Post",            get_space_in);
-  init_new_hcmd("Host:",           "Host: Port",      cmd_html_dummy);
+  init_new_hcmd("Referer:",        "Host: Port",      cmd_html_refer);
+  init_new_hcmd("Host:",           "Host: Port",      cmd_html_host);
   init_new_hcmd("User-Agent:",     "User Agent",      cmd_html_dummy);
   init_new_hcmd("Accept:",         "Accept",          cmd_html_dummy);
   init_new_hcmd("Content-Type:",   "Content type",    cmd_html_cont);

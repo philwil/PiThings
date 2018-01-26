@@ -1,0 +1,2420 @@
+using port #5432
+listen sock #4
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000001
+ new_iobuf_item running, create new iob size 4096
+push_clist zero insert item 0x418070 citem 0x418070
+ ====>handle_input rsize 4096 inbf 0x417040
+ handle_input READ rsize 4096 len 214 inbf->outptr/len 0/214
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 0/214 last 0
+handle_input_norm read len 214 tlen 28 sp[] a outptr/len 0/214
+==>sp [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio1/type] vers [ADD]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+parse_stuff start stuff[ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio1/type] val[1] [pine1/gpios/gpio1/type] 70 69
+sp [
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x4180e0/0x418100
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio1/type]
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio1/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio1/type] 
+rc 5 val [gpio1] val[2] [gpio1] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x418120/0x418140 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio1]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x412130 parent (nil) 
+ Space .. 2 0 [pine1] (nil)
+ new space [pine1] root 0x412130
+ Created New Space for [pine1] 0x4181a0 
+ _add_space_in no parent adding [pine1] to root 
+ New Space for [pine1] at root
+ push_clist null root insert item 0x418250 citem (nil)
+ Space .. 1 1 [gpios] root 0x412130 parent 0x4181a0 
+ >>> find space name [gpios] space (nil)... 
+ Space .. 2 1 [gpios] (nil)
+ new space [gpios] root 0x412130
+ Created New Space for [gpios] 0x418270 
+ _add_space_in adding [gpios] to parent [pine1] 
+ New Space for [gpios] at root
+ push_clist null root insert item 0x418320 citem (nil)
+ Space .. 1 2 [gpio1] root 0x412130 parent 0x418270 
+ >>> find space name [gpio1] space (nil)... 
+ Space .. 2 2 [gpio1] (nil)
+ new space [gpio1] root 0x4181c0
+ Created New Space for [gpio1] 0x418340 
+ _add_space_in adding [gpio1] to parent [gpios] 
+ New Space for [gpio1] at root
+ push_clist null root insert item 0x4183f0 citem (nil)
+ Space .. 1 3 [type] root 0x412130 parent 0x418340 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x418290
+ Created New Space for [type] 0x418410 
+ _add_space_in adding [type] to parent [gpio1] 
+ New Space for [type] at root
+ push_clist null root insert item 0x4184c0 citem (nil)
+ in_snprintf starting in (0x414668) xiob (nil) oubuf ((nil)) ouitem ((nil))
+ new_iobuf_item running, create new iob size 128
+ in_snprintf got iob 0x4184e0 size 128
+ push_clist null root insert item 0x418590 citem (nil)
+ size needed 246 iob size 128 space left 128
+ new_iobuf_item running, create new iob size 246
+push_clist zero insert item 0x4186d0 citem 0x418590
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x4186d0 buf 0x4185b0
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 245 
+ reset buffers tlen = 28 ptr/len 28/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 28/214 last 0
+handle_input_norm read len 186 tlen 28 sp[] a outptr/len 28/214
+==>sp [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio2/type] vers [ADD]
+ handle_input_norm oubuf_list #1 0x418590 item 0x4186d0 buf 0x4185b0
+parse_stuff start stuff[ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio2/type] val[1] [pine1/gpios/gpio2/type] 70 69
+sp [
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x418100/0x4180e0
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio2/type]
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio2/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio2/type] 
+rc 5 val [gpio2] val[2] [gpio2] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x418180/0x418160 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio2]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x412130 parent (nil) 
+ >>> find space name [pine1] space 0x4181a0... 
+ Space .. 2 0 [pine1] 0x4181a0
+ Space found [pine1]
+ Space .. 1 1 [gpios] root 0x412130 parent 0x4181a0 
+ >>> find space name [gpios] space 0x418270... 
+ Space .. 2 1 [gpios] 0x418270
+ Space found [gpios]
+ Space .. 1 2 [gpio2] root 0x412130 parent 0x418270 
+ >>> find space name [gpio2] space (nil)... 
+ Space .. 2 2 [gpio2] (nil)
+ new space [gpio2] root 0x418290
+ Created New Space for [gpio2] 0x4186f0 
+ _add_space_in adding [gpio2] to parent [gpios] 
+ New Space for [gpio2] at root
+push_clist zero insert item 0x4187a0 citem 0x4183f0
+ Space .. 1 3 [type] root 0x412130 parent 0x4186f0 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x418290
+ Created New Space for [type] 0x4187c0 
+ _add_space_in adding [type] to parent [gpio2] 
+ New Space for [type] at root
+ push_clist null root insert item 0x418870 citem (nil)
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x4185b0) ouitem (0x4186d0)
+ size needed 218 iob size 246 space left 1
+ new_iobuf_item running, create new iob size 463
+ push_clist before citem insert item 0x418a90 citem 0x418590
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x418a90 buf 0x418890
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 217/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 462 
+ reset buffers tlen = 28 ptr/len 56/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 56/214 last 0
+handle_input_norm read len 158 tlen 28 sp[] a outptr/len 56/214
+==>sp [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio3/type] vers [SET]
+ handle_input_norm oubuf_list #1 0x418590 item 0x418a90 buf 0x418890
+parse_stuff start stuff[ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio3/type] val[1] [pine1/gpios/gpio3/type] 70 69
+sp [
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x4180e0/0x418100
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio3/type]
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio3/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio3/type] 
+rc 5 val [gpio3] val[2] [gpio3] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x418120/0x418140 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio3]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x412130 parent (nil) 
+ >>> find space name [pine1] space 0x4181a0... 
+ Space .. 2 0 [pine1] 0x4181a0
+ Space found [pine1]
+ Space .. 1 1 [gpios] root 0x412130 parent 0x4181a0 
+ >>> find space name [gpios] space 0x418270... 
+ Space .. 2 1 [gpios] 0x418270
+ Space found [gpios]
+ Space .. 1 2 [gpio3] root 0x412130 parent 0x418270 
+ >>> find space name [gpio3] space (nil)... 
+ Space .. 2 2 [gpio3] (nil)
+ new space [gpio3] root 0x418290
+ Created New Space for [gpio3] 0x418ab0 
+ _add_space_in adding [gpio3] to parent [gpios] 
+ New Space for [gpio3] at root
+ push_clist before citem insert item 0x418b60 citem 0x4183f0
+ Space .. 1 3 [type] root 0x412130 parent 0x418ab0 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x418290
+ Created New Space for [type] 0x418b80 
+ _add_space_in adding [type] to parent [gpio3] 
+ New Space for [type] at root
+ push_clist null root insert item 0x418c30 citem (nil)
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x418890) ouitem (0x418a90)
+ size needed 190 iob size 463 space left 246
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x418a90 buf 0x418890
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 406/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 651 
+ reset buffers tlen = 28 ptr/len 84/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 84/214 last 0
+handle_input_norm read len 130 tlen 35 sp[] a outptr/len 84/214
+==>sp [SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio1/type] vers [output]
+ handle_input_norm oubuf_list #1 0x418590 item 0x418a90 buf 0x418890
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 22 val [pine1/gpios/gpio1/type] val[0] [pine1/gpios/gpio1/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio1/type] *idx 1 valx[0/1] 0x418100/0x7f9507c000
+ parse_name 1 valx[0] [pine1/gpios/gpio1/type]
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio1/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio1/type] 
+rc 5 val [gpio1] val[2] [gpio1] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio1/type] *idy 4 valy[0/1] 0x4180e0/0x418180 [pine1]-[gpios]
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x418890) ouitem (0x418a90)
+ size needed 43 iob size 463 space left 57
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x418a90 buf 0x418890
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ ... rc 0 n 3 cmd [SET] tlen 35 tosend 693 
+ reset buffers tlen = 35 ptr/len 119/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 119/214 last 0
+handle_input_norm read len 95 tlen 34 sp[] a outptr/len 119/214
+==>sp [SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio2/type] vers [input]
+ handle_input_norm oubuf_list #1 0x418590 item 0x418a90 buf 0x418890
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 22 val [pine1/gpios/gpio2/type] val[0] [pine1/gpios/gpio2/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio2/type] *idx 1 valx[0/1] 0x418140/0x7feec1ca10
+ parse_name 1 valx[0] [pine1/gpios/gpio2/type]
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio2/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio2/type] 
+rc 5 val [gpio2] val[2] [gpio2] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio2/type] *idy 4 valy[0/1] 0x418160/0x418180 [pine1]-[gpios]
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x418890) ouitem (0x418a90)
+ size needed 42 iob size 463 space left 15
+ new_iobuf_item running, create new iob size 490
+ push_clist before citem insert item 0x4180e0 citem 0x418590
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x4180e0 buf 0x418120
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ count_iob_bytes count 4 test item [0x4180e0]
+ count_iob_bytes test item->data [0x418120]
+ iob 0x418120 data len/size 41/490->[OK SET pine1/gpios/gpio2/type to [input]
+]
+ ... rc 0 n 3 cmd [SET] tlen 34 tosend 734 
+ reset buffers tlen = 34 ptr/len 153/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 153/214 last 0
+handle_input_norm read len 61 tlen 34 sp[] a outptr/len 153/214
+==>sp [SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio3/type] vers [serve]
+ handle_input_norm oubuf_list #1 0x418590 item 0x4180e0 buf 0x418120
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 22 val [pine1/gpios/gpio3/type] val[0] [pine1/gpios/gpio3/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio3/type] *idx 1 valx[0/1] 0x418180/0x7feec1ca10
+ parse_name 1 valx[0] [pine1/gpios/gpio3/type]
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio3/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio3/type] 
+rc 5 val [gpio3] val[2] [gpio3] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio3/type] *idy 4 valy[0/1] 0x418160/0x418e50 [pine1]-[gpios]
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x418120) ouitem (0x4180e0)
+ size needed 42 iob size 490 space left 449
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x4180e0 buf 0x418120
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ count_iob_bytes count 4 test item [0x4180e0]
+ count_iob_bytes test item->data [0x418120]
+ iob 0x418120 data len/size 82/490->[OK SET pine1/gpios/gpio2/type to [input]
+OK SET pine1/gpios/gpio3/type to [serve]
+]
+ ... rc 0 n 3 cmd [SET] tlen 34 tosend 775 
+ reset buffers tlen = 34 ptr/len 187/214 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 187/214 last 0
+handle_input_norm read len 27 tlen 27 sp[] a outptr/len 187/214
+==>sp [SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio1] vers [off]
+ handle_input_norm oubuf_list #1 0x418590 item 0x4180e0 buf 0x418120
+parse_stuff start stuff[pine1/gpios/gpio1] 
+rc 17 val [pine1/gpios/gpio1] val[0] [pine1/gpios/gpio1] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio1] *idx 1 valx[0/1] 0x418e90/0x7feec1ca10
+ parse_name 1 valx[0] [pine1/gpios/gpio1]
+parse_stuff start stuff[pine1/gpios/gpio1] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio1] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio1] 
+rc 5 val [gpio1] val[2] [gpio1] 67 70
+sp [] 
+parse_stuff done idx 3
+ parse_name 2 name [pine1/gpios/gpio1] *idy 3 valy[0/1] 0x418e70/0x418e50 [pine1]-[gpios]
+ in_snprintf starting in (0x414668) xiob (nil) oubuf (0x418120) ouitem (0x4180e0)
+ size needed 35 iob size 490 space left 408
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x418590 item  0x4180e0 buf 0x418120
+ count_iob_bytes test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ count_iob_bytes count 1 test item [0x418590]
+ count_iob_bytes test item->data [0x4184e0]
+ iob 0x4184e0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x4186d0]
+ count_iob_bytes test item->data [0x4185b0]
+ iob 0x4185b0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x418a90]
+ count_iob_bytes test item->data [0x418890]
+ iob 0x418890 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ count_iob_bytes count 4 test item [0x4180e0]
+ count_iob_bytes test item->data [0x418120]
+ iob 0x418120 data len/size 116/490->[OK SET pine1/gpios/gpio2/type to [input]
+OK SET pine1/gpios/gpio3/type to [serve]
+OK SET pine1/gpios/gpio1 to [off]
+]
+ ... rc 0 n 3 cmd [SET] tlen 27 tosend 809 
+ reset buffers tlen = 27 ptr/len 214/214 more 0
+ handle_input_norm reset buffers tlen = 27 ptr/len 0/0
+ handle_input done more 0
+message len 214
+ idx 2 fd 0 revents 0x00000000
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000005
+before citem rem item 0x418590 citem 0x418590
+ push_clist null root insert item 0x418590 citem (nil)
+ handle_output running the new way item 0x4186d0 iob 0x4185b0 len 245 sp [Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+error writing (n=-1), closing fd 3 
+ idx 2 fd 0 revents 0x00000000
+ setup fd i 1 idx 1 fd 0
+poll start idx 2 lsock 4 
+poll done ret = 0 idx 2
+ setup fd i 1 idx 1 fd 0
+poll start idx 2 lsock 4 
+poll done ret = 0 idx 2
+ setup fd i 1 idx 1 fd 0
+poll start idx 2 lsock 4 
+poll done ret = 0 idx 2
+ setup fd i 1 idx 1 fd 0
+poll start idx 2 lsock 4 
+poll done ret = 1 idx 2
+poll ret = 1 idx 2
+ idx 0 fd 4 revents 0x00000001
+opened new communication with client 
+accept ret = 3 
+ idx 1 fd 0 revents 0x00000000
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000001
+ new_iobuf_item running, create new iob size 4096
+push_clist zero insert item 0x418e50 citem 0x418e50
+ ====>handle_input rsize 4096 inbf 0x418160
+ handle_input READ rsize 4096 len 780 inbf->outptr/len 0/780
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 0/780 last 0
+handle_input_norm read len 780 tlen 33 sp[] a outptr/len 0/780
+==>sp [GET /pine1/gpios/gpio2 HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [GET /pine1/gpios/gpio2 HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [GET] uri [/pine1/gpios/gpio2] vers [HTTP/1.1]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 780 cmd [GET] sp [GET /pine1/gpios/gpio2 HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ get_space_in looking for [GET] [/pine1/gpios/gpio2]
+parse_stuff start stuff[/pine1/gpios/gpio2] 
+rc 18 val [/pine1/gpios/gpio2] val[0] [/pine1/gpios/gpio2] 2f 70
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [/pine1/gpios/gpio2] *idx 1 valx[0/1] 0x418e70/0x7feec1c250
+ parse_name 1 valx[0] [/pine1/gpios/gpio2]
+parse_stuff start stuff[/pine1/gpios/gpio2] 
+rc 6 val [/pine1] val[0] [/pine1] 2f 70
+sp [gpios/gpio2] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio2] 
+rc 5 val [gpio2] val[2] [gpio2] 67 70
+sp [] 
+parse_stuff done idx 3
+ parse_name 2 name [/pine1/gpios/gpio2] *idy 3 valy[0/1] 0x419ec0/0x419ee0 [/pine1]-[gpios]
+ get_space_in using referer 0x414668 [(null)]
+ get_space_in using host 0x414668 [(null)]
+ get_space_in found [GET] [/pine1/gpios/gpio2] in->hidx=0x414668->5
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [GET] tlen 33 tosend 0 
+ reset buffers tlen = 33 ptr/len 33/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 33/780 last 0
+handle_input_norm read len 747 tlen 30 sp[] a outptr/len 33/780
+==>sp [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Host:] uri [pine64.extron.com:5432] vers [Connection:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 747 cmd [Host:] sp [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 5 val [Host:] val[0] [Host:] 48 6f
+sp [pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 23 val [pine64.extron.com:5432] val[1] [pine64.extron.com:5432] 70 69
+sp [
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 2
+ >> String 0 [Host:]
+ >> String 1 [pine64.extron.com:5432]
+ cmd_html_host setting in 0x414668 host  [pine64.extron.com:5432]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Host:] tlen 30 tosend 0 
+ reset buffers tlen = 30 ptr/len 63/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 63/780 last 0
+handle_input_norm read len 717 tlen 24 sp[] a outptr/len 63/780
+==>sp [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Connection:] uri [keep-alive] vers [Pragma:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 717 cmd [Connection:] sp [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Connection:] tlen 24 tosend 0 
+ reset buffers tlen = 24 ptr/len 87/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 87/780 last 0
+handle_input_norm read len 693 tlen 18 sp[] a outptr/len 87/780
+==>sp [Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Pragma:] uri [no-cache] vers [Cache-Control:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 693 cmd [Pragma:] sp [Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Pragma:] tlen 18 tosend 0 
+ reset buffers tlen = 18 ptr/len 105/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 105/780 last 0
+handle_input_norm read len 675 tlen 25 sp[] a outptr/len 105/780
+==>sp [Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Cache-Control:] uri [no-cache] vers [Upgrade-Insecure-Requests:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 675 cmd [Cache-Control:] sp [Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Cache-Control:] tlen 25 tosend 0 
+ reset buffers tlen = 25 ptr/len 130/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 130/780 last 0
+handle_input_norm read len 650 tlen 30 sp[] a outptr/len 130/780
+==>sp [Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Upgrade-Insecure-Requests:] uri [1] vers [User-Agent:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 650 cmd [Upgrade-Insecure-Requests:] sp [Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Upgrade-Insecure-Requests:] tlen 30 tosend 0 
+ reset buffers tlen = 30 ptr/len 160/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 160/780 last 0
+handle_input_norm read len 620 tlen 128 sp[] a outptr/len 160/780
+==>sp [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [User-Agent:] uri [Mozilla/5.0] vers [(Windows]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 620 cmd [User-Agent:] sp [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 11 val [User-Agent:] val[0] [User-Agent:] 55 73
+sp [Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 11 val [Mozilla/5.0] val[1] [Mozilla/5.0] 4d 6f
+sp [(Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 8 val [(Windows] val[2] [(Windows] 28 57
+sp [NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 2 val [NT] val[3] [NT] 4e 54
+sp [6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [6.1;] val[4] [6.1;] 36 2e
+sp [Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 6 val [Win64;] val[5] [Win64;] 57 69
+sp [x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [x64)] val[6] [x64)] 78 36
+sp [AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 18 val [AppleWebKit/537.36] val[7] [AppleWebKit/537.36] 41 70
+sp [(KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 7 val [(KHTML,] val[8] [(KHTML,] 28 4b
+sp [like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [like] val[9] [like] 6c 69
+sp [Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 6 val [Gecko)] val[10] [Gecko)] 47 65
+sp [Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 20 val [Chrome/63.0.3239.132] val[11] [Chrome/63.0.3239.132] 43 68
+sp [Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 14 val [Safari/537.36] val[12] [Safari/537.36] 53 61
+sp [
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 13
+ >> String 0 [User-Agent:]
+ >> String 1 [Mozilla/5.0]
+ >> String 2 [(Windows]
+ >> String 3 [NT]
+ >> String 4 [6.1;]
+ >> String 5 [Win64;]
+ >> String 6 [x64)]
+ >> String 7 [AppleWebKit/537.36]
+ >> String 8 [(KHTML,]
+ >> String 9 [like]
+ >> String 10 [Gecko)]
+ >> String 11 [Chrome/63.0.3239.132]
+ >> String 12 [Safari/537.36]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [User-Agent:] tlen 128 tosend 0 
+ reset buffers tlen = 128 ptr/len 288/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 288/780 last 0
+handle_input_norm read len 492 tlen 95 sp[] a outptr/len 288/780
+==>sp [Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept:] uri [text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8] vers [DNT:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 492 cmd [Accept:] sp [Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 7 val [Accept:] val[0] [Accept:] 41 63
+sp [text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 63 val [text/html,application/xhtml+xml,application/xml;q=0.9,image/web] val[1] [text/html,application/xhtml+xml,application/xml;q=0.9,image/web] 74 65
+sp [,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 22 val [,image/apng,*/*;q=0.8] val[2] [,image/apng,*/*;q=0.8] 2c 69
+sp [
+DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 3
+ >> String 0 [Accept:]
+ >> String 1 [text/html,application/xhtml+xml,application/xml;q=0.9,image/web]
+ >> String 2 [,image/apng,*/*;q=0.8]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept:] tlen 95 tosend 0 
+ reset buffers tlen = 95 ptr/len 383/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 383/780 last 0
+handle_input_norm read len 397 tlen 8 sp[] a outptr/len 383/780
+==>sp [DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [DNT:] uri [1] vers [Accept-Encoding:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 397 cmd [DNT:] sp [DNT: 1
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [DNT:] tlen 8 tosend 0 
+ reset buffers tlen = 8 ptr/len 391/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 391/780 last 0
+handle_input_norm read len 389 tlen 32 sp[] a outptr/len 391/780
+==>sp [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept-Encoding:] uri [gzip,] vers [deflate]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 389 cmd [Accept-Encoding:] sp [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept-Encoding:] tlen 32 tosend 0 
+ reset buffers tlen = 32 ptr/len 423/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 423/780 last 0
+handle_input_norm read len 357 tlen 42 sp[] a outptr/len 423/780
+==>sp [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept-Language:] uri [en-US,en;q=0.9,it;q=0.8] vers [Cookie:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 357 cmd [Accept-Language:] sp [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept-Language:] tlen 42 tosend 0 
+ reset buffers tlen = 42 ptr/len 465/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 465/780 last 0
+handle_input_norm read len 315 tlen 313 sp[] a outptr/len 465/780
+==>sp [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Cookie:] uri [s_fid=7240C1679A9D085B-2635F10559586438;] vers [AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 315 cmd [Cookie:] sp [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Cookie:] tlen 313 tosend 0 
+ reset buffers tlen = 313 ptr/len 778/780 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 780 outptr/len 778/780 last 0
+handle_input_norm read len 2 tlen 2 sp[] a outptr/len 778/780
+==>sp [
+] 
+ handle_input_norm message received [
+] -> n -1 cmd [] uri [] vers []
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 2 cmd [] sp [
+]
+ run_str_http start of data from 0xd 0xa hlen 0 hidx 5 name [gpio2]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n -1 cmd [] tlen 2 tosend 0 
+ reset buffers tlen = 2 ptr/len 782/780 more 0
+ handle_input done more 0
+message len 780
+ idx 2 fd 0 revents 0x00000000
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000020
+ idx 2 fd 0 revents 0x00000000
+ setup fd i 1 idx 1 fd 0
+poll start idx 2 lsock 4 
+poll done ret = 1 idx 2
+poll ret = 1 idx 2
+ idx 0 fd 4 revents 0x00000001
+opened new communication with client 
+accept ret = 3 
+ idx 1 fd 0 revents 0x00000000
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000001
+ new_iobuf_item running, create new iob size 4096
+push_clist zero insert item 0x418090 citem 0x418090
+ ====>handle_input rsize 4096 inbf 0x41a130
+ handle_input READ rsize 4096 len 756 inbf->outptr/len 0/756
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 0/756 last 0
+handle_input_norm read len 756 tlen 27 sp[] a outptr/len 0/756
+==>sp [GET /favicon.ico HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [GET /favicon.ico HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [GET] uri [/favicon.ico] vers [HTTP/1.1]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 756 cmd [GET] sp [GET /favicon.ico HTTP/1.1
+Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ get_space_in looking for [GET] [/favicon.ico]
+parse_stuff start stuff[/favicon.ico] 
+rc 12 val [/favicon.ico] val[0] [/favicon.ico] 2f 66
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [/favicon.ico] *idx 1 valx[0/1] 0x4180b0/0x7feec1c250
+ parse_name 1 valx[0] [/favicon.ico]
+parse_stuff start stuff[/favicon.ico] 
+rc 12 val [/favicon.ico] val[0] [/favicon.ico] 2f 66
+sp [] 
+parse_stuff done idx 1
+ parse_name 2 name [/favicon.ico] *idy 1 valy[0/1] 0x41b1b0/(nil) [/favicon.ico]-[none]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [GET] tlen 27 tosend 0 
+ reset buffers tlen = 27 ptr/len 27/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 27/756 last 0
+handle_input_norm read len 729 tlen 30 sp[] a outptr/len 27/756
+==>sp [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Host:] uri [pine64.extron.com:5432] vers [Connection:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 729 cmd [Host:] sp [Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[Host: pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 5 val [Host:] val[0] [Host:] 48 6f
+sp [pine64.extron.com:5432
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 23 val [pine64.extron.com:5432] val[1] [pine64.extron.com:5432] 70 69
+sp [
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 2
+ >> String 0 [Host:]
+ >> String 1 [pine64.extron.com:5432]
+ cmd_html_host setting in 0x414668 host  [pine64.extron.com:5432]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Host:] tlen 30 tosend 0 
+ reset buffers tlen = 30 ptr/len 57/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 57/756 last 0
+handle_input_norm read len 699 tlen 24 sp[] a outptr/len 57/756
+==>sp [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Connection:] uri [keep-alive] vers [Pragma:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 699 cmd [Connection:] sp [Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Connection:] tlen 24 tosend 0 
+ reset buffers tlen = 24 ptr/len 81/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 81/756 last 0
+handle_input_norm read len 675 tlen 18 sp[] a outptr/len 81/756
+==>sp [Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Pragma:] uri [no-cache] vers [Cache-Control:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 675 cmd [Pragma:] sp [Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Pragma:] tlen 18 tosend 0 
+ reset buffers tlen = 18 ptr/len 99/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 99/756 last 0
+handle_input_norm read len 657 tlen 25 sp[] a outptr/len 99/756
+==>sp [Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Cache-Control:] uri [no-cache] vers [User-Agent:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 657 cmd [Cache-Control:] sp [Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Cache-Control:] tlen 25 tosend 0 
+ reset buffers tlen = 25 ptr/len 124/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 124/756 last 0
+handle_input_norm read len 632 tlen 128 sp[] a outptr/len 124/756
+==>sp [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [User-Agent:] uri [Mozilla/5.0] vers [(Windows]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 632 cmd [User-Agent:] sp [User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 11 val [User-Agent:] val[0] [User-Agent:] 55 73
+sp [Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 11 val [Mozilla/5.0] val[1] [Mozilla/5.0] 4d 6f
+sp [(Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 8 val [(Windows] val[2] [(Windows] 28 57
+sp [NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 2 val [NT] val[3] [NT] 4e 54
+sp [6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [6.1;] val[4] [6.1;] 36 2e
+sp [Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 6 val [Win64;] val[5] [Win64;] 57 69
+sp [x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [x64)] val[6] [x64)] 78 36
+sp [AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 18 val [AppleWebKit/537.36] val[7] [AppleWebKit/537.36] 41 70
+sp [(KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 7 val [(KHTML,] val[8] [(KHTML,] 28 4b
+sp [like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 4 val [like] val[9] [like] 6c 69
+sp [Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 6 val [Gecko)] val[10] [Gecko)] 47 65
+sp [Chrome/63.0.3239.132 Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 20 val [Chrome/63.0.3239.132] val[11] [Chrome/63.0.3239.132] 43 68
+sp [Safari/537.36
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 14 val [Safari/537.36] val[12] [Safari/537.36] 53 61
+sp [
+Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 13
+ >> String 0 [User-Agent:]
+ >> String 1 [Mozilla/5.0]
+ >> String 2 [(Windows]
+ >> String 3 [NT]
+ >> String 4 [6.1;]
+ >> String 5 [Win64;]
+ >> String 6 [x64)]
+ >> String 7 [AppleWebKit/537.36]
+ >> String 8 [(KHTML,]
+ >> String 9 [like]
+ >> String 10 [Gecko)]
+ >> String 11 [Chrome/63.0.3239.132]
+ >> String 12 [Safari/537.36]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [User-Agent:] tlen 128 tosend 0 
+ reset buffers tlen = 128 ptr/len 252/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 252/756 last 0
+handle_input_norm read len 504 tlen 49 sp[] a outptr/len 252/756
+==>sp [Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept:] uri [image/webp,image/apng,image/*,*/*;q=0.8] vers [DNT:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 504 cmd [Accept:] sp [Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[Accept: image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 7 val [Accept:] val[0] [Accept:] 41 63
+sp [image/webp,image/apng,image/*,*/*;q=0.8
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 40 val [image/webp,image/apng,image/*,*/*;q=0.8] val[1] [image/webp,image/apng,image/*,*/*;q=0.8] 69 6d
+sp [
+DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 2
+ >> String 0 [Accept:]
+ >> String 1 [image/webp,image/apng,image/*,*/*;q=0.8]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept:] tlen 49 tosend 0 
+ reset buffers tlen = 49 ptr/len 301/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 301/756 last 0
+handle_input_norm read len 455 tlen 8 sp[] a outptr/len 301/756
+==>sp [DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [DNT:] uri [1] vers [Referer:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 455 cmd [DNT:] sp [DNT: 1
+Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [DNT:] tlen 8 tosend 0 
+ reset buffers tlen = 8 ptr/len 309/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 309/756 last 0
+handle_input_norm read len 447 tlen 58 sp[] a outptr/len 309/756
+==>sp [Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Referer:] uri [http://pine64.extron.com:5432/pine1/gpios/gpio2] vers [Accept-Encoding:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 447 cmd [Referer:] sp [Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+parse_stuff start stuff[Referer: http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 8 val [Referer:] val[0] [Referer:] 52 65
+sp [http://pine64.extron.com:5432/pine1/gpios/gpio2
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+rc 48 val [http://pine64.extron.com:5432/pine1/gpios/gpio2] val[1] [http://pine64.extron.com:5432/pine1/gpios/gpio2] 68 74
+sp [
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+parse_stuff done idx 2
+ >> String 0 [Referer:]
+ >> String 1 [http://pine64.extron.com:5432/pine1/gpios/gpio2]
+ cmd_html_refer setting in 0x414668 referer  [http://pine64.extron.com:5432/pine1/gpios/gpio2]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Referer:] tlen 58 tosend 0 
+ reset buffers tlen = 58 ptr/len 367/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 367/756 last 0
+handle_input_norm read len 389 tlen 32 sp[] a outptr/len 367/756
+==>sp [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept-Encoding:] uri [gzip,] vers [deflate]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 389 cmd [Accept-Encoding:] sp [Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept-Encoding:] tlen 32 tosend 0 
+ reset buffers tlen = 32 ptr/len 399/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 399/756 last 0
+handle_input_norm read len 357 tlen 42 sp[] a outptr/len 399/756
+==>sp [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Accept-Language:] uri [en-US,en;q=0.9,it;q=0.8] vers [Cookie:]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 357 cmd [Accept-Language:] sp [Accept-Language: en-US,en;q=0.9,it;q=0.8
+Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_norm oubuf_list #2 list (nil) item  (nil) buf (nil)
+ count_iob_bytes test item [(nil)]
+ ... rc 0 n 3 cmd [Accept-Language:] tlen 42 tosend 0 
+ reset buffers tlen = 42 ptr/len 441/756 more 1
+ handle_input done more 1
+ handle_input running more 1
+find_cmd_term lend 756 outptr/len 441/756 last 0
+handle_input_norm read len 315 tlen 313 sp[] a outptr/len 441/756
+==>sp [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] 
+ handle_input_norm message received [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+] -> n 3 cmd [Cookie:] uri [s_fid=7240C1679A9D085B-2635F10559586438;] vers [AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+ >>> run_str_http >>>> rc 315 cmd [Cookie:] sp [Cookie: s_fid=7240C1679A9D085B-2635F10559586438; AMCV_C00F26C3570511187F000101%40AdobeOrg=-1248264605%7CMCIDTS%7C17295%7CMCMID%7C65858947669005197514392377655580290925%7CMCAAMLH-1494882396%7C7%7CMCAAMB-1494882396%7CNRX38WO0n5BH8Th-nqAG_A%7CMCOPTOUT-1494284796s%7CNONE%7CMCAID%7C2ACE90460507B511-40000107E0012CC8
+
+]
+ handle_input_nor

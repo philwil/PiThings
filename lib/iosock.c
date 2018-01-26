@@ -54,6 +54,8 @@ int init_iosock(struct iosock *in)
   in->hlen = 0;
   in->hidx = -1;
   in->hproto = 0;
+  in->host = NULL;
+  in->referer = NULL;
 
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
@@ -504,14 +506,14 @@ int send_html_form(struct iosock *in, char *url, char *name, char *value)
 		    "<!DOCTYPE html>"
 		    "<html>"
 		    "<body>"
-		    "<form action=\"/%s\">"
-		    "Variable %s:<br>"
-		    "<input type=\"text\" name=\"value\" value=\"%s\"><br>"
+		    "<form action=\"%s\">"
+		    "Variable %s:"
+		    "<input type=\"text\" name=\"value\" value=\"%s\">"
 		    "<input type=\"submit\" value=\"Change\">"
 		    "</form>" 
 		    "</body>"
 		    "</html>"
-		    , url
+		    , in->referer
 		    , name
 		    , value
 		    );

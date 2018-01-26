@@ -109,9 +109,10 @@ struct iosock
   struct list *initem;  // current input buffer
   struct list *inbuf_list;
   
-  
   int cmdlen;   // number of bytes left for curent command
   int cmdbytes;   // number of bytes expected curent command
+  char *host;  
+  char *referer;  
   int hlen;
   int hproto;     // for now indicates html protocol
   int hidx;

@@ -840,7 +840,7 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
   spv[0][0]=0;
   spv[1][0]=0;
   rc = sscanf(name,"%s %s", spv[0], spv[1]);
-  if(0)printf(" %s looking for [%s] [%s]\n"
+  if(1)printf(" %s looking for [%s] [%s]\n"
 	      , __FUNCTION__
 	      , spv[0]
 	      , spv[1]
@@ -857,6 +857,8 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 	{
 	  if (in->hproto)
 	    {
+	      printf(" %s using referer %p [%s]\n", __FUNCTION__, in, in->referer);
+	      printf(" %s using host %p [%s]\n", __FUNCTION__, in, in->host);
 	      snprintf(buf, 2048, "%s 200 OK\r\n"
 		       "Content-Type: text/html\r\n\r\n"
 		       "<html><head>"
@@ -867,14 +869,14 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
 		       "<!DOCTYPE html>"
 		       "<html>"
 		       "<body>"
-		       "<form action=\"/%s\">"
-		       "Variable %s:<br>"
-		       "<input type=\"text\" name=\"value\" value=\"%s\"><br>"
+		       "<form action=\"%s/%s\">"
+		       "Variable %s"
+		       "<input type=\"text\" name=\"value\" value=\"%s\">"
 		       "<input type=\"submit\" value=\"Change\">"
 		       "</form>" 
 		       "</body>"
 		       "</html>"
-		       , spv[1], sp1->name, sp1->value);
+		       , in->host, sp, sp1->name, sp1->value);
 	      //send_html_form(in, spv[1], sp1->name, sp1->value);
 	      write(in->fd, buf, strlen(buf));
 	      close(in->fd);
