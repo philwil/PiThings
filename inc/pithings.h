@@ -113,6 +113,11 @@ struct iosock
   int cmdbytes;   // number of bytes expected curent command
   char *host;  
   char *referer;  
+ 
+  char *hcmd;
+  char *hvers;
+  char *huri;
+  
   int hlen;
   int hproto;     // for now indicates html protocol
   int hidx;

@@ -821,7 +821,10 @@ int run_new_cmd(struct cmds *cmds, int ncmds, char *key, struct list **list, cha
     }
   rc = i;
   if(i == ncmds)
-    rc = -1;
+    {
+      rc = -1;
+      printf("%s unable to decode key [%s]\n", __FUNCTION__, key);
+    }
   return rc;
 }
 

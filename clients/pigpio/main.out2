@@ -1,0 +1,907 @@
+using port #5432
+listen sock #4
+ setup fd i 0 idx 1 fd 3
+ setup fd i 1 idx 2 fd 0
+poll start idx 3 lsock 4 
+poll done ret = 1 idx 3
+poll ret = 1 idx 3
+ idx 0 fd 4 revents 0x00000000
+ idx 1 fd 3 revents 0x00000001
+ new_iobuf_item running, create new iob size 4096
+push_clist zero insert item 0x1239060 citem 0x1239060
+ ====>handle_input rsize 4096 inbf 0x1238030
+ handle_input READ rsize 4096 len 214 inbf->outptr/len 0/214
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 0/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 28 hcmd [(null)]
+handle_input_norm read len 214 tlen 28 sp[] a outptr/len 0/214
+==>sp [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio1/type] vers [ADD]
+ handle_input_norm oubuf_list #1 (nil) item (nil) buf (nil)
+parse_stuff start stuff[ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio1/type] val[1] [pine1/gpios/gpio1/type] 70 69
+sp [
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x12390d0/0x12390f0
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio1/type]
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio1/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio1/type] 
+rc 5 val [gpio1] val[2] [gpio1] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x1239110/0x1239130 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio1]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x601c28 parent (nil) 
+ Space .. 2 0 [pine1] (nil)
+ new space [pine1] root 0x601c28
+ Created New Space for [pine1] 0x1239190 
+ _add_space_in no parent adding [pine1] to root 
+ New Space for [pine1] at root
+ push_clist null root insert item 0x1239240 citem (nil)
+ Space .. 1 1 [gpios] root 0x601c28 parent 0x1239190 
+ >>> find space name [gpios] space (nil)... 
+ Space .. 2 1 [gpios] (nil)
+ new space [gpios] root 0x601c28
+ Created New Space for [gpios] 0x1239260 
+ _add_space_in adding [gpios] to parent [pine1] 
+ New Space for [gpios] at root
+ push_clist null root insert item 0x1239310 citem (nil)
+ Space .. 1 2 [gpio1] root 0x601c28 parent 0x1239260 
+ >>> find space name [gpio1] space (nil)... 
+ Space .. 2 2 [gpio1] (nil)
+ new space [gpio1] root 0x12391b0
+ Created New Space for [gpio1] 0x1239330 
+ _add_space_in adding [gpio1] to parent [gpios] 
+ New Space for [gpio1] at root
+ push_clist null root insert item 0x12393e0 citem (nil)
+ Space .. 1 3 [type] root 0x601c28 parent 0x1239330 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x1239280
+ Created New Space for [type] 0x1239400 
+ _add_space_in adding [type] to parent [gpio1] 
+ New Space for [type] at root
+ push_clist null root insert item 0x12394b0 citem (nil)
+ in_snprintf starting in (0x604160) xiob (nil) oubuf ((nil)) ouitem ((nil))
+ new_iobuf_item running, create new iob size 128
+ in_snprintf got iob 0x12394d0 size 128
+ push_clist null root insert item 0x1239580 citem (nil)
+ size needed 246 iob size 128 space left 128
+ new_iobuf_item running, create new iob size 246
+push_clist zero insert item 0x12396c0 citem 0x1239580
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x12396c0 buf 0x12395a0
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 245 
+ reset buffers tlen = 28 ptr/len 28/214 more 1
+ handle_input done more 1 in->hproto 0
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 28/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 28 hcmd [(null)]
+handle_input_norm read len 186 tlen 28 sp[] a outptr/len 28/214
+==>sp [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio2/type] vers [ADD]
+ handle_input_norm oubuf_list #1 0x1239580 item 0x12396c0 buf 0x12395a0
+parse_stuff start stuff[ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio2/type] val[1] [pine1/gpios/gpio2/type] 70 69
+sp [
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x12390f0/0x12390d0
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio2/type]
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio2/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio2/type] 
+rc 5 val [gpio2] val[2] [gpio2] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x1239170/0x1239150 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio2]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x601c28 parent (nil) 
+ >>> find space name [pine1] space 0x1239190... 
+ Space .. 2 0 [pine1] 0x1239190
+ Space found [pine1]
+ Space .. 1 1 [gpios] root 0x601c28 parent 0x1239190 
+ >>> find space name [gpios] space 0x1239260... 
+ Space .. 2 1 [gpios] 0x1239260
+ Space found [gpios]
+ Space .. 1 2 [gpio2] root 0x601c28 parent 0x1239260 
+ >>> find space name [gpio2] space (nil)... 
+ Space .. 2 2 [gpio2] (nil)
+ new space [gpio2] root 0x1239280
+ Created New Space for [gpio2] 0x12396e0 
+ _add_space_in adding [gpio2] to parent [gpios] 
+ New Space for [gpio2] at root
+push_clist zero insert item 0x1239790 citem 0x12393e0
+ Space .. 1 3 [type] root 0x601c28 parent 0x12396e0 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x1239280
+ Created New Space for [type] 0x12397b0 
+ _add_space_in adding [type] to parent [gpio2] 
+ New Space for [type] at root
+ push_clist null root insert item 0x1239860 citem (nil)
+ in_snprintf starting in (0x604160) xiob (nil) oubuf (0x12395a0) ouitem (0x12396c0)
+ size needed 218 iob size 246 space left 1
+ new_iobuf_item running, create new iob size 463
+ push_clist before citem insert item 0x1239a80 citem 0x1239580
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x1239a80 buf 0x1239880
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x1239a80]
+ count_iob_bytes test item->data [0x1239880]
+ iob 0x1239880 data len/size 217/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 462 
+ reset buffers tlen = 28 ptr/len 56/214 more 1
+ handle_input done more 1 in->hproto 0
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 56/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 28 hcmd [(null)]
+handle_input_norm read len 158 tlen 28 sp[] a outptr/len 56/214
+==>sp [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [ADD] uri [pine1/gpios/gpio3/type] vers [SET]
+ handle_input_norm oubuf_list #1 0x1239580 item 0x1239a80 buf 0x1239880
+parse_stuff start stuff[ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 3 val [ADD] val[0] [ADD] 41 44
+sp [pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+rc 23 val [pine1/gpios/gpio3/type] val[1] [pine1/gpios/gpio3/type] 70 69
+sp [
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+parse_stuff done idx 2
+ parse_name 1 name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idx 2 valx[0/1] 0x12390d0/0x12390f0
+ parse_name 1 valx[0] [ADD]
+ parse_name 1 valx[1] [pine1/gpios/gpio3/type]
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio3/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio3/type] 
+rc 5 val [gpio3] val[2] [gpio3] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] *idy 4 valy[0/1] 0x1239110/0x1239130 [pine1]-[gpios]
+ ===========
+>>> _add_space_in name [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] idv 4 
+     _add_space_in >> item 0 [pine1]
+     _add_space_in >> item 1 [gpios]
+     _add_space_in >> item 2 [gpio3]
+     _add_space_in >> item 3 [type]
+ Space .. 1 0 [pine1] root 0x601c28 parent (nil) 
+ >>> find space name [pine1] space 0x1239190... 
+ Space .. 2 0 [pine1] 0x1239190
+ Space found [pine1]
+ Space .. 1 1 [gpios] root 0x601c28 parent 0x1239190 
+ >>> find space name [gpios] space 0x1239260... 
+ Space .. 2 1 [gpios] 0x1239260
+ Space found [gpios]
+ Space .. 1 2 [gpio3] root 0x601c28 parent 0x1239260 
+ >>> find space name [gpio3] space (nil)... 
+ Space .. 2 2 [gpio3] (nil)
+ new space [gpio3] root 0x1239280
+ Created New Space for [gpio3] 0x1239aa0 
+ _add_space_in adding [gpio3] to parent [gpios] 
+ New Space for [gpio3] at root
+ push_clist before citem insert item 0x1239b50 citem 0x12393e0
+ Space .. 1 3 [type] root 0x601c28 parent 0x1239aa0 
+ >>> find space name [type] space (nil)... 
+ Space .. 2 3 [type] (nil)
+ new space [type] root 0x1239280
+ Created New Space for [type] 0x1239b70 
+ _add_space_in adding [type] to parent [gpio3] 
+ New Space for [type] at root
+ push_clist null root insert item 0x1239c20 citem (nil)
+ in_snprintf starting in (0x604160) xiob (nil) oubuf (0x1239880) ouitem (0x1239a80)
+ size needed 190 iob size 463 space left 246
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x1239a80 buf 0x1239880
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x1239a80]
+ count_iob_bytes test item->data [0x1239880]
+ iob 0x1239880 data len/size 406/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ ... rc 0 n 3 cmd [ADD] tlen 28 tosend 651 
+ reset buffers tlen = 28 ptr/len 84/214 more 1
+ handle_input done more 1 in->hproto 0
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 84/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 35 hcmd [(null)]
+handle_input_norm read len 130 tlen 35 sp[] a outptr/len 84/214
+==>sp [SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio1/type] vers [output]
+ handle_input_norm oubuf_list #1 0x1239580 item 0x1239a80 buf 0x1239880
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 22 val [pine1/gpios/gpio1/type] val[0] [pine1/gpios/gpio1/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio1/type] *idx 1 valx[0/1] 0x12390f0/0xffffffffffffffff
+ parse_name 1 valx[0] [pine1/gpios/gpio1/type]
+parse_stuff start stuff[pine1/gpios/gpio1/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio1/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio1/type] 
+rc 5 val [gpio1] val[2] [gpio1] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio1/type] *idy 4 valy[0/1] 0x12390d0/0x1239170 [pine1]-[gpios]
+ in_snprintf starting in (0x604160) xiob (nil) oubuf (0x1239880) ouitem (0x1239a80)
+ size needed 43 iob size 463 space left 57
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x1239a80 buf 0x1239880
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x1239a80]
+ count_iob_bytes test item->data [0x1239880]
+ iob 0x1239880 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ ... rc 0 n 3 cmd [SET] tlen 35 tosend 693 
+ reset buffers tlen = 35 ptr/len 119/214 more 1
+ handle_input done more 1 in->hproto 0
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 119/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 34 hcmd [(null)]
+handle_input_norm read len 95 tlen 34 sp[] a outptr/len 119/214
+==>sp [SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio2/type] vers [input]
+ handle_input_norm oubuf_list #1 0x1239580 item 0x1239a80 buf 0x1239880
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 22 val [pine1/gpios/gpio2/type] val[0] [pine1/gpios/gpio2/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio2/type] *idx 1 valx[0/1] 0x1239130/0xffffffffffffffff
+ parse_name 1 valx[0] [pine1/gpios/gpio2/type]
+parse_stuff start stuff[pine1/gpios/gpio2/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio2/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio2/type] 
+rc 5 val [gpio2] val[2] [gpio2] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio2/type] *idy 4 valy[0/1] 0x1239150/0x1239170 [pine1]-[gpios]
+ in_snprintf starting in (0x604160) xiob (nil) oubuf (0x1239880) ouitem (0x1239a80)
+ size needed 42 iob size 463 space left 15
+ new_iobuf_item running, create new iob size 490
+ push_clist before citem insert item 0x12390d0 citem 0x1239580
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x12390d0 buf 0x1239110
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x1239a80]
+ count_iob_bytes test item->data [0x1239880]
+ iob 0x1239880 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ count_iob_bytes count 4 test item [0x12390d0]
+ count_iob_bytes test item->data [0x1239110]
+ iob 0x1239110 data len/size 41/490->[OK SET pine1/gpios/gpio2/type to [input]
+]
+ ... rc 0 n 3 cmd [SET] tlen 34 tosend 734 
+ reset buffers tlen = 34 ptr/len 153/214 more 1
+ handle_input done more 1 in->hproto 0
+ handle_input running more 1
+find_cmd_term lend 214 outptr/len 153/214 last 0
+handle_input_norm instate 0 hproto 0 tlen 34 hcmd [(null)]
+handle_input_norm read len 61 tlen 34 sp[] a outptr/len 153/214
+==>sp [SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] 
+ handle_input_norm message received [SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] -> n 3 cmd [SET] uri [pine1/gpios/gpio3/type] vers [serve]
+ handle_input_norm oubuf_list #1 0x1239580 item 0x12390d0 buf 0x1239110
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 22 val [pine1/gpios/gpio3/type] val[0] [pine1/gpios/gpio3/type] 70 69
+sp [] 
+parse_stuff done idx 1
+ parse_name 1 name [pine1/gpios/gpio3/type] *idx 1 valx[0/1] 0x1239170/0xffffffffffffffff
+ parse_name 1 valx[0] [pine1/gpios/gpio3/type]
+parse_stuff start stuff[pine1/gpios/gpio3/type] 
+rc 5 val [pine1] val[0] [pine1] 70 69
+sp [gpios/gpio3/type] 
+rc 5 val [gpios] val[1] [gpios] 67 70
+sp [gpio3/type] 
+rc 5 val [gpio3] val[2] [gpio3] 67 70
+sp [type] 
+rc 4 val [type] val[3] [type] 74 79
+sp [] 
+parse_stuff done idx 4
+ parse_name 2 name [pine1/gpios/gpio3/type] *idy 4 valy[0/1] 0x1239150/0x1239e40 [pine1]-[gpios]
+ in_snprintf starting in (0x604160) xiob (nil) oubuf (0x1239110) ouitem (0x12390d0)
+ size needed 42 iob size 490 space left 449
+in_snprintf starting output
+ handle_input_norm oubuf_list #2 list 0x1239580 item  0x12390d0 buf 0x1239110
+ count_iob_bytes test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ count_iob_bytes count 1 test item [0x1239580]
+ count_iob_bytes test item->data [0x12394d0]
+ iob 0x12394d0 data len/size 0/128->[]
+ count_iob_bytes count 2 test item [0x12396c0]
+ count_iob_bytes test item->data [0x12395a0]
+ iob 0x12395a0 data len/size 245/246->[Added [ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+]
+ count_iob_bytes count 3 test item [0x1239a80]
+ count_iob_bytes test item->data [0x1239880]
+ iob 0x1239880 data len/size 448/463->[Added [ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+Added [ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+] added  space [type] 2
+OK SET pine1/gpios/gpio1/type to [output]
+]
+ count_iob_bytes count 4 test item [0x12390d0]
+ count_iob_bytes test item->data [0x1239110]
+ iob 0x1239110 data len/size 82/490->[OK SET pine1/gpios/gpio2/type to [input]
+OK SET pine1/gpios/gpio3/type to [serve]
+]
+ ... rc 0 n 3 cmd [SET] tlen 34 t

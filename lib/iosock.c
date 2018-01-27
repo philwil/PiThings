@@ -56,6 +56,9 @@ int init_iosock(struct iosock *in)
   in->hproto = 0;
   in->host = NULL;
   in->referer = NULL;
+  in->hcmd = NULL;
+  in->hvers=NULL;
+  in->huri=NULL;
 
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
@@ -561,7 +564,7 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
   
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
-  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n"
+  if(0)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n"
 	      , __FUNCTION__
 	      , rc
 	      , cmd
@@ -625,10 +628,32 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
     }
   else
     {
-      rc = run_new_gcmd (cmd, &g_space_list, sp, in);
-      rc = run_new_hcmd (cmd, &g_space_list, sp, in);
+
+      if(in->hproto == 1)
+	{
+	  in->hproto = 2;
+	  in->hcmd = sp;
+	}
+      if(in->hproto == 3)
+	{
+	  in->hproto = 4;
+	  rc = run_new_gcmd (cmd, &g_space_list, in->hcmd, in);
+	}
+      else
+	{
+	  rc = run_new_hcmd (cmd, &g_space_list, sp, in);
+	}
     }
   return 0;
+}
+
+char *str_replace(char **strp, char *rep)
+{
+  char *sp=*strp;
+  if(sp)free(sp);
+  sp = strdup(rep);
+  *strp=sp;
+  return sp;
 }
 // scan for double terminators from outptr to outlen 
 int handle_input_norm(struct iosock *in)
@@ -642,13 +667,7 @@ int handle_input_norm(struct iosock *in)
     char vers[1024];
     char *sp;
     char savch;
-    //char buf[1024];
-    //char *bres;
-    //int lres;
-    //char *bufp;
     struct iobuf *inbf;  // input buffer
-    //struct iobuf *oubf;  // input buffer
-    //int rsize;
     int tosend;
 
     inbf = in->inbuf;
@@ -670,6 +689,13 @@ int handle_input_norm(struct iosock *in)
 	    sp[tlen-1]=0;
 	  }
       }
+
+    printf("%s instate %d hproto %d tlen %d hcmd [%s]\n", __FUNCTION__
+	   , in->instate
+	   , in->hproto
+	   , tlen
+	   , in->hcmd
+	   );
     if(g_debug)
       {
 	printf("%s read len %d tlen %d sp[] %x outptr/len %d/%d\n==>sp [%s] \n"
@@ -706,11 +732,14 @@ int handle_input_norm(struct iosock *in)
 		   );
 	  }
 
-	in->hproto = 0;  // Default
+	//in->hproto = 0;  // Default
 	if(strstr(vers,"HTTP/"))
 	  {
 	    in->instate = STATE_IN_HTTP;
 	    in->hproto = 1;
+	    str_replace(&in->hvers, vers);
+	    str_replace(&in->huri, uri);
+
 	  }
 	if (in->instate == STATE_IN_HTTP)
 	  {
@@ -884,11 +913,15 @@ int handle_input(struct iosock *in)
 	    {
 	      more = handle_input_norm(in);
 	    }
+	  if((more == 0) && (in->hproto == 2))
+	    in->hproto = 3;
+
 	  if(g_debug)
 	    {
-	      printf(" %s done more %d\n"
+	      printf(" %s done more %d in->hproto %d\n"
 		     , __FUNCTION__
 		     , more
+		     , in->hproto
 		     );
 	    }
 	}
