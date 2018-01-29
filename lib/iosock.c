@@ -748,11 +748,11 @@ int handle_input_norm(struct iosock *in)
 	//in->hproto = 0;  // Default
 	if (strstr(cmd,"GET") && strstr(vers,"HTTP/"))
 	  {
-	    in->hproto = -11;
+	    in->hproto = -1;
 	  }
 	if (strstr(cmd,"POST") && strstr(vers,"HTTP/"))
 	  {
-	    in->hproto = -22;
+	    in->hproto = -2;
 	  }
 	if(in->hproto < 0)		    
 	  {
