@@ -115,12 +115,15 @@ struct iosock
   char *referer;  
  
   char *hcmd;
+  char *hsp;
   char *hvers;
   char *huri;
-  
+  struct list *hbuf_list;
+  int hin;
   int hlen;
   int hproto;     // for now indicates html protocol
   int hidx;
+
   char *cmdid;    // current command id
   int tlen;       // term
   int nosend;       // term
@@ -221,6 +224,7 @@ struct space *set_space_in(struct list **list, char *name, struct iosock *in);
 int set_space(struct list **list, char *name);
 
 struct space *get_space_in(struct list **list, char *name, struct iosock *in);
+struct space *get_html_in(struct list **listp, char *name, struct iosock *in);
 
 char *get_space(struct list **list, char *name);
 
@@ -359,6 +363,9 @@ struct list *pull_in_iob(struct iosock *in, char **spp, int*len);
 int count_iob_bytes(struct list **listp);
 int send_html_continue(struct iosock *in, char *msg);
 int send_html_form(struct iosock *in, char *url, char *name, char *value);
+
+// iosock.c
+char *str_replace(char **strp, char *rep);
 
 #endif
 

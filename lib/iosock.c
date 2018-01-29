@@ -59,6 +59,9 @@ int init_iosock(struct iosock *in)
   in->hcmd = NULL;
   in->hvers=NULL;
   in->huri=NULL;
+  in->hsp=NULL;
+  in->hlen=0;
+  in->hin=0;
 
   in->cmdbytes = 0;
   //in->cmdtrm = 0;
@@ -69,6 +72,7 @@ int init_iosock(struct iosock *in)
 
   in->inbuf_list=NULL;
   in->oubuf_list=NULL;
+  in->hbuf_list=NULL;
 
   in->initem=NULL;
   in->ouitem=NULL;
@@ -554,48 +558,53 @@ int send_html_tail(struct iosock *in, char *msg)
   return len;
 }
 
+// collect and scan
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 {
   //struct space *space=NULL;
   //struct space *attr=NULL;
-  int rc;
+  int rc=0;
   struct iobuf *inbf;  // input buffer
-  struct space *sp1;
+  //struct space *sp1;
   
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
-  if(0)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n"
+  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s] \n sp[0] 0X%x sp[1] 0x%x\n"
 	      , __FUNCTION__
 	      , rc
 	      , cmd
 	      , sp
+	      , sp[0]
+	      , sp[1]
 	      );
   
-  if(0)printf(" %s sp0 [%x] \n"
-	      , __FUNCTION__
-	      , sp[0]
-	      );
-  if(0)printf(" %s sp0 [%x] in %p \n"
-	      , __FUNCTION__
-	      , sp[0]
-	      , in
-	      );
       
   if(0)printf(" %s sp0 [%x] in->hidx %d \n"
 	      , __FUNCTION__
 	      , sp[0]
 	      , in->hidx
 	      );
-      if(in->hidx >= 0)
-	{
-	  if(0)printf(" %s sp0 [%x] in->hidx %d %p\n"
-		      , __FUNCTION__
-		      , sp[0]
-		      , in->hidx
-		      , g_spaces[in->hidx]
-		      );
-	}
-  
+  if(in->hidx >= 0)
+    {
+      if(0)printf(" %s sp0 [%x] in->hidx %d %p\n"
+		  , __FUNCTION__
+		  , sp[0]
+		  , in->hidx
+		  , g_spaces[in->hidx]
+		  );
+    }
+  rc = run_new_hcmd (cmd, &g_space_list, sp, in);
+  if(1)printf(" >>> %s >>>> rc %d in->hcmd [%s] sp [%s] \n >>> sp[0] 0x%x sp[1] 0x%x hlen %d \n"
+	      , __FUNCTION__
+	      , rc
+	      , in->hcmd
+	      , sp
+	      , sp[0]
+	      , sp[1]
+	      , in->hlen
+	      );
+
+ #if 0 
   if((sp[0] == 0xd) || (sp[0] == 0xa))
     {
       sp1 = NULL;
@@ -628,22 +637,11 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
     }
   else
     {
-
-      if(in->hproto == 1)
 	{
-	  in->hproto = 2;
-	  in->hcmd = sp;
-	}
-      if(in->hproto == 3)
-	{
-	  in->hproto = 4;
-	  rc = run_new_gcmd (cmd, &g_space_list, in->hcmd, in);
-	}
-      else
-	{
-	  rc = run_new_hcmd (cmd, &g_space_list, sp, in);
+	  rc = run_new_gcmd (cmd, &g_space_list, sp, in);
 	}
     }
+#endif
   return 0;
 }
 
@@ -656,6 +654,15 @@ char *str_replace(char **strp, char *rep)
   return sp;
 }
 // scan for double terminators from outptr to outlen 
+// then hands scanned string over to run_space
+// this is turn calls the command handlers.
+// BUT we want to run the html POST or GET command after parsing the 
+// rest of the HTML header string.
+// THe first run of the GET command detects the HTTP header and just extracts 
+// the strings it needs.
+// we return the "more" output
+// the get_space_in will normally use the buffer with hproto = 3
+// I guess we could make it used the stored data
 int handle_input_norm(struct iosock *in)
 {
     int rc=0;
@@ -689,13 +696,18 @@ int handle_input_norm(struct iosock *in)
 	    sp[tlen-1]=0;
 	  }
       }
+    if(in->hproto)
+      {
+	printf("%s instate %d hproto %d tlen %d sp [%s] hsp [%s]\n"
+	       , __FUNCTION__
+	       , in->instate
+	       , in->hproto
+	       , tlen
+	       , sp
+	       , in->hsp
+	       );
+      }
 
-    printf("%s instate %d hproto %d tlen %d hcmd [%s]\n", __FUNCTION__
-	   , in->instate
-	   , in->hproto
-	   , tlen
-	   , in->hcmd
-	   );
     if(g_debug)
       {
 	printf("%s read len %d tlen %d sp[] %x outptr/len %d/%d\n==>sp [%s] \n"
@@ -718,10 +730,12 @@ int handle_input_norm(struct iosock *in)
 	n = sscanf(sp, "%s %s %s", cmd, uri, vers);   //TODO use better sscanf
 	//if(1)in_snprintf(in, NULL
 	printf(		 " %s message received [%s] ->"
-			 " n %d cmd [%s] uri [%s] vers [%s]\n"
+			 " n %d hproto %d cmd [%s] uri [%s] vers [%s]\n"
 			 , __FUNCTION__
 			 , sp //&in->inbuf[in->inptr]
-			 , n, cmd, uri, vers );
+			 , n
+			 , in->hproto
+			 , cmd, uri, vers );
 	if(g_debug)
 	  {
 	    printf(" %s oubuf_list #1 %p item %p buf %p\n"
@@ -731,19 +745,37 @@ int handle_input_norm(struct iosock *in)
 		   , in->oubuf
 		   );
 	  }
-
 	//in->hproto = 0;  // Default
-	if(strstr(vers,"HTTP/"))
+	if (strstr(cmd,"GET") && strstr(vers,"HTTP/"))
 	  {
+	    in->hproto = -11;
+	  }
+	if (strstr(cmd,"POST") && strstr(vers,"HTTP/"))
+	  {
+	    in->hproto = -22;
+	  }
+	if(in->hproto < 0)		    
+	  {
+	    in->hbuf_list = in->inbuf_list;    // save start of the input
 	    in->instate = STATE_IN_HTTP;
-	    in->hproto = 1;
 	    str_replace(&in->hvers, vers);
 	    str_replace(&in->huri, uri);
-
+	    str_replace(&in->hcmd, cmd);
+	    in->hsp = sp;
+	    in->hproto = -in->hproto;		    
 	  }
 	if (in->instate == STATE_IN_HTTP)
 	  {
-	    run_str_http(in, sp, cmd, uri, vers);
+	    // this will collect data from header and terminate when all the data is in
+	    rc = run_str_http(in, sp, cmd, uri, vers);
+	    if(g_debug)
+	      {
+		printf(" >>>>>%s run_str_http return rc %d\n"
+		       , __FUNCTION__
+		       , rc
+		       );
+	      }
+	    //run_str_http(in, in->hcmd, in->hcmd, in->huri, in->hvers);
 	  }
 	else
 	  {
@@ -913,9 +945,11 @@ int handle_input(struct iosock *in)
 	    {
 	      more = handle_input_norm(in);
 	    }
-	  if((more == 0) && (in->hproto == 2))
-	    in->hproto = 3;
-
+	  //if((more == 0) && (in->hproto))
+	  //{
+	  //more = 1;
+	    //in->hproto = 3;
+	  //}
 	  if(g_debug)
 	    {
 	      printf(" %s done more %d in->hproto %d\n"
@@ -1012,7 +1046,7 @@ int handle_output(struct iosock *in)
 	  iob->outlen = 0;
 	  iob->outptr = 0;
 	  
-	  if((in->hproto) && (in->oubuf_list == NULL))
+	  if((in->hproto==3) && (in->oubuf_list == NULL))
 	    {
 	      printf(" sent the last buffer to fd %d\n",
 		     in->fd);
@@ -1051,7 +1085,7 @@ int poll_sock(int lsock)
       {
 	if (g_iosock[i].fd >= 0)
 	  {
-	    if(g_debug)
+	    if(g_debug>2)
 	      {
 		printf(" setup fd i %d idx %d fd %d\n"
 		       , i
@@ -1072,17 +1106,17 @@ int poll_sock(int lsock)
 	  }
       }
     if(idx == 0) return -1;
-    if(g_debug)printf("poll start idx %d lsock %d \n", idx, lsock);
+    if(g_debug>3)printf("poll start idx %d lsock %d \n", idx, lsock);
     ret =  poll(fds, idx, timeout);
-    if(g_debug)printf("poll done ret = %d idx %d\n", ret, idx);
+    if(g_debug>3)printf("poll done ret = %d idx %d\n", ret, idx);
 
     if(ret > 0) 
     {
-      if(g_debug)printf("poll ret = %d idx %d\n", ret, idx);
+      if(g_debug>2)printf("poll ret = %d idx %d\n", ret, idx);
 	
 	for( i = 0; i < idx; i++) 
 	{
-	  if(g_debug)
+	  if(g_debug>2)
 	    {
 	      printf(" idx %d fd %d revents 0x%08x\n",i, fds[i].fd, fds[i].revents);
 	    }
@@ -1119,7 +1153,7 @@ int poll_sock(int lsock)
 
 			if (n <= 0) 
 			{
-			  if(g_debug)
+			  if(g_debug>0)
 			    {
 			      printf("error reading (n=%d), "
 				     "closing fd %d in->fd %d\n"
@@ -1135,7 +1169,7 @@ int poll_sock(int lsock)
 			}
 			else 
 			{
-			  if(g_debug)
+			  if(g_debug>0)
 			    {
 			      printf("message len %d\n", n);
 			    }			    

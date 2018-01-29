@@ -145,7 +145,7 @@ struct space *cmd_html_cont(struct list **root, char *name,
   // TODO free vals
   return NULL;
 }
-
+//
 struct space *cmd_html_len(struct list **root, char *name,
 			    struct iosock *in)
 {
@@ -525,18 +525,20 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 int set_up_new_cmds(void)
 {
   int rc = 0;
-  init_new_gcmd("HELP", "Print this help",             help_new_gcmds);
-  init_new_gcmd("ADD",  "Create a new space",          add_space_in);
-  init_new_gcmd("SET",  "Set a (string) value",	       set_space_in);
-  init_new_gcmd("GET",  "Get a (string) value",	       get_space_in);
-  init_new_gcmd("CMD", "determine command id and len", decode_cmd_in);
+  init_new_gcmd("HELP", "Print this help",              help_new_gcmds);
+  init_new_gcmd("ADD",  "Create a new space",           add_space_in);
+  init_new_gcmd("SET",  "Set a (string) value",	        set_space_in);
+  init_new_gcmd("GET",  "Process HTML GET",	        get_html_in);
+  init_new_gcmd("POST",  "Process HTML POST",           get_html_in);
+  init_new_gcmd("SEE",   "See (Get) a value",           get_space_in);
+  init_new_gcmd("CMD", "determine command id and len",  decode_cmd_in);
   init_new_gcmd("REP", "determine  replyid and len",    decode_rep_in);
   init_new_gcmd("SHOW", "Show spaces from a root",      show_space_in);
   init_new_gcmd("NODE", "Allow remote items",           add_node_in);
   init_new_gcmd("CONN", "Register with this NODE",      add_conn_in);
   init_new_gcmd("QUIT", "quit",      cmd_quit);
 
-  init_new_hcmd("POST",            "Post",            get_space_in);
+
   init_new_hcmd("Referer:",        "Host: Port",      cmd_html_refer);
   init_new_hcmd("Host:",           "Host: Port",      cmd_html_host);
   init_new_hcmd("User-Agent:",     "User Agent",      cmd_html_dummy);
