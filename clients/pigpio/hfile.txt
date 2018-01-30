@@ -701,3 +701,192 @@ User-Agent: curl/7.26.0
 Host: 127.0.0.1:5432
 Accept: */*
 
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+

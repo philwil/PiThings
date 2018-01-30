@@ -368,6 +368,10 @@ int send_html_form(struct iosock *in, char *url, char *name, char *value);
 char *str_replace(char **strp, char *rep);
 char *data_replace(char **strp, char *rep, int len);
 
+
+struct space *get_html_in(struct list **listp, char *name, struct iosock *in);
+struct space *xget_html_in(struct list **listp, char *name, struct iosock *in);
+
 #endif
 
 

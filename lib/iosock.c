@@ -620,7 +620,7 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 	{
 	  inbf->outptr += (in->hlen +2);
 	  data_replace(&in->hdata,sp+2,in->hlen);
-	  printf("%s TODO copy %d/%d bytes to in->hdata [%s] then run %s on %s\n"
+	  printf("%s TODO copy %d/%d bytes to in->hdata [%s] then run [%s] on [%s]\n"
 		 , __FUNCTION__
 		 , in->hlen
 		 , rlen
@@ -628,10 +628,21 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 		 , in->hcmd
 		 , in->hsp
 		 );
+
+	  if(in->hproto == 1)
+	    {
+	      xget_html_in(&g_space_list, in->hsp, in);
+	    }
+	  else if(in->hproto == 2)
+	    {
+	      //post_html_in(NULL, in->hsp, in);
+	    }
 	}
-//  in->hcmd = NULL;
-
-
+      
+      // get_
+      //  in->hcmd = NULL;
+      
+      
     }
 
  #if 0 
