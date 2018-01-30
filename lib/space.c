@@ -892,7 +892,17 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
       //sret = sp1->value;
       if(in)
 	{
-	  if(in->hproto == 1)
+	  if(in->hproto == 2)
+	    {
+	      if (in->hdata)
+		{
+		  if(sp1->value) free (sp1->value);
+		  sp1->value = in->hdata;
+		  sp1->vallen = in->hlen;
+		  in->hdata = NULL;
+		}
+	    }
+	  if(in->hproto >0)
 	    {
 	      printf(" %s using referer %p [%s]\n", __FUNCTION__, in, in->referer);
 	      printf(" %s using host %p [%s]\n", __FUNCTION__, in, in->host);
@@ -936,7 +946,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
     {
       if(in)
 	{
-	  if (in->hproto==1)
+	  if (in->hproto > 0)
 	    {
 	      snprintf(buf, 2048, "%s 200 OK\r\n"
 		       "Content-Type: text/html\r\n\r\n"
@@ -954,7 +964,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 	}
     }
 
-  if (in->hproto==1)
+  if (in->hproto > 0)
     {
       printf("%s reset hproto\n", __FUNCTION__);
       in->hproto=0;

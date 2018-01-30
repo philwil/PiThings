@@ -69,6 +69,7 @@ struct space {
   struct space *clone; // here are copies of this item
   char *value;
   int ival;
+  int vallen;
   float fval;
   char *cval;
   int type;

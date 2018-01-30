@@ -559,6 +559,7 @@ int send_html_tail(struct iosock *in, char *msg)
   return len;
 }
 
+
 // collect and scan
 // hproto > 0 will trigger just a data scan
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
@@ -635,7 +636,7 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 	    }
 	  else if(in->hproto == 2)
 	    {
-	      //post_html_in(NULL, in->hsp, in);
+	      xget_html_in(&g_space_list, in->hsp, in);
 	    }
 	}
       
