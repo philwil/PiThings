@@ -57,6 +57,7 @@ int init_iosock(struct iosock *in)
   in->host = NULL;
   in->referer = NULL;
   in->hcmd = NULL;
+  in->hdata = NULL;
   in->hvers=NULL;
   in->huri=NULL;
   in->hsp=NULL;
@@ -559,21 +560,27 @@ int send_html_tail(struct iosock *in, char *msg)
 }
 
 // collect and scan
+// hproto > 0 will trigger just a data scan
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 {
   //struct space *space=NULL;
   //struct space *attr=NULL;
   int rc=0;
+  int rlen;
   struct iobuf *inbf;  // input buffer
   //struct space *sp1;
   
   inbf = in->inbuf;
   rc = inbf->outlen - inbf->outptr;
-  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s] \n sp[0] 0X%x sp[1] 0x%x\n"
+  rlen = rc;
+  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n >>>"
+	      " hproto %d hlen %d sp[0] 0X%x sp[1] 0x%x\n"
 	      , __FUNCTION__
 	      , rc
 	      , cmd
 	      , sp
+	      , in->hproto
+	      , in->hlen
 	      , sp[0]
 	      , sp[1]
 	      );
@@ -593,16 +600,39 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 		  , g_spaces[in->hidx]
 		  );
     }
-  rc = run_new_hcmd (cmd, &g_space_list, sp, in);
-  if(1)printf(" >>> %s >>>> rc %d in->hcmd [%s] sp [%s] \n >>> sp[0] 0x%x sp[1] 0x%x hlen %d \n"
-	      , __FUNCTION__
-	      , rc
-	      , in->hcmd
-	      , sp
-	      , sp[0]
-	      , sp[1]
-	      , in->hlen
-	      );
+  if(in->hproto <= 0)
+    {
+      rc = run_new_hcmd (cmd, &g_space_list, sp, in);
+      if(1)printf(" >>> %s >>>> rc %d in->hcmd [%s] sp [%s] \n"
+		  " >>> sp[0] 0x%x sp[1] 0x%x hlen %d \n"
+		  , __FUNCTION__
+		  , rc
+		  , in->hcmd
+		  , sp
+		  , sp[0]
+		  , sp[1]
+		  , in->hlen
+		  );
+    }
+  else
+    {
+      if(rlen >= (in->hlen +2))
+	{
+	  inbf->outptr += (in->hlen +2);
+	  data_replace(&in->hdata,sp+2,in->hlen);
+	  printf("%s TODO copy %d/%d bytes to in->hdata [%s] then run %s on %s\n"
+		 , __FUNCTION__
+		 , in->hlen
+		 , rlen
+		 , in->hdata
+		 , in->hcmd
+		 , in->hsp
+		 );
+	}
+//  in->hcmd = NULL;
+
+
+    }
 
  #if 0 
   if((sp[0] == 0xd) || (sp[0] == 0xa))
@@ -642,7 +672,20 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 	}
     }
 #endif
+
   return 0;
+}
+
+
+char *data_replace(char **strp, char *rep, int len)
+{
+  char *sp=*strp;
+  if(sp)free(sp);
+  sp = (char *)malloc(len+1);
+  memcpy(sp,rep, len);
+  sp[len] = 0;
+  *strp=sp;
+  return sp;
 }
 
 char *str_replace(char **strp, char *rep)
@@ -676,6 +719,7 @@ int handle_input_norm(struct iosock *in)
     char savch;
     struct iobuf *inbf;  // input buffer
     int tosend;
+    int snaphcmd = 0;
 
     inbf = in->inbuf;
     sp = &inbf->outbuf[inbf->outptr];
@@ -710,18 +754,38 @@ int handle_input_norm(struct iosock *in)
 
     if(g_debug)
       {
-	printf("%s read len %d tlen %d sp[] %x outptr/len %d/%d\n==>sp [%s] \n"
+	printf("%s read len %d tlen %d sp[] 0x%x 0x%x outptr/len %d/%d hproto %d hlen %d\n==>sp [%s] \n"
 	       , __FUNCTION__
 	       , len
 	       , tlen
+	       , sp[tlen-2]
 	       , sp[tlen-1]
 	       , inbf->outptr
 	       , inbf->outlen
+	       , in->hproto
+	       , in->hlen
 	       , sp
 	       );
 
       }
-    if(tlen > 1)
+    // look for special terminator signal read hlen to run_str_http
+    if( (tlen == 2) && (sp[tlen-2] == 0xd)&& (sp[tlen-1] == 0xa))
+      {
+	//char *str_replace(char **strp, char *rep); in->hdata;
+	printf(">>>%s special terminator found\n", __FUNCTION__);
+	in->hproto = -in->hproto;	
+	rc = 0;	    
+	rc = run_str_http(in, sp, cmd, uri, vers);
+	if(g_debug)
+	  {
+	    printf(" >>>>>%s run_str_http return rc %d\n"
+		   , __FUNCTION__
+		   , rc
+		   );
+	  }
+      }
+
+    if(tlen > 2)
       {
 	sp = &inbf->outbuf[inbf->outptr];
 	cmd[0]=0;
@@ -745,24 +809,28 @@ int handle_input_norm(struct iosock *in)
 		   , in->oubuf
 		   );
 	  }
+	snaphcmd = 0;
 	//in->hproto = 0;  // Default
 	if (strstr(cmd,"GET") && strstr(vers,"HTTP/"))
 	  {
 	    in->hproto = -1;
+	    snaphcmd = 1;
 	  }
 	if (strstr(cmd,"POST") && strstr(vers,"HTTP/"))
 	  {
 	    in->hproto = -2;
+	    snaphcmd = 1;
 	  }
-	if(in->hproto < 0)		    
+	if(snaphcmd)		    
 	  {
+	    snaphcmd = 0;
 	    in->hbuf_list = in->inbuf_list;    // save start of the input
 	    in->instate = STATE_IN_HTTP;
 	    str_replace(&in->hvers, vers);
 	    str_replace(&in->huri, uri);
 	    str_replace(&in->hcmd, cmd);
 	    in->hsp = sp;
-	    in->hproto = -in->hproto;		    
+	    in->hlen = 0;
 	  }
 	if (in->instate == STATE_IN_HTTP)
 	  {
@@ -822,17 +890,17 @@ int handle_input_norm(struct iosock *in)
 		   , rc
 		   );
 	  }
-	if (inbf->outptr == inbf->outlen)
-	  {
-	    inbf->outptr = 0;
-	    inbf->outlen = 0;
-	    printf(" %s reset buffers tlen = %d ptr/len %d/%d\n"
-		   , __FUNCTION__
-		   , tlen
-		   , inbf->outptr
-		   , inbf->outlen
-		   );
-	  }
+      }
+    if (inbf->outptr == inbf->outlen)
+      {
+	inbf->outptr = 0;
+	inbf->outlen = 0;
+	printf(" %s reset buffers tlen = %d ptr/len %d/%d\n"
+	       , __FUNCTION__
+	       , tlen
+	       , inbf->outptr
+	       , inbf->outlen
+	       );
       }
     return rc;
 }

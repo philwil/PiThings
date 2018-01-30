@@ -123,7 +123,7 @@ struct iosock
   int hlen;
   int hproto;     // for now indicates html protocol
   int hidx;
-
+  char *hdata;
   char *cmdid;    // current command id
   int tlen;       // term
   int nosend;       // term
@@ -366,6 +366,7 @@ int send_html_form(struct iosock *in, char *url, char *name, char *value);
 
 // iosock.c
 char *str_replace(char **strp, char *rep);
+char *data_replace(char **strp, char *rep, int len);
 
 #endif
 
