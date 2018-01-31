@@ -866,52 +866,44 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   struct space *sp1;
   //struct list *list;
   //struct space *base = NULL;
-  char *sp;
-  char *sp2;
+  //  char *sp;
+  char *sp2=NULL;
+  char *spv=NULL;
   char *sp_name;
   //char *vers="HTTP/1.1";
   char buf[2048];
-  char spv[2][128];
-  int rc=0;
-  char *valx[4];
-  int idx;
   char *sp_child;
 
-  spv[0][0]=0;
-  spv[1][0]=0;
   sp_name = in->hsp;
-  rc = sscanf(sp_name,"%s %s", spv[0], spv[1]);
-  if(1)printf(" %s hproto %d looking for [%s] [%s]\n"
+  sp2 = get_uri(sp_name);
+  spv = get_query(sp_name,"value");
+  if(spv) in->hproto = 2;
+  sp1 = find_space_new(listp, sp2);
+
+  if(1)printf(" %s hproto %d query[%s] value [%s] space [%s]\n"
 	      , __FUNCTION__
 	      , in->hproto
-	      , spv[0]
-	      , spv[1]
+	      , sp2
+	      , spv ? spv:"no value"
+	      , sp1 ? sp1->name:"not found"
 	      );
-  sp = spv[0];
-  if( rc == 2 ) sp = spv[1];
 
  
   //char *valx[4];
   //int idx;
-  valx[0]=NULL;
-  valx[1]=NULL;
-  valx[2]=NULL;
-  valx[3]=NULL;
-  sp_child="<select>"
-    "<option child=<a href=\"localhost:5432/pine1/gpios/gpio2\">gpio2</a></option>"
-    "<option child=\"saab\">Saab</option>"
-    "<option child=\"opel\">Opel</option>"
-    "<option child=\"audi\">Audi</option>"
+#if 0
+<select name="forma" onchange="location = this.value;">
+ <option value="Home.php">Home</option>
+ <option value="Contact.php">Contact</option>
+ <option value="Sitemap.php">Sitemap</option>
+</select>
+#endif
+  sp_child="<select name=\"forma\" onchange=\"location = this.value;\">"
+    "<option value=\"gpio1\">gpio1</option>"
+    "<option value=\"gpio2\">gpio2</option>"
+    "<option value=\"gpio3\">gpio3</option>"
     "</select>";
   
-  idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
-  if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , valx[0]
-	      , valx[1]
-	      );
-  sp2 =valx[0];
 
   sp1 = find_space_new(listp, sp2);
   if(sp1)
@@ -930,6 +922,13 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 		  sp1->value = in->hdata;
 		  sp1->vallen = in->hlen;
 		  in->hdata = NULL;
+		}
+	      if(spv)
+		{
+		  if(sp1->value) free (sp1->value);
+		  sp1->value = spv;
+		  sp1->vallen = strlen(spv);
+		  spv = NULL;
 		}
 	    }
 	  if(in->hproto >0)
@@ -964,14 +963,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 	}
       
       in->hidx = sp1->idx;
-      if(g_debug)
-	printf(" %s found [%s] [%s] in->hidx=%p->%d\n"
-	       , __FUNCTION__
-	       , spv[0]
-	       , spv[1]
-	       , in
-	       , in->hidx
-	       );
+
     }
   else
     {
@@ -988,7 +980,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 		       "ERR GET %s not found\n"
 		       "</body></html>\n\n"
 		       ,in->hvers
-		       , sp);
+		       , sp2);
 	      write(in->fd, buf, strlen(buf));
 	    }
 	  //send_html_head(in, NULL);
@@ -1000,6 +992,9 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
       printf("%s reset hproto\n", __FUNCTION__);
       in->hproto=0;
     }
+  if(spv)free(spv);
+  if(sp2)free(sp2);
+
   return sp1;
 }
 

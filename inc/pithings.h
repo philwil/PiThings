@@ -373,6 +373,14 @@ char *data_replace(char **strp, char *rep, int len);
 struct space *get_html_in(struct list **listp, char *name, struct iosock *in);
 struct space *xget_html_in(struct list **listp, char *name, struct iosock *in);
 
+int test_parse_stuff(void);
+char *get_uri(char *sp);
+char *get_query(char *sp, char *qname);
+int clean_valx(char *valx[], int num);
+int null_valx(char *valx[], int num);
+char *get_valx(char *valx[], int num);
+
+
 #endif
 
 

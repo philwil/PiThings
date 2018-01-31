@@ -23,6 +23,183 @@ extern char *g_myname;
 extern char *g_myaddr;
 extern int g_port_no;
 
+char *get_valx(char *valx[], int num)
+{
+  char *sp;
+  sp = valx[num];
+  valx[num] =  NULL;
+  return sp;
+}
+
+int null_valx(char *valx[], int num)
+{
+  while(num--)
+    {
+      if(valx[num]) 
+	{
+	  //free (valx[num]);
+	  valx[num] = NULL;
+	}
+    }
+  return num;
+}
+
+int clean_valx(char *valx[], int num)
+{
+  while(num--)
+    {
+      if(valx[num]) 
+	{
+	  free (valx[num]);
+	  valx[num] = NULL;
+	}
+    }
+  return num;
+}
+
+
+char *get_query(char *sp, char *qname)
+{
+  char *valx[16];
+  int idx;
+  int i;
+
+  null_valx(valx, 16);
+
+  /*
+  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
+    "User-Agent: curl/7.26.0\n"
+    "Host: 127.0.0.1:5432\n"
+    "Accept: xxx\n"
+    "Content-Length: 19\n"
+    "Content-Type: application/x-www-form-urlencoded\n"
+    "\n"
+    "thisistherealnumber\n";
+*/
+  
+  idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
+  if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , valx[0]
+	      , valx[1]
+	      );
+
+  sp = get_valx(valx, 1);
+  clean_valx(valx, 4);
+  if(sp)
+    {
+      idx = parse_stuff('&', 8 , (char **)valx, sp,' ');
+      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , valx[0]
+	      , valx[1]
+	      , valx[2]
+	      , valx[3]
+	      );
+      free(sp);
+      
+      sp = get_valx(valx, 0);
+      clean_valx(valx, 8);
+      
+      idx = parse_stuff('=', 8 , (char **)valx, sp,' ');
+      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+		  , __FUNCTION__
+		  , idx
+		  , valx[0]
+		  , valx[1]
+		  , valx[2]
+		  , valx[3]
+		  );
+      
+      free(sp);
+      sp = NULL;
+      for (i = 0; i< idx; i+=2)
+	{
+	  if ((i<(idx-1)) && valx[i] && (strcmp(valx[i], qname) == 0))
+	    {
+	      sp = get_valx(valx, i+1);
+	      break;
+	    }
+	}
+      
+      clean_valx(valx, 8);
+    }
+  return sp;
+}
+
+
+char *get_uri(char *sp)
+{
+  char *valx[8];
+  int idx;
+  
+  null_valx(valx, 8);
+
+  /*
+  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
+    "User-Agent: curl/7.26.0\n"
+    "Host: 127.0.0.1:5432\n"
+    "Accept: xxx\n"
+    "Content-Length: 19\n"
+    "Content-Type: application/x-www-form-urlencoded\n"
+    "\n"
+    "thisistherealnumber\n";
+*/
+  
+  idx = parse_stuff(' ', 4 , (char **)valx, sp,'?');
+  if(1)printf(" %s get_uri 1 idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , valx[0]
+	      , valx[1]
+	      );
+  sp = get_valx(valx, 1);
+
+  idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
+  if(1)printf(" %s get_uri 1 idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , valx[0]
+	      , valx[1]
+	      );
+
+  free(sp);
+
+  sp = get_valx(valx, 0);
+  clean_valx(valx, 4);
+
+  return sp;
+}
+
+int test_parse_stuff(void)
+{
+  char *sp;
+  char *rsp;
+  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
+    "User-Agent: curl/7.26.0\n"
+    "Host: 127.0.0.1:5432\n"
+    "Accept: */*\n"
+    "Content-Length: 19\n"
+    "Content-Type: application/x-www-form-urlencoded\n"
+    "\n"
+    "thisistherealnumber\n";
+  rsp =   get_uri(sp);
+  if(1)printf(" %s get_ui got [%s]\n"
+	      , __FUNCTION__
+	      , rsp
+	      );
+  free(rsp);
+  rsp =   get_query(sp, "value");
+  if(1)printf(" %s get_ui got [%s]\n"
+	      , __FUNCTION__
+	      , rsp
+	      );
+  free(rsp);
+  return 0;
+}
+
 //  sock = connect_socket(iport, addr);
 //int dummy_hand(int fd, char *id, char *buf, int len)
 //      init_new_hand("some_id", "Dummy Handler",  dummy_handler);

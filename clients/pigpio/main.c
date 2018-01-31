@@ -168,63 +168,7 @@ int def_config(void)
   
   return 0;
 }
-int test_parse_stuff(void)
-{
-  char *sp;
-  char *valx[8];
-  int idx;
-  
-  valx[0]=NULL;
-  valx[1]=NULL;
-  valx[2]=NULL;
-  valx[3]=NULL;
-  valx[4]=NULL;
-  valx[5]=NULL;
-  valx[6]=NULL;
-  valx[7]=NULL;
-  sp = "/pine1/gpios/gpio1?foo=1&fum=1234";
-  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
-    "User-Agent: curl/7.26.0\n"
-    "Host: 127.0.0.1:5432\n"
-    "Accept: */*\n"
-    "Content-Length: 19\n"
-    "Content-Type: application/x-www-form-urlencoded\n"
-    "\n"
-    "thisistherealnumber\n";
-  
-  idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
-  if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , valx[0]
-	      , valx[1]
-	      );
-  sp = strdup(valx[1]);
 
-  idx = parse_stuff('&', 8 , (char **)valx, sp,' ');
-  if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , valx[0]
-	      , valx[1]
-	      , valx[2]
-	      , valx[3]
-	      );
-  free(sp);
-  sp = strdup(valx[0]);
-  idx = parse_stuff('=', 8 , (char **)valx, sp,' ');
-  if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , valx[0]
-	      , valx[1]
-	      , valx[2]
-	      , valx[3]
-	      );
-
-  free(sp);
-  return 0;
-}
 
 
 int main (int argc, char *argv[])
