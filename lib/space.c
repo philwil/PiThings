@@ -867,6 +867,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   //struct list *list;
   //struct space *base = NULL;
   char *sp;
+  char *sp2;
   char *sp_name;
   //char *vers="HTTP/1.1";
   char buf[2048];
@@ -902,8 +903,8 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 	      , valx[0]
 	      , valx[1]
 	      );
-
-  sp1 = find_space_new(listp, valx[0]);
+  sp2 =valx[0];
+  sp1 = find_space_new(listp, sp2);
   if(sp1)
     {
       if(sp1->onget)
@@ -943,7 +944,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 		       "</form>" 
 		       "</body>"
 		       "</html>"
-		       , in->host, sp, sp1->name, sp1->value);
+		       , in->host, sp2, sp1->name, sp1->value);
 	      //send_html_form(in, spv[1], sp1->name, sp1->value);
 	      write(in->fd, buf, strlen(buf));
 	      close(in->fd);
