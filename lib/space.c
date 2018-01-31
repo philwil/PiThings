@@ -875,6 +875,7 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   int rc=0;
   char *valx[4];
   int idx;
+  char *sp_child;
 
   spv[0][0]=0;
   spv[1][0]=0;
@@ -896,6 +897,13 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   valx[1]=NULL;
   valx[2]=NULL;
   valx[3]=NULL;
+  sp_child="<select>"
+    "<option child=<a href=\"localhost:5432/pine1/gpios/gpio2\">gpio2</a></option>"
+    "<option child=\"saab\">Saab</option>"
+    "<option child=\"opel\">Opel</option>"
+    "<option child=\"audi\">Audi</option>"
+    "</select>";
+  
   idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
   if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
 	      , __FUNCTION__
@@ -904,9 +912,11 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 	      , valx[1]
 	      );
   sp2 =valx[0];
+
   sp1 = find_space_new(listp, sp2);
   if(sp1)
     {
+
       if(sp1->onget)
 	sp1->onget(sp1, sp1->idx, sp_name);
       //sret = sp1->value;
@@ -937,14 +947,15 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 		       "<!DOCTYPE html>"
 		       "<html>"
 		       "<body>"
-		       "<form action=\"%s/%s\">"
+		       "<form action=\"%s\">"
 		       "Variable %s"
 		       "<input type=\"text\" name=\"value\" value=\"%s\">"
 		       "<input type=\"submit\" value=\"Change\">"
-		       "</form>" 
+		       "%s"
+		       "</form><br><br>" 
 		       "</body>"
 		       "</html>"
-		       , in->host, sp2, sp1->name, sp1->value);
+		       , sp2, sp1->name, sp1->value, sp_child);
 	      //send_html_form(in, spv[1], sp1->name, sp1->value);
 	      write(in->fd, buf, strlen(buf));
 	      close(in->fd);
