@@ -519,6 +519,7 @@ struct space *find_space_new(struct list **listp, char *name)
   char *valx[64];
   // break up the name into a load of names
   // valv is the broken down list of name elements
+  // uses parse_stuff
   parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
   // now find the space name at each step
   i = 0;
@@ -871,6 +872,9 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   char buf[2048];
   char spv[2][128];
   int rc=0;
+  char *valx[4];
+  int idx;
+
   spv[0][0]=0;
   spv[1][0]=0;
   sp_name = in->hsp;
@@ -884,7 +888,22 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
   sp = spv[0];
   if( rc == 2 ) sp = spv[1];
 
-  sp1 = find_space_new(listp, sp);
+ 
+  //char *valx[4];
+  //int idx;
+  valx[0]=NULL;
+  valx[1]=NULL;
+  valx[2]=NULL;
+  valx[3]=NULL;
+  idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
+  if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , valx[0]
+	      , valx[1]
+	      );
+
+  sp1 = find_space_new(listp, valx[0]);
   if(sp1)
     {
       if(sp1->onget)
@@ -982,8 +1001,8 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
   //struct space *base = NULL;
   char *sp;
   char *sp_name;
-  char *vers="HTTP/1.1";
-  char buf[2048];
+  //char *vers="HTTP/1.1";
+  //char buf[2048];
   char spv[2][128];
   int rc=0;
   spv[0][0]=0;
@@ -1009,40 +1028,7 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
       sret = sp1->value;
       if(in)
 	{
-	  if (in->hproto)
-	    {
-	      if(in->hproto == 3)
-		{
-		  printf(" %s using referer %p [%s]\n", __FUNCTION__, in, in->referer);
-		  printf(" %s using host %p [%s]\n", __FUNCTION__, in, in->host);
-		  snprintf(buf, 2048, "%s 200 OK\r\n"
-			   "Content-Type: text/html\r\n\r\n"
-			   "<html><head>"
-			   "</head>\n"
-			   ,vers);
-		  write(in->fd, buf, strlen(buf));
-		  snprintf(buf, 2048,
-			   "<!DOCTYPE html>"
-			   "<html>"
-			   "<body>"
-			   "<form action=\"%s/%s\">"
-			   "Variable %s"
-			   "<input type=\"text\" name=\"value\" value=\"%s\">"
-			   "<input type=\"submit\" value=\"Change\">"
-			   "</form>" 
-			   "</body>"
-			   "</html>"
-			   , in->host, sp, sp1->name, sp1->value);
-		  //send_html_form(in, spv[1], sp1->name, sp1->value);
-		  write(in->fd, buf, strlen(buf));
-		  close(in->fd);
-		  //send_html_head(in, NULL);
-		}
-	    }
-	  else
-	    {
-	      in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
-	    }
+	  in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
 		//send_html_tail(in, NULL);
 	  in->hidx = sp1->idx;
 	  if(g_debug)
@@ -1059,36 +1045,11 @@ struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
     {
       if(in)
 	{
-	  if (in->hproto)
-	    {
-	      if (in->hproto==3)
-		{
-		  snprintf(buf, 2048, "HTTP/1.1 200 OK\r\n"
-			   "Content-Type: text/html\r\n\r\n"
-			   "<html><head><style>"
-			   "body{font-family: monospace; font-size: 13px;}"
-			   "td {padding: 1.5px 6px;}"
-			   "</style></head><body>\n "
-			   "ERR GET %s not found\n"
-			   "</body></html>\n\n"
-			   , sp);
-		  write(in->fd, buf, strlen(buf));
-		}
-	      //send_html_head(in, NULL);
-	    }
-	  else
-	    {
-	      in_snprintf(in, NULL, "ERR GET [%s] not found \n",sp);
-	    }
+	  in_snprintf(in, NULL, "ERR GET [%s] not found \n",sp);
 	  in->hidx = -2;
 	}
     }
 
-  if (in->hproto==3)
-    {
-      printf("%s reset hproto\n", __FUNCTION__);
-      in->hproto=0;
-    }
   return sp1;
 }
 

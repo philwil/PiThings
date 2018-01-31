@@ -978,4 +978,193 @@ Accept: */*
 Content-Length: 19
 Content-Type: application/x-www-form-urlencoded
 
-thisistherealnumber
+thisistherealnumber==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+POST /pine1/gpios/gpio1?foo=1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+GET /pine1/gpios/gpio1?foo=1/ HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+
+==================
+POST /pine1/gpios/gpio1?foo=1&fum=2345 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+
+==================
+GET /pine1/gpios/gpio1?foo=1/ HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+
+==================
+
+==================
+
+==================
+
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+POST /pine1/gpios/gpio1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+GET /pine1/gpios/gpio1?foo=1/ HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+
+==================
+
+==================
+POST /pine1/gpios/gpio1?foo=1&fum=2345 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: 127.0.0.1:5432
+Accept: */*
+Content-Length: 19
+Content-Type: application/x-www-form-urlencoded
+
+thisistherealnumber==================
+
+==================
+
