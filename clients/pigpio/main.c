@@ -178,6 +178,10 @@ int main (int argc, char *argv[])
    struct iosock ins;
    struct iosock *in = &ins;
 
+#if 1
+   test_hmsg();
+   //return 0;
+#endif
 #if 0
    test_parse_stuff();
    return 0;

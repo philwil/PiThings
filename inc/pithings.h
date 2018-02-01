@@ -52,6 +52,26 @@ struct node {
   struct iosock *in;
 };
 
+#define NUM_HVALS1 64
+#define NUM_HVALS2 64
+#define NUM_HVALS3 64
+#define NUM_HVALS4 64
+
+struct hmsg {
+  char *sp;
+  char *action;
+  char *url;
+  char *qstring;
+  char *vers;
+  char *data;
+  int dlen;
+  char *hvals1[NUM_HVALS1];
+  char *hvals2[NUM_HVALS2];
+  char *hvals3[NUM_HVALS3];
+  char *hvals4[NUM_HVALS4];
+};
+
+
 // OK the space becomes the real thing
 // A space can have kids and attributes
 // all of which are also "spaces"  
@@ -380,6 +400,11 @@ int clean_valx(char *valx[], int num);
 int null_valx(char *valx[], int num);
 char *get_valx(char *valx[], int num);
 
+char *setup_hmsg(struct hmsg *hm, char *insp);
+int clean_hmsg(struct hmsg *hm);
+int init_hmsg(struct hmsg *hm);
+int show_hmsg(struct hmsg *hm);
+int test_hmsg(void);
 
 #endif
 

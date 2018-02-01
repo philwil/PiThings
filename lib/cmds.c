@@ -23,6 +23,103 @@ extern char *g_myname;
 extern char *g_myaddr;
 extern int g_port_no;
 
+
+int show_hvals(char *key, char *hvals[], int num)
+{
+  int i;
+  for (i=0; i<num; i++)
+    {
+      if(hvals[i])
+	{
+	  printf("==== %s @%d [%s]\n", key, i, hvals[i]);
+	}
+    }
+  return 0;
+}
+
+int show_hmsg(struct hmsg *hm)
+{
+  printf("=======Show hmsg @%p=======\n",hm);
+  printf("===   sp [%s]\n",hm->sp);
+  printf("===action[%s]\n",hm->action);
+  printf("===   url[%s]\n",hm->url);
+  printf("===  vers[%s]\n",hm->vers);
+  printf("==qstring[%s]\n",hm->qstring);
+  printf("==   dlen[%d]\n",hm->dlen);
+  printf("==   data[%s]\n",hm->data);
+  show_hvals("    hvals1", hm->hvals1, NUM_HVALS1);
+  show_hvals("    hvals2", hm->hvals2, NUM_HVALS2);
+  show_hvals("    hvals3", hm->hvals3, NUM_HVALS3);
+  show_hvals("    hvals4", hm->hvals4, NUM_HVALS4);
+  return 0;
+
+}
+
+int init_hmsg(struct hmsg *hm)
+{
+  int i;
+  hm->sp = NULL;
+  hm->url = NULL;
+  hm->action = NULL;
+  hm->qstring = NULL;
+  hm->data = NULL;
+  hm->dlen = 0;
+  for (i=0; i<NUM_HVALS1; i++)
+    {
+      hm->hvals1[i] = NULL;
+    }
+  for (i=0; i<NUM_HVALS2; i++)
+    {
+      hm->hvals2[i] = NULL;
+    }
+  for (i=0; i<NUM_HVALS3; i++)
+    {
+      hm->hvals3[i] = NULL;
+    }
+  for (i=0; i<NUM_HVALS4; i++)
+    {
+      hm->hvals4[i] = NULL;
+    }
+  return 0;
+
+}
+
+void clean_sp(char **spp)
+{
+  char *sp;
+  sp = *spp;
+  if(sp)free(sp);
+  *spp = NULL;
+}
+
+void clean_vals(char *vals[], int num)
+{
+  int i;
+  for (i=0; i<num; i++)
+    {
+      if(vals[i]) free(vals[i]);
+      vals[i] = NULL;
+    }
+}
+
+int clean_hmsg(struct hmsg *hm)
+{
+  clean_sp(&hm->sp);
+  clean_sp(&hm->url);
+  clean_sp(&hm->action);
+  clean_sp(&hm->qstring);
+  clean_sp(&hm->vers);
+  clean_sp(&hm->data);
+  hm->dlen = 0;
+  clean_vals(hm->hvals1, NUM_HVALS1);
+  clean_vals(hm->hvals2, NUM_HVALS2);
+  clean_vals(hm->hvals3, NUM_HVALS3);
+  clean_vals(hm->hvals4, NUM_HVALS4);
+
+  return 0;
+}
+
+
 char *get_valx(char *valx[], int num)
 {
   char *sp;
@@ -57,6 +154,132 @@ int clean_valx(char *valx[], int num)
   return num;
 }
 
+int decode_content_length(char *hsp)
+{
+  char tmp[128];
+  char *tsp;
+  int dlen;
+
+  hsp +=strlen("Content-Length:");
+  tsp = tmp;
+  tsp[0]=0;
+  while (*hsp && (*hsp == ' ') && (*hsp != '\n') )hsp++; 
+  //printf(" After no Space sp [%s]\n",hsp);
+  while (*hsp && (*hsp != '\n') )*tsp++ = *hsp++;
+  *tsp = 0;
+  //printf(" After decode tmp [%s]\n",tmp);
+  dlen = atoi(tmp);
+  //printf(" After decode dlen [%d]\n",dlen);
+  return dlen; 
+}
+
+char *find_data(char *hsp)
+{
+  char *sp = NULL;
+  sp = strstr(hsp,"\r\n\r\n");
+  if(sp)sp  += strlen("\r\n\r\n");
+  if (!sp)sp = strstr(hsp,"\n\r\n\r");
+  if(sp)sp  += strlen("\n\r\n\r");
+  if (!sp)sp = strstr(hsp,"\n\n");
+  if(sp)sp  += strlen("\n\n");
+  if(sp)
+    {
+      printf(" After %s  [%x] [%x]\n",__FUNCTION__, sp[0], sp[1]);
+    }
+  else
+    {
+      printf(" After %s  data not found\n",__FUNCTION__);
+    }
+  return sp;
+}
+
+char *setup_hmsg(struct hmsg *hm, char *insp)
+{
+  int idx;
+  char *sp=NULL;
+  /*
+  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
+    "User-Agent: curl/7.26.0\n"
+    "Host: 127.0.0.1:5432\n"
+    "Accept: xxx\n"
+    "Content-Length: 19\n"
+    "Content-Type: application/x-www-form-urlencoded\n\r"
+    "\n\r"
+    "thisistherealnumber\n";
+*/
+  if(!hm->sp)
+    hm->sp = strdup(insp);
+  idx = parse_stuff(' ', 3 , (char **)hm->hvals1, hm->sp,' ');
+  if(1)printf(" %s parse_stuff 1  idx %d got [%s] [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , hm->hvals1[0]
+	      , hm->hvals1[1]
+	      , hm->hvals1[2]
+	      );
+  hm->action = get_valx(hm->hvals1, 0);  //POST GET
+  hm->vers = get_valx(hm->hvals1, 2);  //POST GET
+  sp = get_valx(hm->hvals1, 1);                // uri + query
+
+  idx = parse_stuff('?', 4 , (char **)hm->hvals2, sp,'?');
+  if(1)printf(" %s parse_stuff 2 idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , hm->hvals2[0]
+	      , hm->hvals2[1]
+	      );
+
+  hm->url = get_valx(hm->hvals2, 0);  //url
+  hm->qstring = get_valx(hm->hvals2, 1);  //query
+  sp = hm->qstring;
+  if(sp)
+    {
+      idx = parse_stuff('&', 8 , (char **)hm->hvals3, sp,' ');
+      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , hm->hvals3[0]
+	      , hm->hvals3[1]
+	      , hm->hvals3[2]
+	      , hm->hvals3[3]
+	      );
+    }
+  sp = hm->url;
+  if(sp)
+    {
+      idx = parse_stuff('/', 8 , (char **)hm->hvals4, sp,' ');
+      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+	      , __FUNCTION__
+	      , idx
+	      , hm->hvals4[0]
+	      , hm->hvals4[1]
+	      , hm->hvals4[2]
+	      , hm->hvals4[3]
+	      );
+    }
+  // "Content-Length: 19\n"
+  hm->dlen = 0;
+  hm->data = NULL;
+  sp = strstr(insp, "Content-Length:");
+  if(sp)
+    {
+      //printf("decode content len from [%s]\n",sp);
+      hm->dlen = decode_content_length(sp);
+    }
+  if(hm->dlen)
+    sp = find_data(hm->sp);
+  if(sp)
+    {
+      hm->data=strdup(sp);
+      hm->data[hm->dlen]=0;
+    }
+  else
+    {
+      hm->dlen =0;
+      hm->data =NULL;
+    }
+  return sp;
+}
 
 char *get_query(char *sp, char *qname)
 {
@@ -197,6 +420,27 @@ int test_parse_stuff(void)
 	      , rsp
 	      );
   free(rsp);
+  return 0;
+}
+
+int test_hmsg(void)
+{
+  char *sp;
+  struct hmsg hmsg;
+
+  sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
+    "User-Agent: curl/7.26.0\n"
+    "Host: 127.0.0.1:5432\n"
+    "Accept: */*\n"
+    "Content-Length: 19\n"
+    "Content-Type: application/x-www-form-urlencoded\n"
+    "\n"
+    "thisistherealnumber\n";
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, sp);
+  show_hmsg(&hmsg);
+  clean_hmsg(&hmsg);
+
   return 0;
 }
 
