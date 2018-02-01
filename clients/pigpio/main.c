@@ -179,8 +179,9 @@ int main (int argc, char *argv[])
    struct iosock *in = &ins;
 
 #if 1
+   printf(" Running test_hmsg\n");
    test_hmsg();
-   //return 0;
+   return 0;
 #endif
 #if 0
    test_parse_stuff();

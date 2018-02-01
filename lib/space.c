@@ -187,8 +187,6 @@ struct space *setup_space(char *name, struct space*parent)
   space->node = NULL;
   space->group = NULL;
 
-  //  space->prev = space;
-  //space->next = space;
   space->onset = NULL;
   space->onget = NULL;
 
@@ -198,6 +196,40 @@ struct space *setup_space(char *name, struct space*parent)
       g_spaces[space->idx] = space;
     }
   return space;
+}
+
+void free_space(struct space *space)
+{
+  //foreach
+  //  sp += strlen(sp);
+  struct list *slist;
+  struct list *item;
+  //  struct list *nitem;
+  struct space *parent;
+  parent = space->parent;
+  if(parent)
+    {
+      slist = parent->child;
+      item = slist;
+      while (item)
+	{
+	  //child = (struct space *)slist->data;
+	  if(item->data == space)
+	    {
+	      item->data = NULL;
+	    }
+	  item = item->next;
+	  if (slist == item) 
+	    item = NULL;
+	}
+    }
+  //TODO free attr
+  //TODO free children
+  // 
+  g_spaces[space->idx] = NULL;
+  free(space->name);
+  free(space);
+
 }
 
 struct space *new_space(char *name , struct space *parent, struct list **root_space, struct node *node)

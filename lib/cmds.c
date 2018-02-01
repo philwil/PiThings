@@ -80,6 +80,10 @@ int init_hmsg(struct hmsg *hm)
     {
       hm->hvals4[i] = NULL;
     }
+  for (i=0; i<NUM_SPACES; i++)
+    {
+      hm->spaces[i] = NULL;
+    }
   return 0;
 
 }
@@ -99,6 +103,16 @@ void clean_vals(char *vals[], int num)
     {
       if(vals[i]) free(vals[i]);
       vals[i] = NULL;
+    }
+}
+
+void clean_spaces(struct space *spaces[], int num)
+{
+  int i;
+  for (i=0; i<num; i++)
+    {
+      if(spaces[i]) free_space(spaces[i]);
+      spaces[i] = NULL;
     }
 }
 
@@ -440,6 +454,25 @@ int test_hmsg(void)
   setup_hmsg(&hmsg, sp);
   show_hmsg(&hmsg);
   clean_hmsg(&hmsg);
+
+  sp ="GET /pine1/gpios/gpio1\n\n";
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, sp);
+  show_hmsg(&hmsg);
+  clean_hmsg(&hmsg);
+
+  sp ="GET /pine1/gpios/gpio1?value=1\n\n";
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, sp);
+  show_hmsg(&hmsg);
+  clean_hmsg(&hmsg);
+
+  sp ="POST /pine1/gpios/gpio1?value=1&action=set \n123456\n\n";
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, sp);
+  show_hmsg(&hmsg);
+  clean_hmsg(&hmsg);
+
 
   return 0;
 }

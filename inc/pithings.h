@@ -25,6 +25,10 @@
 #define SPACE_INT 2
 #define SPACE_STR 3
 
+#define NUM_HVALS1 64
+#define NUM_HVALS2 64
+#define NUM_HVALS3 64
+#define NUM_HVALS4 64
 
 #define NUM_SOCKS 16
 #define NUM_CMDS 16
@@ -52,24 +56,7 @@ struct node {
   struct iosock *in;
 };
 
-#define NUM_HVALS1 64
-#define NUM_HVALS2 64
-#define NUM_HVALS3 64
-#define NUM_HVALS4 64
 
-struct hmsg {
-  char *sp;
-  char *action;
-  char *url;
-  char *qstring;
-  char *vers;
-  char *data;
-  int dlen;
-  char *hvals1[NUM_HVALS1];
-  char *hvals2[NUM_HVALS2];
-  char *hvals3[NUM_HVALS3];
-  char *hvals4[NUM_HVALS4];
-};
 
 
 // OK the space becomes the real thing
@@ -100,6 +87,22 @@ struct space {
 
 };
 
+
+
+struct hmsg {
+  char *sp;
+  char *action;
+  char *url;
+  char *qstring;
+  char *vers;
+  char *data;
+  int dlen;
+  char *hvals1[NUM_HVALS1];
+  char *hvals2[NUM_HVALS2];
+  char *hvals3[NUM_HVALS3];
+  char *hvals4[NUM_HVALS4];
+  struct space*spaces[NUM_SPACES];
+};
 struct iobuf;
 
 struct iobuf
@@ -223,6 +226,7 @@ int iob_snprintf(struct iobuf *iob, const char *fmt, ...);
 int find_parents(struct space* node, struct space **list, int num, int max);
 struct space *setup_space(char *name, struct space*parent);
 struct space *new_space(char *name , struct space *parent, struct list **root_space, struct node *node);
+void free_space(struct space *space);
 
 //struct space *find_space_new(struct space *base, char *name);
 
