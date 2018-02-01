@@ -641,6 +641,14 @@ int add_child(struct space *parent, struct space *child)
   return 0;
 }
 
+int add_attr(struct space *parent, struct space *attr)
+{
+  struct list *item = new_list(attr);
+  push_list(&parent->attr, item);
+  attr->parent = parent;
+  return 0;
+}
+
 #if 0
 // create a copy of the space if any at name
 //  base = find_space_new(base, name);

@@ -71,7 +71,7 @@ struct space {
   //struct space *prev;
   struct space *parent;
   struct list *child;  // multispace
-  struct space *attr;  // here are things about this item 
+  struct list *attr;  // here are things about this item 
   struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
   char *value;
@@ -409,6 +409,7 @@ int clean_hmsg(struct hmsg *hm);
 int init_hmsg(struct hmsg *hm);
 int show_hmsg(struct hmsg *hm);
 int test_hmsg(void);
+int add_attr(struct space *parent, struct space *attr);
 
 #endif
 
