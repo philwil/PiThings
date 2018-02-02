@@ -467,7 +467,7 @@ int test_hmsg(void)
   show_hmsg(&hmsg);
   clean_hmsg(&hmsg);
 
-  sp ="POST /pine1/gpios/gpio1?value=1&action=set \n123456\n\n";
+  sp ="POST /pine1/gpios/gpio1?value=1&action=set\n Content-Length: 6\n\n123456789\n\n";
   init_hmsg(&hmsg);
   setup_hmsg(&hmsg, sp);
   show_hmsg(&hmsg);
