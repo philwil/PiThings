@@ -2196,3 +2196,36 @@ SET pine1/gpios/gpio3/type serve
 
 SET pine1/gpios/gpio1 off
 
+==================
+ADD pine1/gpios/gpio1/type
+
+ADD pine1/gpios/gpio2/type
+
+ADD pine1/gpios/gpio3/type
+
+SET pine1/gpios/gpio1/type output
+
+SET pine1/gpios/gpio2/type input
+
+SET pine1/gpios/gpio3/type serve
+
+SET pine1/gpios/gpio1 off
+
+==================
+SHOW
+==================
+
+==================
+GET /pine1
+==================
+
+==================
+GET pine1
+==================
+
+==================
+SHOW
+==================
+
+==================
+[B[B[B

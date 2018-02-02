@@ -50,7 +50,7 @@ int show_hmsg(struct hmsg *hm)
   show_hvals("    hvals1", hm->hvals1, NUM_HVALS1);
   show_hvals("    hvals2", hm->hvals2, NUM_HVALS2);
   show_hvals("    hvals3", hm->hvals3, NUM_HVALS3);
-  show_hvals("    hvals4", hm->hvals4, NUM_HVALS4);
+  show_hvals("    snames", hm->snames, NUM_SPACES);
   return 0;
 
 }
@@ -76,9 +76,9 @@ int init_hmsg(struct hmsg *hm)
     {
       hm->hvals3[i] = NULL;
     }
-  for (i=0; i<NUM_HVALS4; i++)
+  for (i=0; i<NUM_SPACES; i++)
     {
-      hm->hvals4[i] = NULL;
+      hm->snames[i] = NULL;
     }
   for (i=0; i<NUM_SPACES; i++)
     {
@@ -128,7 +128,7 @@ int clean_hmsg(struct hmsg *hm)
   clean_vals(hm->hvals1, NUM_HVALS1);
   clean_vals(hm->hvals2, NUM_HVALS2);
   clean_vals(hm->hvals3, NUM_HVALS3);
-  clean_vals(hm->hvals4, NUM_HVALS4);
+  clean_vals(hm->snames, NUM_SPACES);
 
   return 0;
 }
@@ -261,14 +261,14 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   sp = hm->url;
   if(sp)
     {
-      idx = parse_stuff('/', 8 , (char **)hm->hvals4, sp,' ');
+      idx = parse_stuff('/', 8 , (char **)hm->snames, sp,' ');
       if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
-	      , hm->hvals4[0]
-	      , hm->hvals4[1]
-	      , hm->hvals4[2]
-	      , hm->hvals4[3]
+	      , hm->snames[0]
+	      , hm->snames[1]
+	      , hm->snames[2]
+	      , hm->snames[3]
 	      );
     }
   // "Content-Length: 19\n"
@@ -439,6 +439,7 @@ int test_parse_stuff(void)
 
 int test_hmsg(void)
 {
+  int idx=0;
   char *sp;
   struct hmsg hmsg;
 
@@ -471,9 +472,81 @@ int test_hmsg(void)
   init_hmsg(&hmsg);
   setup_hmsg(&hmsg, sp);
   show_hmsg(&hmsg);
-  clean_hmsg(&hmsg);
+  //clean_hmsg(&hmsg);
+
+  idx = find_hmsg_spaces(&hmsg);
+  printf("idx val = %d\n", idx);
+  return 0;
+}
 
 
+int find_hmsg_spaces(struct hmsg *hm)
+{
+  int i = -1;
+  struct space *sp1;
+  struct list **sp_list;
+  struct list * item;;
+  char *sp;
+
+  sp_list = &g_space_list;
+  item = g_space_list;
+
+  if(0)
+    {
+      printf("%s first item [%p]\n"
+	      , __FUNCTION__
+	     , item
+	     );
+      sp1 = item->data;
+      
+      printf("%s first item [%p]\n"
+	     , __FUNCTION__
+	     , sp1
+	     );
+      printf("%s first item name [%s]\n"
+	     , __FUNCTION__
+	     , sp1->name
+	     );
+    }
+
+  for (i=0; i<NUM_SPACES; i++)
+    {
+
+      sp = hm->snames[i];
+      //if (*sp == '/') sp++;
+      printf(" looking for %d [%s]\n", i, sp?sp:"none");
+      if(hm->snames[i] && (strlen(hm->snames[i]) > 0))
+	{
+	  sp = hm->snames[i];
+	  //if (*sp == '/') sp++;
+	  printf(" looking for [%s]\n", sp);
+
+	  sp1 = find_space_new(sp_list, sp);
+	  if(sp1)
+	    {
+	      printf(" found name [%s]/n", sp1->name);
+	      sp_list = &sp1->child;
+	      hm->spaces[1] = sp1;
+	    }
+	  if(!sp1 || !sp_list)
+	    {
+	      printf(" List finised at index %d\n", i); 
+	      break;
+	    }
+	}
+      else
+	{
+	      printf(" List finised at index %d\n", --i); 
+	      break;
+	}
+    }
+  return i;
+}
+
+int process_hmsg(struct hmsg *hmsg)
+{
+  //char *cmd;
+  //char *action;
   return 0;
 }
 
@@ -1353,9 +1426,9 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
   if(g_debug)
     printf(" %s starting in (%p) xiob %p oubuf (%p) ouitem (%p)\n"
 	   , __FUNCTION__
-	 , in, xiob
-	 , in->oubuf
-	 , in->ouitem
+	   , in, xiob
+	   , in?in->oubuf:0
+	   , in?in->ouitem:0
 	 );
 
   if(xiob)

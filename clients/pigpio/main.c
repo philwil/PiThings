@@ -178,13 +178,6 @@ int main (int argc, char *argv[])
    struct iosock ins;
    struct iosock *in = &ins;
 
-#if 1
-   printf(" Running test_hmsg\n");
-   test_hmsg();
-   printf(" Running test_list\n");
-   test_lists();
-   return 0;
-#endif
 #if 0
    test_parse_stuff();
    return 0;
@@ -209,6 +202,16 @@ int main (int argc, char *argv[])
    g_debug = 1;
 
    in->fd = 1;
+#if 1
+   printf(" Running test_list\n");
+   test_lists();
+   add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
+   add_space_in(&g_space_list, "ADD /pine1/gpios/gpio1", NULL);
+
+   printf(" Running test_hmsg g_space %p\n", g_space_list);
+   test_hmsg();
+   return 0;
+#endif
 
 #if 1
    //return 0;
