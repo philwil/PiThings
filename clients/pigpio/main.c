@@ -181,6 +181,8 @@ int main (int argc, char *argv[])
 #if 1
    printf(" Running test_hmsg\n");
    test_hmsg();
+   printf(" Running test_list\n");
+   test_lists();
    return 0;
 #endif
 #if 0

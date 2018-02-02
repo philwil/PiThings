@@ -409,7 +409,16 @@ int clean_hmsg(struct hmsg *hm);
 int init_hmsg(struct hmsg *hm);
 int show_hmsg(struct hmsg *hm);
 int test_hmsg(void);
+
+
 int add_attr(struct space *parent, struct space *attr);
+int del_attr(struct space *parent, struct space *attr);
+int del_child(struct space *parent, struct space *attr);
+
+struct list *del_list(struct list **root ,  struct list *item);
+struct list *add_list(struct list **root ,  struct list *item);
+int show_list(struct list *item, char *msg);
+int test_lists(void);
 
 #endif
 

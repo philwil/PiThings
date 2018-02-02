@@ -627,11 +627,7 @@ struct space *find_space_new(struct list **listp, char *name)
   free_stuff(idx, valx);
 
   return space;
-
-
 }
-
-
 
 int add_child(struct space *parent, struct space *child)
 {
@@ -645,6 +641,22 @@ int add_attr(struct space *parent, struct space *attr)
 {
   struct list *item = new_list(attr);
   push_list(&parent->attr, item);
+  attr->parent = parent;
+  return 0;
+}
+
+int del_child(struct space *parent, struct space *child)
+{
+  struct list *item = new_list(child);
+  del_list(&parent->child, item);
+  child->parent = parent;
+  return 0;
+}
+
+int del_attr(struct space *parent, struct space *attr)
+{
+  struct list *item = new_list(attr);
+  del_list(&parent->attr, item);
   attr->parent = parent;
   return 0;
 }

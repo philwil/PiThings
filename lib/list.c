@@ -147,6 +147,57 @@ struct list *pop_clist(struct list **root, struct list *citem, struct list *item
   return item;
 }
 
+struct list *del_list(struct list **root ,  struct list *item)
+{
+  struct list *nitem = item->next;
+  struct list *pitem = item->prev;
+  struct list *ritem = *root;
+  if((nitem==pitem) && (nitem==item))
+    {
+      *root = NULL;
+    }
+  else
+    {
+      pitem->next = nitem;
+      nitem->prev = pitem;
+      if(ritem==item)
+	*root = nitem;
+    }
+  return *root;
+}
+
+struct list *add_list(struct list **root ,  struct list *item)
+{
+  struct list *ritem = *root;
+  struct list *nitem = NULL;
+ struct list *pitem = NULL;
+  if(ritem == NULL)
+    {
+    *root = item;
+    }
+  else
+    {
+      nitem = ritem->next;
+      pitem = ritem->prev;
+      
+      if(pitem == nitem)
+	{
+	  pitem->next = item;
+	  item->prev = pitem;
+	  item->next = ritem;
+	  ritem->prev = item;
+	}
+      else
+	{
+	  pitem->next = item;
+	  item->prev = pitem;
+	  item->next = ritem;
+	  ritem->prev = item;
+	}
+    }
+  return *root;
+}
+
 struct list *pop_list(struct list **root ,  struct list *item)
 {
   struct list *citem = NULL;
@@ -169,4 +220,77 @@ struct list *find_list_item(struct list *master, void *data)
     }
 
   return item;
+}
+
+int show_list(struct list *root, char *msg)
+{
+  int rc = 0;
+  struct list *item = root;
+  struct list *ritem = NULL;
+
+  if(msg)printf("show_list %s\n", msg); 
+  while (foreach_item(&ritem, &item))
+    {
+      printf("item [%d] %p\n", rc, item->data); 
+    }
+  return rc;
+}
+
+struct list * xpop_list(struct list **root)
+{
+  struct list *item;
+  struct list *pitem;
+  struct list *nitem;
+  item = *root;
+  if(item)
+    {
+      if ((item->next == item->prev) && (item->next == item))
+	{
+	  *root = NULL;
+	}
+      else
+	{
+	  pitem = item->prev;
+	  nitem = item->next;
+	  *root = nitem;
+	  nitem->prev = pitem;
+	  pitem->next = nitem; 
+	  item->prev = item;
+	  item->next = item;
+	}
+    }
+  return item;
+}
+
+int test_lists(void)
+{
+  struct list *root = NULL;
+  struct list *item = NULL;
+  item= new_list((void *)1);
+  add_list(&root, item);
+
+  //return 0;
+
+ add_list(&root,new_list((void *)2));
+ show_list(root, "after two adds");
+  //return 0;
+  add_list(&root,new_list((void *)3));
+  add_list(&root,new_list((void *)4));
+  add_list(&root,new_list((void *)5));
+  show_list(root,"after six adds");
+
+  item = find_list_item(root,(void *)3);
+  del_list(&root,item);
+  show_list(root,"after del 3");
+  item = xpop_list(&root);
+  show_list(root,"after xpop 1");
+  item = xpop_list(&root);
+  show_list(root,"after xpop 2");
+  item = xpop_list(&root);
+  show_list(root,"after xpop 3");
+  item = xpop_list(&root);
+  show_list(root,"after xpop 4");
+
+
+  return 0;
 }
