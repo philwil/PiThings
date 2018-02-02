@@ -479,16 +479,40 @@ int test_hmsg(void)
   return 0;
 }
 
+struct space*find_space_name(struct list *root, char *name)
+{
+  struct space *sp1 = NULL;
+  struct list *item = root;
+  struct list *ritem = NULL;
+
+  while (foreach_item(&ritem, &item))
+    {
+      if(item->data) 
+	{
+	  sp1 = item->data;
+	  if (strcmp(sp1->name, name) == 0)
+	    {
+	      break;
+	    }
+	  else
+	    {
+	      sp1 = NULL;
+	    }
+	}
+    }
+  return sp1;
+}
+
 
 int find_hmsg_spaces(struct hmsg *hm)
 {
   int i = -1;
   struct space *sp1;
-  struct list **sp_list;
+  struct list *sp_list;
   struct list * item;;
   char *sp;
 
-  sp_list = &g_space_list;
+  sp_list = g_space_list;
   item = g_space_list;
 
   if(0)
@@ -519,14 +543,18 @@ int find_hmsg_spaces(struct hmsg *hm)
 	{
 	  sp = hm->snames[i];
 	  //if (*sp == '/') sp++;
-	  printf(" looking for [%s]\n", sp);
+	  printf(" looking for [%s] ... ", sp);
 
-	  sp1 = find_space_new(sp_list, sp);
+	  sp1 = find_space_name(sp_list, sp);
 	  if(sp1)
 	    {
-	      printf(" found name [%s]/n", sp1->name);
-	      sp_list = &sp1->child;
+	      printf(" found name [%s]\n", sp1->name);
+	      sp_list = sp1->child;
 	      hm->spaces[1] = sp1;
+	    }
+	  else
+	    {
+	      printf(" .. urgh !\n");
 	    }
 	  if(!sp1 || !sp_list)
 	    {
