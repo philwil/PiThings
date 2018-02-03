@@ -522,8 +522,6 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
   int idx=-1;
 
   sp_list = root;
-  //  item = g_space_list;
-
 
   for (i=0; i<NUM_SPACES; i++)
     {
@@ -572,8 +570,88 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 	}
       sp2 = sp1;
     }
+  if(add & (idx >= 0))
+    {
+      printf("setting attributes for [%s]\n", sp1->name);
+      for (i = 0; i < NUM_ATTRS; i++)
+	{
+
+	  struct list *item;
+	  struct attr *attr;
+	  if(!hm->attrs[i]) break;
+	  attr = find_space_attr(&sp1->attrs, hm->attrs[i]);
+	  if(!attr)
+	    {
+	      attr =  new_space_attr(hm->attrs[i]);
+	      item = new_list(attr);
+	      add_list (&sp1->attrs, item);
+	    }
+	  else
+	    {
+	      replace_space_attr(attr,hm->attrs[i]);
+	    }
+	}
+    }
+
   return idx;
 }
+
+struct attr*new_space_attr(char *name)
+{
+  struct attr *attr = NULL;
+  int nlen = name - strchr(name,'=');
+  attr=calloc(sizeof(struct attr), 1);
+  attr->name =strndup(name, nlen);
+  attr->nlen = nlen;
+  attr->value = strdup(&name[nlen+1]);
+  attr->vlen = strlen(attr->value);
+  return attr;
+}
+
+struct attr*replace_space_attr(struct attr *attr, char *name)
+{
+  int nlen = name - strchr(name,'=');
+  if(attr->vlen > strlen(&name[nlen+1]))
+    {
+      strcpy(attr->value, &name[nlen+1]);
+    }
+  else
+    {
+      free(attr->value);
+      attr->value = strdup(&name[nlen+1]);
+      attr->vlen = strlen(attr->value);
+    }
+  return attr;
+}
+
+struct attr*find_space_attr(struct list **root, char *name)
+{
+  struct attr *attr = NULL;
+  struct list *item = *root;
+  struct list *ritem = NULL;
+  int nlen = name - strchr(name,'=');
+
+  while (foreach_item(&ritem, &item))
+    {
+      if(item->data) 
+	{
+	  attr = item->data;
+
+	  printf(" %s >>>> [%s] seeking [%s]\n",__FUNCTION__,attr->name, name);
+	  if (strncmp(attr->name, name, nlen) == 0)
+	    {
+	      break;
+	    }
+	  else
+	    {
+	      attr = NULL;
+	    }
+	}
+    }
+  return attr;
+}
+
+
 
 int find_hmsg_spaces(struct list **root, struct hmsg *hm)
 {

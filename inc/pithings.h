@@ -56,6 +56,13 @@ struct node {
   struct iosock *in;
 };
 
+struct attr {
+  char *name;
+  int nlen;
+  char *value;
+  int vlen;
+};
+
 
 
 
@@ -71,7 +78,7 @@ struct space {
   //struct space *prev;
   struct space *parent;
   struct list *child;  // multispace
-  struct list *attr;  // here are things about this item 
+  struct list *attrs;  // here are things about this item 
   struct space *class; // attrs can be given to classes
   struct space *clone; // here are copies of this item
   char *value;
@@ -422,6 +429,10 @@ int test_lists(void);
 int find_hmsg_spaces(struct list **root, struct hmsg *hm);
 int add_hmsg_spaces(struct list **root, struct hmsg *hm);
 struct space*find_space_name(struct list **root, char *name);
+
+struct attr*replace_space_attr(struct attr *attr, char *name);
+struct attr*find_space_attr(struct list **root, char *name);
+struct attr*new_space_attr(char *name);
 
 #endif
 

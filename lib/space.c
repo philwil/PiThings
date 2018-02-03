@@ -193,7 +193,7 @@ struct space *setup_space(char *name, struct space*parent)
 
   space->name = strdup(name);
 
-  space->attr = NULL;
+  space->attrs = NULL;
   space->class = NULL;
   space->clone = NULL;
   space->child = NULL;
@@ -238,7 +238,7 @@ void free_space(struct space *space)
 	    item = NULL;
 	}
     }
-  //TODO free attr
+  //TODO free attrs
   //TODO free children
   // 
   g_spaces[space->idx] = NULL;
@@ -298,6 +298,8 @@ struct space *new_space_class(char *name , struct space *parent)
 
   return space;
 }  
+
+#if 0
 struct space *new_space_attr(char *name , struct space *parent)
 {
   //int i;
@@ -328,6 +330,9 @@ struct space *new_space_attr(char *name , struct space *parent)
 #endif
   return space;
 }  
+#endif
+
+#if 0
 
 struct space *new_space_attr_str(char *name, struct space *parent, char *val)
 {
@@ -382,6 +387,7 @@ struct space *new_space_attr_int(char *name, struct space *parent, int val)
     }
   return space;
 }
+#endif
 
 int show_space_class(struct iosock *in,struct space *base, int indent)
 {
@@ -394,7 +400,7 @@ int show_space_class(struct iosock *in,struct space *base, int indent)
   }
   return len;
 }
-
+#if 0
 int show_space_attr(struct iosock *in,struct space *base, int indent)
 {
   char atname[128];
@@ -406,6 +412,7 @@ int show_space_attr(struct iosock *in,struct space *base, int indent)
   }
   return len;
 }
+#endif
 
 int show_space(struct iosock *in, struct space*base, int indent)
 {
@@ -427,7 +434,7 @@ int show_space(struct iosock *in, struct space*base, int indent)
 	 //, base->next->name
 	 //, base->prev->name
 	 );
-  if(0)  show_space_attr(in,base, indent+3);
+  //  if(0)  show_space_attr(in,base, indent+3);
 
   if(0)show_space_class(in,base, indent+5);
   return rc;
@@ -657,6 +664,7 @@ int add_child(struct space *parent, struct space *child)
   return 0;
 }
 
+#if 0
 int add_attr(struct space *parent, struct space *attr)
 {
   struct list *item = new_list(attr);
@@ -664,6 +672,7 @@ int add_attr(struct space *parent, struct space *attr)
   attr->parent = parent;
   return 0;
 }
+#endif
 
 int del_child(struct space *parent, struct space *child)
 {
@@ -672,7 +681,7 @@ int del_child(struct space *parent, struct space *child)
   child->parent = parent;
   return 0;
 }
-
+#if 0
 int del_attr(struct space *parent, struct space *attr)
 {
   struct list *item = new_list(attr);
@@ -680,7 +689,7 @@ int del_attr(struct space *parent, struct space *attr)
   attr->parent = parent;
   return 0;
 }
-
+#endif
 #if 0
 // create a copy of the space if any at name
 //  base = find_space_new(base, name);
