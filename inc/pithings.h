@@ -421,6 +421,7 @@ int show_list(struct list *item, char *msg);
 int test_lists(void);
 int find_hmsg_spaces(struct list **root, struct hmsg *hm);
 int add_hmsg_spaces(struct list **root, struct hmsg *hm);
+struct space*find_space_name(struct list **root, char *name);
 
 #endif
 

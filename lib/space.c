@@ -49,6 +49,7 @@ struct space *_add_space_in(struct list **root, char *name,
   if(idx >= 0)
     space = g_spaces[idx];
   clean_hmsg(&hmsg);
+  return space;
 
   //  struct space *parent=NULL;
   //  struct space *child=NULL;

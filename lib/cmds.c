@@ -224,7 +224,7 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   if(!hm->sp)
     hm->sp = strdup(insp);
   idx = parse_stuff(' ', 3 , (char **)hm->hvals1, hm->sp,' ');
-  if(1)printf(" %s parse_stuff 1  idx %d got [%s] [%s] [%s]\n"
+  if(0)printf(" %s parse_stuff 1  idx %d got [%s] [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
 	      , hm->hvals1[0]
@@ -236,7 +236,7 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   sp = get_valx(hm->hvals1, 1);                // uri + query
 
   idx = parse_stuff('?', 4 , (char **)hm->hvals2, sp,'?');
-  if(1)printf(" %s parse_stuff 2 idx %d got [%s] [%s]\n"
+  if(0)printf(" %s parse_stuff 2 idx %d got [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
 	      , hm->hvals2[0]
@@ -249,7 +249,7 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   if(sp)
     {
       idx = parse_stuff('&', 8 , (char **)hm->attrs, sp,' ');
-      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+      if(0)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
 	      , hm->attrs[0]
@@ -262,7 +262,7 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   if(sp)
     {
       idx = parse_stuff('/', 8 , (char **)hm->snames, sp,' ');
-      if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+      if(0)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
 	      , hm->snames[0]
@@ -484,10 +484,10 @@ int test_hmsg(void)
   return 0;
 }
 
-struct space*find_space_name(struct list *root, char *name)
+struct space*find_space_name(struct list **root, char *name)
 {
   struct space *sp1 = NULL;
-  struct list *item = root;
+  struct list *item = *root;
   struct list *ritem = NULL;
 
   while (foreach_item(&ritem, &item))
@@ -495,6 +495,7 @@ struct space*find_space_name(struct list *root, char *name)
       if(item->data) 
 	{
 	  sp1 = item->data;
+	  printf(" %s >>>> [%s] seeking [%s]\n",__FUNCTION__,sp1->name, name);
 	  if (strcmp(sp1->name, name) == 0)
 	    {
 	      break;
@@ -515,12 +516,12 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
   int i = -1;
   struct space *sp1;
   struct space *sp2=NULL;
-  struct list *sp_list;
+  struct list **sp_list;
   //struct list * item;;
   char *sp;
   int idx=-1;
 
-  sp_list = *root;
+  sp_list = root;
   //  item = g_space_list;
 
 
@@ -533,13 +534,13 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 	{
 	  sp = hm->snames[i];
 	  //if (*sp == '/') sp++;
-	  printf(" looking for [%s] ... ", sp);
+	  printf(" looking for %d [%s] ... ",i,  sp);
 
 	  sp1 = find_space_name(sp_list, sp);
 	  if(sp1)
 	    {
-	      printf(" found name [%s]\n", sp1->name);
-	      sp_list = sp1->child;
+	      printf(" found name [%s] idx %d\n", sp1->name, sp1->idx);
+	      sp_list = &sp1->child;
 	      hm->spaces[1] = sp1;
 	      idx = sp1->idx;
 	    }
@@ -548,7 +549,8 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 	      if(add)
 		{
 		  printf(" .. adding [%s] !\n", sp);
-		  sp1=new_space(sp,sp2,&sp_list,NULL);
+		  sp1=new_space(sp,sp2,sp_list,NULL);
+		  sp_list = &sp1->child;
 		  idx = sp1->idx;
 		}
 	      else
@@ -557,7 +559,7 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 		  idx = -1;
 		}
 	    }
-	  if(!sp1 || !sp_list)
+	  if(!add && (!sp1 || !sp_list))
 	    {
 	      printf(" List finised at index %d\n", i); 
 	      break;
@@ -1017,7 +1019,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
   val_size = 64;
   val = malloc(64);  //TODO fix this
   val[0]=0;
-  if(g_debug)
+  if(0)
     printf("%s start stuff[%s] \n", __FUNCTION__, stuff);
   //vals[idx] = strdup(sp);
   //idx++;
@@ -1060,7 +1062,7 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
       if(rc>0)
 	{
 	  vals[idx] = strdup(val);
-	  if(g_debug)
+	  if(0)
 	    printf("rc %d val [%s] val[%d] [%s] %x %x\n"
 		   , rc
 		   , val
@@ -1069,14 +1071,14 @@ int parse_stuff(char delim, int num, char **vals, char *stuff, char cstop)
 		   , vals[idx][0]
 		   , vals[idx][1]
 		   );
-	  if(g_debug)
+	  if(0)
 	    printf("sp [%s] \n", sp);
 	  //if(!skip)
 	  idx++;
 	  //skip = 0;
 	}
     }
-  if(g_debug)
+  if(0)
     printf("%s done idx %d\n", __FUNCTION__, idx);
   free(val);
   return idx;

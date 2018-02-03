@@ -177,7 +177,7 @@ int main (int argc, char *argv[])
    int rc = 1;
    struct iosock ins;
    struct iosock *in = &ins;
-
+   struct space *sp1;
 #if 0
    test_parse_stuff();
    return 0;
@@ -206,7 +206,16 @@ int main (int argc, char *argv[])
    printf(" Running test_list\n");
    test_lists();
    add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
+   printf("g_space_list %p %p\n", &g_space_list, g_space_list);
+   if(!g_space_list)return 0;
+   sp1 = g_space_list->data;
+   printf(" name [%s] child %p %p\n", sp1->name, &sp1->child , sp1->child);
+   add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
+   printf(" name [%s] child %p %p\n", sp1->name, &sp1->child , sp1->child);
+   //return(0);
    add_space_in(&g_space_list, "ADD /pine1/gpiox/gpio1", NULL);
+   add_space_in(&g_space_list, "ADD /pine1/gpiox/gpio2", NULL);
+   //return(0);
    add_space_in(&g_space_list, "ADD /pine1/gpios/gpio3", NULL);
    add_space_in(&g_space_list, "ADD /pine1/gpios/gpio1", NULL);
    add_space_in(&g_space_list, "ADD /pine1/gpios/gpio1", NULL);
