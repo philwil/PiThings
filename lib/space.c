@@ -39,19 +39,31 @@ int init_g_spaces(void)
 struct space *_add_space_in(struct list **root, char *name,
 			    struct iosock *in)
 {
-  struct space *parent=NULL;
-  //  struct space *child=NULL;
   struct space *space=NULL;
+  struct hmsg hmsg;
+  int idx;
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, name);
+  show_hmsg(&hmsg);
+  idx = add_hmsg_spaces(root, &hmsg);
+  if(idx >= 0)
+    space = g_spaces[idx];
+  clean_hmsg(&hmsg);
+
+  //  struct space *parent=NULL;
+  //  struct space *child=NULL;
+  //struct space *space=NULL;
   //struct iobuf * iob;
   //int cidx = 0;
   //char *sp = name;
-  int new = 0;
-  int i;
+  //int new = 0;
+  //int i;
   //int rc;
-  int idx = 0;
-  int idv = 0;
-  char *valv[64];
-  char *valx[64];
+  //int idx = 0;
+  //int idv = 0;
+  //char *valv[64];
+  //char *valx[64];
+#if 0
   struct list *item;
   struct list **clist = root;
   parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
@@ -114,6 +126,8 @@ struct space *_add_space_in(struct list **root, char *name,
   
   free_stuff(idv, valv);
   free_stuff(idx, valx);
+#endif
+
   return space;
 }
 
@@ -235,6 +249,7 @@ void free_space(struct space *space)
 struct space *new_space(char *name , struct space *parent, struct list **root_space, struct node *node)
 {
   struct space *space;
+  struct list * item;
   printf(" new space [%s] root %p\n"
 	 , name
 	 , root_space
@@ -245,7 +260,11 @@ struct space *new_space(char *name , struct space *parent, struct list **root_sp
     {
       space->node = node;
     }
-
+  if(root_space)
+    {
+      item = new_list(space);
+      add_list(root_space, item);
+    }
   return space;
 }  
 

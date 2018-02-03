@@ -27,7 +27,7 @@
 
 #define NUM_HVALS1 64
 #define NUM_HVALS2 64
-#define NUM_HVALS3 64
+#define NUM_ATTRS 64
 #define NUM_SNAMES 64
 
 #define NUM_SOCKS 16
@@ -99,7 +99,7 @@ struct hmsg {
   int dlen;
   char *hvals1[NUM_HVALS1];
   char *hvals2[NUM_HVALS2];
-  char *hvals3[NUM_HVALS3];
+  char *attrs[NUM_ATTRS];
   char *snames[NUM_SPACES];
   struct space*spaces[NUM_SPACES];
 };
@@ -419,7 +419,8 @@ struct list *del_list(struct list **root ,  struct list *item);
 struct list *add_list(struct list **root ,  struct list *item);
 int show_list(struct list *item, char *msg);
 int test_lists(void);
-int find_hmsg_spaces(struct hmsg *hm);
+int find_hmsg_spaces(struct list **root, struct hmsg *hm);
+int add_hmsg_spaces(struct list **root, struct hmsg *hm);
 
 #endif
 

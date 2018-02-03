@@ -206,11 +206,14 @@ int main (int argc, char *argv[])
    printf(" Running test_list\n");
    test_lists();
    add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
+   add_space_in(&g_space_list, "ADD /pine1/gpiox/gpio1", NULL);
+   add_space_in(&g_space_list, "ADD /pine1/gpios/gpio3", NULL);
    add_space_in(&g_space_list, "ADD /pine1/gpios/gpio1", NULL);
-
-   printf(" Running test_hmsg g_space %p\n", g_space_list);
-   test_hmsg();
-   return 0;
+   add_space_in(&g_space_list, "ADD /pine1/gpios/gpio1", NULL);
+   //return 0;
+   //printf(" Running test_hmsg g_space %p\n", g_space_list);
+   //test_hmsg();
+   //return 0;
 #endif
 
 #if 1

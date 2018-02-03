@@ -49,7 +49,7 @@ int show_hmsg(struct hmsg *hm)
   printf("==   data[%s]\n",hm->data);
   show_hvals("    hvals1", hm->hvals1, NUM_HVALS1);
   show_hvals("    hvals2", hm->hvals2, NUM_HVALS2);
-  show_hvals("    hvals3", hm->hvals3, NUM_HVALS3);
+  show_hvals("    attrs",  hm->attrs,  NUM_ATTRS);
   show_hvals("    snames", hm->snames, NUM_SPACES);
   return 0;
 
@@ -72,9 +72,9 @@ int init_hmsg(struct hmsg *hm)
     {
       hm->hvals2[i] = NULL;
     }
-  for (i=0; i<NUM_HVALS3; i++)
+  for (i=0; i<NUM_ATTRS; i++)
     {
-      hm->hvals3[i] = NULL;
+      hm->attrs[i] = NULL;
     }
   for (i=0; i<NUM_SPACES; i++)
     {
@@ -127,7 +127,7 @@ int clean_hmsg(struct hmsg *hm)
   hm->dlen = 0;
   clean_vals(hm->hvals1, NUM_HVALS1);
   clean_vals(hm->hvals2, NUM_HVALS2);
-  clean_vals(hm->hvals3, NUM_HVALS3);
+  clean_vals(hm->attrs,  NUM_ATTRS);
   clean_vals(hm->snames, NUM_SPACES);
 
   return 0;
@@ -248,14 +248,14 @@ char *setup_hmsg(struct hmsg *hm, char *insp)
   sp = hm->qstring;
   if(sp)
     {
-      idx = parse_stuff('&', 8 , (char **)hm->hvals3, sp,' ');
+      idx = parse_stuff('&', 8 , (char **)hm->attrs, sp,' ');
       if(1)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
 	      , __FUNCTION__
 	      , idx
-	      , hm->hvals3[0]
-	      , hm->hvals3[1]
-	      , hm->hvals3[2]
-	      , hm->hvals3[3]
+	      , hm->attrs[0]
+	      , hm->attrs[1]
+	      , hm->attrs[2]
+	      , hm->attrs[3]
 	      );
     }
   sp = hm->url;
@@ -468,14 +468,19 @@ int test_hmsg(void)
   show_hmsg(&hmsg);
   clean_hmsg(&hmsg);
 
-  sp ="POST /pine1/gpios/gpio1?value=1&action=set\n Content-Length: 6\n\n123456789\n\n";
+  sp ="POST /pine1/gpios/gpio21?value=1&action=set\n Content-Length: 6\n\n123456789\n\n";
   init_hmsg(&hmsg);
   setup_hmsg(&hmsg, sp);
   show_hmsg(&hmsg);
   //clean_hmsg(&hmsg);
 
-  idx = find_hmsg_spaces(&hmsg);
+  idx = find_hmsg_spaces(&g_space_list,&hmsg);
   printf("idx val = %d\n", idx);
+  idx = add_hmsg_spaces(&g_space_list,&hmsg);
+  printf("idx val = %d\n", idx);
+  idx = find_hmsg_spaces(&g_space_list,&hmsg);
+  printf("idx val = %d\n", idx);
+
   return 0;
 }
 
@@ -504,38 +509,23 @@ struct space*find_space_name(struct list *root, char *name)
 }
 
 
-int find_hmsg_spaces(struct hmsg *hm)
+
+int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 {
   int i = -1;
   struct space *sp1;
+  struct space *sp2=NULL;
   struct list *sp_list;
-  struct list * item;;
+  //struct list * item;;
   char *sp;
+  int idx=-1;
 
-  sp_list = g_space_list;
-  item = g_space_list;
+  sp_list = *root;
+  //  item = g_space_list;
 
-  if(0)
-    {
-      printf("%s first item [%p]\n"
-	      , __FUNCTION__
-	     , item
-	     );
-      sp1 = item->data;
-      
-      printf("%s first item [%p]\n"
-	     , __FUNCTION__
-	     , sp1
-	     );
-      printf("%s first item name [%s]\n"
-	     , __FUNCTION__
-	     , sp1->name
-	     );
-    }
 
   for (i=0; i<NUM_SPACES; i++)
     {
-
       sp = hm->snames[i];
       //if (*sp == '/') sp++;
       printf(" looking for %d [%s]\n", i, sp?sp:"none");
@@ -551,10 +541,21 @@ int find_hmsg_spaces(struct hmsg *hm)
 	      printf(" found name [%s]\n", sp1->name);
 	      sp_list = sp1->child;
 	      hm->spaces[1] = sp1;
+	      idx = sp1->idx;
 	    }
 	  else
 	    {
-	      printf(" .. urgh !\n");
+	      if(add)
+		{
+		  printf(" .. adding [%s] !\n", sp);
+		  sp1=new_space(sp,sp2,&sp_list,NULL);
+		  idx = sp1->idx;
+		}
+	      else
+		{
+		  printf(" .. urgh !\n");
+		  idx = -1;
+		}
 	    }
 	  if(!sp1 || !sp_list)
 	    {
@@ -567,8 +568,19 @@ int find_hmsg_spaces(struct hmsg *hm)
 	      printf(" List finised at index %d\n", --i); 
 	      break;
 	}
+      sp2 = sp1;
     }
-  return i;
+  return idx;
+}
+
+int find_hmsg_spaces(struct list **root, struct hmsg *hm)
+{
+  return do_hmsg_spaces(root, hm, 0);
+}
+
+int add_hmsg_spaces(struct list **root, struct hmsg *hm)
+{
+  return do_hmsg_spaces(root, hm, 1);
 }
 
 int process_hmsg(struct hmsg *hmsg)
