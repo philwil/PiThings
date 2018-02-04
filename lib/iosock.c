@@ -704,7 +704,15 @@ char *str_replace(char **strp, char *rep)
 {
   char *sp=*strp;
   if(sp)free(sp);
-  sp = strdup(rep);
+
+  if(rep)
+    {
+      sp = strdup(rep);
+    }
+  else
+    {
+      sp = NULL;
+    }
   *strp=sp;
   return sp;
 }

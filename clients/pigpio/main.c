@@ -182,6 +182,10 @@ int main (int argc, char *argv[])
    test_parse_stuff();
    return 0;
 #endif
+#if 1
+   test_hmsg();
+   return 0;
+#endif
 
    g_myaddr = strdup("127.0.0.1");
    init_g_spaces();
@@ -205,11 +209,17 @@ int main (int argc, char *argv[])
 #if 1
    printf(" Running test_list\n");
    test_lists();
-   add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
+   add_space_in(&g_space_list, "ADD uavx/motor1 1234", NULL);
+   add_space_in(&g_space_list, "ADD uavx/motor2 1234", NULL);
+   add_space_in(&g_space_list, "ADD uavx/motor3 1234", NULL);
+   set_space_in(&g_space_list, "SET uavx/motor1 1234", NULL);
+   show_space_in(&g_space_list, "SET uavx 1234", NULL);
    printf("g_space_list %p %p\n", &g_space_list, g_space_list);
-   if(!g_space_list)return 0;
+   //if(!g_space_list)
    sp1 = g_space_list->data;
    printf(" name [%s] child %p %p\n", sp1->name, &sp1->child , sp1->child);
+   return 0;
+
    add_space_in(&g_space_list, "ADD uavx/motor1", NULL);
    printf(" name [%s] child %p %p\n", sp1->name, &sp1->child , sp1->child);
    //return(0);

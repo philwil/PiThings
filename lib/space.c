@@ -50,86 +50,6 @@ struct space *_add_space_in(struct list **root, char *name,
     space = g_spaces[idx];
   clean_hmsg(&hmsg);
   return space;
-
-  //  struct space *parent=NULL;
-  //  struct space *child=NULL;
-  //struct space *space=NULL;
-  //struct iobuf * iob;
-  //int cidx = 0;
-  //char *sp = name;
-  //int new = 0;
-  //int i;
-  //int rc;
-  //int idx = 0;
-  //int idv = 0;
-  //char *valv[64];
-  //char *valx[64];
-#if 0
-  struct list *item;
-  struct list **clist = root;
-  parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-  if(g_debug)
-    printf(" ===========\n>>> %s name [%s] idv %d \n", __FUNCTION__, name, idv );
-
-  for (i = 0; i<idv; i++)
-    {
-      printf("     %s >> item %d [%s]\n", __FUNCTION__, i, valv[i]);
-    }
-  for (i=0 ; i<idv; i++)
-    {
-      //space = NULL;
-      printf(" Space .. 1 %d [%s] root %p parent %p \n"
-	     , i, valv[i], root, parent);
-      space = find_space(clist, valv[i]);
-      printf(" Space .. 2 %d [%s] %p\n", i, valv[i], space);
-      if(0)in_snprintf(in, NULL, "Seeking [%s]  %p\n", valv[i], space);
-      if (!space)
-	{
-	  new = 1;
-	  space = new_space(valv[i], NULL, clist, NULL); 
-	  printf(" Created New Space for [%s] %p \n", valv[i], space);
-	  if(!parent)
-	    printf(" %s no parent adding [%s] to root \n"
-		   , __FUNCTION__, space->name);
-	  else
-	    {
-	      printf(" %s adding [%s] to parent [%s] \n"
-		     , __FUNCTION__
-		     , space->name
-		     , parent->name);
-	      clist = &parent->child;
-	    }
-	  if(g_debug)
-	    {
-	      printf(" New Space for [%s] at root\n", valv[i]);
-	    }
-	  item = new_list(space);
-	  push_list(clist, item);
-
-	  if(parent)
-	    space->parent = parent;
-	}
-      else
-	{
-	  // we found this level move on
-	  //if(g_debug)
-	    printf(" Space found [%s]\n", valv[i]);
-	    clist = &space->child;
-	}
-      parent = space;
-    }
-  //iob_snprintf(iob1, "more stuff  the name [%s] value is %d ", "some_name", 23);
-
-  if(new)
-    in_snprintf(in, NULL, "Added [%s] added  space [%s] %d\n",name, space->name, idx);
-  else
-    in_snprintf(in, NULL, "Found [%s] found  space [%s] %d\n",name, space->name, idx);
-  
-  free_stuff(idv, valv);
-  free_stuff(idx, valx);
-#endif
-
-  return space;
 }
 
 struct space *add_space_in(struct list **root, char *name,
@@ -681,6 +601,7 @@ int del_child(struct space *parent, struct space *child)
   child->parent = parent;
   return 0;
 }
+
 #if 0
 int del_attr(struct space *parent, struct space *attr)
 {
@@ -770,54 +691,37 @@ int insert_space(struct list **parent, struct space *space)
 
   return 0;
 }
-struct space *show_space_in(struct list **list, char *name, struct iosock *in)
+struct space *show_space_in(struct list **root, char *name, struct iosock *in)
 {
-  //int rc = 0;
-  char sbuf[4096];
+  struct hmsg hmsg;
+  int idx;
   struct space *sp1=NULL;
-  //struct space **spb=&g_space;
-  char *sp = name;
-  sbuf[0]=0;
-  sscanf(name,"%s ", sbuf);  // TODO use more secure option
+  char sbuf[4096];
+  struct list **base;
 
-  if(g_debug)
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, name);
+  show_hmsg(&hmsg);
+  idx = find_hmsg_spaces(root, &hmsg);
+  if(idx >= 0)
     {
-      printf("%s 1 name [%s] sbuf [%s]\n"
-	     , __FUNCTION__
-	     , name
-	     , sbuf
-	     );
+      sp1 = g_spaces[idx];
     }
-  if(in_new_cmds(g_cmds, NUM_CMDS, sbuf)>=0)
-    {
-      sp = strstr(name, sbuf);
-      if(sp)
-	{
-	  sp += strlen(sbuf);
-	  while (*sp &&(*sp == ' '))
-	    {
-	      sp++;
-	    }
-	  if(g_debug)
-	    {
-	      printf("%s 2 name [%s] len %lu sp [%s] %x\n"
-		     , __FUNCTION__
-		     , name
-		     , (long unsigned int)strlen(sp)
-		     , sp
-		     , *sp
-		     );
-	    }
-	  if ((*sp != 0xa) && (*sp != 0xd)) 
-	    sp1 = find_space_new(&g_space_list, sp);
-	}
-    }
+
+  base = &g_space_list;
   if(sp1)
   {
-    printf(" %s got sp1 name [%s]\n", __FUNCTION__,sp1->name);
+    printf(" %s got sp1 name [%s] child %p\n", __FUNCTION__
+	   , sp1->name
+	   , sp1->child
+	   );
   //  spb = &sp1;
+    if(sp1->child)
+      base = &sp1->child;
   }
-  show_spaces_new(in, &g_space_list, sbuf, 4096, sbuf);
+  show_spaces_new(in, base, sbuf, 4096, sbuf);
+  clean_hmsg(&hmsg);
+
   return NULL;
 }
 
@@ -841,7 +745,7 @@ int set_space_value(struct space *sp1, char *spv, char *name)
 int set_spacexx(struct list **list, char *name, char *value)
 {
   int rc = -1;
-  struct space *sp1;
+  struct space *sp1 = NULL;
   char sname[3][128];  // TODO
   char * spv;
 
@@ -859,44 +763,54 @@ int set_spacexx(struct list **list, char *name, char *value)
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-struct space *set_space_in(struct list **list, char *name, struct iosock *in)
+struct space *set_space_in(struct list **root, char *name, struct iosock *in)
 {
-  //int rc = -1;
-  struct space *sp1;
-  //  struct space *base =NULL;
-  char sname[3][128];  // TODO
-  char * spv;
-
-  sname[0][0]=0;
-  sname[1][0]=0;
-  sname[2][0]=0;
-  sscanf(name,"%s %s %s", sname[0], sname[1], sname[2]);
-  sp1 = find_space_new(list, sname[1]);
-  if(sp1)
+  struct space *sp1=NULL;
+  struct hmsg hmsg;
+  int idx;
+  char *spv;
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, name);
+  show_hmsg(&hmsg);
+  idx = find_hmsg_spaces(root, &hmsg);
+  if(idx >= 0)
     {
-      // set_space_value
-      spv = sname[2];
-      ///if(value)
-      //spv =  value;
+      sp1 = g_spaces[idx];
+      str_replace(&sp1->value, NULL);
+      if(hmsg.data)
+	{
+	  spv=hmsg.data;
+	  hmsg.data = NULL;
+	}
+      else if(hmsg.vers)
+	{
+	  spv=hmsg.vers;
+	  hmsg.vers = NULL;
+	}
+
+      printf("%s [%s] old val [%s] hmsg.data[%s] hmsg.vers[%s] spv [%s]\n"
+	     , __FUNCTION__
+	     , sp1->name
+	     , sp1->value
+	     , hmsg.data 
+	     , hmsg.vers
+	     , spv
+	     );
       set_space_value(sp1, spv, name);
-      if(sp1->group)
-	set_group_value(name, spv, name);
-#if 0
-      if(sp1->value) free(sp1->value);
-      sp1->value = NULL;
-      if(spv && (strlen(spv) > 0))
-	sp1->value = strdup(spv);
-      if(sp1->onset)
-	sp1->onset(sp1, sp1->idx, name, spv);
-#endif
-      
+
       //rc = 0;
-      if(in)in_snprintf(in,NULL,"OK SET %s to [%s]\n",sname[1], sname[2]);
+      if(in)in_snprintf(in,NULL,"OK SET %s to [%s]\n",sp1->name, sp1->value);
     }
   else
     {
-      if(in)in_snprintf(in,NULL,"?? SET [%s] not found \n",sname[1]);
+      printf("%s [%s]  NOT FOUND\n"
+	     , __FUNCTION__ 
+	     , hmsg.url
+	     );
+      if(in)in_snprintf(in,NULL,"?? SET [%s] not found \n",sp1->name);
     }
+
+  clean_hmsg(&hmsg);
   return sp1;
 }
 
@@ -1081,63 +995,38 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 
 // This is the GET command
 //char *get_space(struct space *base, char *name)
-struct space *get_space_in(struct list **listp, char *name, struct iosock *in)
+struct space *get_space_in(struct list **root, char *name, struct iosock *in)
 {
-  char * sret=NULL;
-  struct space *sp1;
-  //struct list *list;
-  //struct space *base = NULL;
-  char *sp;
-  char *sp_name;
-  //char *vers="HTTP/1.1";
-  //char buf[2048];
-  char spv[2][128];
-  int rc=0;
-  spv[0][0]=0;
-  spv[1][0]=0;
-  sp_name = name;
-  if(in->hproto == 3)
-    sp_name = in->hsp;
-  rc = sscanf(sp_name,"%s %s", spv[0], spv[1]);
-  if(1)printf(" %s hproto %d looking for [%s] [%s]\n"
-	      , __FUNCTION__
-	      , in->hproto
-	      , spv[0]
-	      , spv[1]
-	      );
-  sp = spv[0];
-  if( rc == 2 ) sp = spv[1];
+  struct space *sp1=NULL;
+  struct hmsg hmsg;
+  int idx;
 
-  sp1 = find_space_new(listp, sp);
-  if(sp1)
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, name);
+  show_hmsg(&hmsg);
+  idx = find_hmsg_spaces(root, &hmsg);
+  if(idx >= 0)
     {
+      sp1 = g_spaces[idx];
       if(sp1->onget)
-	sp1->onget(sp1, sp1->idx, sp_name);
-      sret = sp1->value;
-      if(in)
-	{
-	  in_snprintf(in, NULL, "OK GET %s value [%s]\n", sp, sret);
-		//send_html_tail(in, NULL);
-	  in->hidx = sp1->idx;
-	  if(g_debug)
-	    printf(" %s found [%s] [%s] in->hidx=%p->%d\n"
-		   , __FUNCTION__
-		   , spv[0]
-		   , spv[1]
-		   , in
-		   , in->hidx
-		   );
-	}
+	sp1->onget(sp1, sp1->idx, hmsg.url);
+
+      printf("%s [%s] val [%s] \n"
+	     , __FUNCTION__
+	     , sp1->name
+	     , sp1->value
+	     );
+      if(in)in_snprintf(in,NULL,"OK SEE %s to [%s]\n",sp1->name, sp1->value);
     }
   else
     {
-      if(in)
-	{
-	  in_snprintf(in, NULL, "ERR GET [%s] not found \n",sp);
-	  in->hidx = -2;
-	}
+      printf("%s [%s]  NOT FOUND\n"
+	     , __FUNCTION__ 
+	     , hmsg.url
+	     );
+      if(in)in_snprintf(in,NULL,"?? SEE [%s] not found \n",sp1->name);
     }
-
+  clean_hmsg(&hmsg);
   return sp1;
 }
 

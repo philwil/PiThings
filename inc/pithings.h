@@ -104,6 +104,10 @@ struct hmsg {
   char *vers;
   char *data;
   int dlen;
+  int slen;
+  int hlen;
+  int http;
+  int more;   // -1 not done 0 = done xxx = chars needed
   char *hvals1[NUM_HVALS1];
   char *hvals2[NUM_HVALS2];
   char *attrs[NUM_ATTRS];
@@ -433,6 +437,7 @@ struct space*find_space_name(struct list **root, char *name);
 struct attr*replace_space_attr(struct attr *attr, char *name);
 struct attr*find_space_attr(struct list **root, char *name);
 struct attr*new_space_attr(char *name);
+char *setup_hmsg_len(struct hmsg *hm, char *insp, int len);
 
 #endif
 

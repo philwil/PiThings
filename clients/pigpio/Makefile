@@ -12,6 +12,7 @@ LIBOBJS += $(BASEDIR)/lib/iobuf.c
 LIBOBJS += $(BASEDIR)/lib/node.c
 LIBOBJS += $(BASEDIR)/lib/list.c
 LIBOBJS += $(BASEDIR)/lib/group.c
+LIBOBJS += $(BASEDIR)/lib/hvals.c
 
 SRCOBJS = $(BASEDIR)/clients/pigpio/main.c
 #SRCOBJS += ../src/tests.c
