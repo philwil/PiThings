@@ -96,9 +96,12 @@ int init_hmsg(struct hmsg *hm)
 void clean_sp(char **spp)
 {
   char *sp;
-  sp = *spp;
-  if(sp)free(sp);
-  *spp = NULL;
+  if(spp)
+    {
+      sp = *spp;
+      if(sp)free(sp);
+      *spp = NULL;
+    }
 }
 
 void clean_vals(char *vals[], int num)

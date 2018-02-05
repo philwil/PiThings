@@ -40,15 +40,16 @@ struct space *_add_space_in(struct list **root, char *name,
 			    struct iosock *in)
 {
   struct space *space=NULL;
-  struct hmsg hmsg;
+  struct hmsg *hm;
   int idx;
-  init_hmsg(&hmsg);
-  setup_hmsg(&hmsg, name);
-  show_hmsg(&hmsg);
-  idx = add_hmsg_spaces(root, &hmsg);
+  //init_hmsg(&hmsg);
+  //setup_hmsg(&hmsg, name);
+  hm= in->hm;
+  show_hmsg(hm);
+  idx = add_hmsg_spaces(root, hm);
   if(idx >= 0)
     space = g_spaces[idx];
-  clean_hmsg(&hmsg);
+  //clean_hmsg(&hmsg);
   return space;
 }
 
@@ -693,16 +694,17 @@ int insert_space(struct list **parent, struct space *space)
 }
 struct space *show_space_in(struct list **root, char *name, struct iosock *in)
 {
-  struct hmsg hmsg;
-  int idx;
+  struct hmsg * hm;
+  int idx=-1;
   struct space *sp1=NULL;
   char sbuf[4096];
   struct list **base;
 
-  init_hmsg(&hmsg);
-  setup_hmsg(&hmsg, name);
-  show_hmsg(&hmsg);
-  idx = find_hmsg_spaces(root, &hmsg);
+  //init_hmsg(&hmsg);
+  //setup_hmsg(&hmsg, name);
+  hm = in->hm;
+  show_hmsg(hm);
+  //idx = find_hmsg_spaces(root, &hmsg);
   if(idx >= 0)
     {
       sp1 = g_spaces[idx];
@@ -720,7 +722,7 @@ struct space *show_space_in(struct list **root, char *name, struct iosock *in)
       base = &sp1->child;
   }
   show_spaces_new(in, base, sbuf, 4096, sbuf);
-  clean_hmsg(&hmsg);
+  //clean_hmsg(&hmsg);
 
   return NULL;
 }
@@ -998,18 +1000,18 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 struct space *get_space_in(struct list **root, char *name, struct iosock *in)
 {
   struct space *sp1=NULL;
-  struct hmsg hmsg;
+  struct hmsg *hm;
   int idx;
-
-  init_hmsg(&hmsg);
-  setup_hmsg(&hmsg, name);
-  show_hmsg(&hmsg);
-  idx = find_hmsg_spaces(root, &hmsg);
+  hm = in->hm;
+  //init_hmsg(&hmsg);
+  //setup_hmsg(&hmsg, name);
+  show_hmsg(hm);
+  idx = find_hmsg_spaces(root, hm);
   if(idx >= 0)
     {
       sp1 = g_spaces[idx];
       if(sp1->onget)
-	sp1->onget(sp1, sp1->idx, hmsg.url);
+	sp1->onget(sp1, sp1->idx, hm->url);
 
       printf("%s [%s] val [%s] \n"
 	     , __FUNCTION__
@@ -1022,11 +1024,11 @@ struct space *get_space_in(struct list **root, char *name, struct iosock *in)
     {
       printf("%s [%s]  NOT FOUND\n"
 	     , __FUNCTION__ 
-	     , hmsg.url
+	     , hm->url
 	     );
-      if(in)in_snprintf(in,NULL,"?? SEE [%s] not found \n",sp1->name);
+      if(in)in_snprintf(in,NULL,"?? SEE [%s] not found \n", hm->url);
     }
-  clean_hmsg(&hmsg);
+  //clean_hmsg(&hmsg);
   return sp1;
 }
 
