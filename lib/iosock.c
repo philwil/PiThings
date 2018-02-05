@@ -77,6 +77,7 @@ int init_iosock(struct iosock *in)
 
   in->initem=NULL;
   in->ouitem=NULL;
+  in->hm = NULL;
 
   return 0;
 }
@@ -562,6 +563,25 @@ int send_html_tail(struct iosock *in, char *msg)
 
 // collect and scan
 // hproto > 0 will trigger just a data scan
+int run_str_http_hmsg(struct iosock *in)
+{
+  struct hmsg *hm;
+  hm = in->hm;
+  int rc=0;
+  //int rlen;
+  struct iobuf *inbf;  // input buffer
+  
+  inbf = in->inbuf;
+  rc = inbf->outlen - inbf->outptr;
+  //rlen = rc;
+
+  rc = run_new_gcmd (hm->action, &g_space_list, hm->sp, in);
+
+  return rc;
+}
+
+// collect and scan
+// hproto > 0 will trigger just a data scan
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 {
   //struct space *space=NULL;
@@ -925,6 +945,86 @@ int handle_input_norm(struct iosock *in)
     return rc;
 }
 
+int skip_term(char *sp)
+{
+  if(*sp)
+    {
+      if(*sp == '\n') return 1;
+      if(*sp == '\r') return 1;
+    }
+  return 0;
+}
+
+int handle_input_norm_hmsg(struct iosock *in)
+{
+    int rc=0;
+    int len;
+    char *sp;
+    struct iobuf *inbf;  // input buffer
+    struct hmsg *hm;
+    int done = 0;
+
+    if(!in->hm)
+      {
+	in->hm = new_hmsg();
+      }
+    hm = in->hm;
+    while (!done)
+      {
+	if(!hm->more)
+	  clean_hmsg(hm);
+	
+	inbf = in->inbuf;
+	sp = &inbf->outbuf[inbf->outptr];
+	len = inbf->outlen - inbf->outptr;
+	setup_hmsg_len(hm, sp, len);
+	if(hm->more)
+	  return 1;
+	if(g_debug)
+	  {
+	    show_hmsg(hm);
+	  }
+	if(hm->http)
+	  rc = run_str_http_hmsg(in);
+	else
+	  rc = run_str_in_hmsg(in);
+	
+	inbf->outptr += hm->slen;
+	if (inbf->outptr < inbf->outlen)
+	  {
+	    sp = &inbf->outbuf[inbf->outptr];
+	    while (skip_term(sp)) 
+	      {
+		inbf->outptr++;
+		sp++;
+	      }
+	    printf(" %s adjust buffers slen %d more %d ptr/len %d/%d rest [%s]\n"
+		   , __FUNCTION__
+		   , hm->slen
+		   , hm->more
+		   , inbf->outptr
+		   , inbf->outlen
+		   , sp
+		   );
+	    if(hm->more) done = 1;
+	    if(hm->slen == 0) done = 1;
+	  }
+	if (inbf->outptr == inbf->outlen)
+	  {
+	    inbf->outptr = 0;
+	    inbf->outlen = 0;
+	    printf(" %s reset buffers slen = %d ptr/len %d/%d\n"
+		   , __FUNCTION__
+		   , hm->slen
+		   , inbf->outptr
+		   , inbf->outlen
+		   );
+	    done = 1;
+	  }
+      }
+    return rc;
+}
+
 // A bit complicated here
 // we have an input
 // we could have one or more commands in the input
@@ -953,7 +1053,7 @@ int handle_input(struct iosock *in)
       inbf = item->data;
       inbf->outlen = 0;
       inbf->outptr = 0;
-      push_list(&in->inbuf_list, item);
+      add_list(&in->inbuf_list, item);
     }
   // this is OK
   item = in->inbuf_list; 
@@ -975,7 +1075,7 @@ int handle_input(struct iosock *in)
       
       rsize = inbf->outsize-inbf->outlen;  // get remainig size
       printf(" ====>%s NEW rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
-      push_list(&in->inbuf_list, item);
+      add_list(&in->inbuf_list, item);
       
     }
   sp = &inbf->outbuf[inbf->outlen];
@@ -1031,7 +1131,8 @@ int handle_input(struct iosock *in)
 	  //}
 	  else
 	    {
-	      more = handle_input_norm(in);
+	      //more = handle_input_norm(in);
+	      more = handle_input_norm_hmsg(in);
 	    }
 	  //if((more == 0) && (in->hproto))
 	  //{

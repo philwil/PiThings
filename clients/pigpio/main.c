@@ -118,10 +118,10 @@ int test_file(char *name)
   return fd;
 }
 
-int def_config(void)
+int def_config(struct space *sp1)
 {
    char buf[2048];
-   struct space *sp1;
+   //struct space *sp1;
    struct space *sp2;
    struct list *lp1;
    struct list *lp2;
@@ -182,10 +182,11 @@ int main (int argc, char *argv[])
    test_parse_stuff();
    return 0;
 #endif
-#if 1
+#if 0
    test_hmsg();
    return 0;
 #endif
+   printf(" def_config 1\n");
 
    g_myaddr = strdup("127.0.0.1");
    init_g_spaces();
@@ -196,17 +197,20 @@ int main (int argc, char *argv[])
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
    g_list_debug =1;
-   g_debug = 0;
+   g_debug = 1;
    g_debug_term = 0;
+   sp1 = NULL;
    rc = test_file("config.txt");
+   printf(" def_config 2 rc %d\n", rc);
+   g_debug = 1;
    if(rc< 0)
      {
-       def_config();
+       printf(" def_config\n");
+       def_config(sp1);
      }
-   g_debug = 1;
-
+   //return 0;
    in->fd = 1;
-#if 1
+#if 0
    printf(" Running test_list\n");
    test_lists();
    add_space_in(&g_space_list, "ADD uavx/motor1 1234", NULL);

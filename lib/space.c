@@ -807,7 +807,7 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
 	     , __FUNCTION__ 
 	     , hmsg.url
 	     );
-      if(in)in_snprintf(in,NULL,"?? SET [%s] not found \n",sp1->name);
+      if(in)in_snprintf(in,NULL,"?? SET idx %d  not found \n", idx);//sp1->name);
     }
 
   clean_hmsg(&hmsg);

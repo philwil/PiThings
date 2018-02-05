@@ -64,8 +64,6 @@ struct attr {
 };
 
 
-
-
 // OK the space becomes the real thing
 // A space can have kids and attributes
 // all of which are also "spaces"  
@@ -93,8 +91,6 @@ struct space {
   int (*onget)(struct space *this, int idx, char *name);
 
 };
-
-
 
 struct hmsg {
   char *sp;
@@ -163,7 +159,7 @@ struct iosock
   int tlen;       // term
   int nosend;       // term
   int instate;
-  
+  struct hmsg *hm;  
 };
 
 struct cmds
@@ -438,6 +434,10 @@ struct attr*replace_space_attr(struct attr *attr, char *name);
 struct attr*find_space_attr(struct list **root, char *name);
 struct attr*new_space_attr(char *name);
 char *setup_hmsg_len(struct hmsg *hm, char *insp, int len);
+struct hmsg *new_hmsg(void);
+
+int run_str_in_hmsg(struct iosock *in);
+int run_str_http_hmsg(struct iosock *in);
 
 #endif
 

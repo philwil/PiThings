@@ -234,6 +234,7 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
     "thisistherealnumber\n";
   */
   hm->hlen = len;
+  hm->slen = 0;
 
   if (!strchr(insp,'\n'))
     {
@@ -251,9 +252,22 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
 	      , hm->hvals1[2]
 	      , hm->hvals1[3]
 	      );
-  hm->action = get_valx(hm->hvals1, 0);  // POST GET etc
-  hm->vers   = get_valx(hm->hvals1, 2);  // VERS
-  sp         = get_valx(hm->hvals1, 1);  // uri + query
+  if(idx > 0)
+    {
+      hm->action = get_valx(hm->hvals1, 0);  // POST GET etc
+      hm->slen = (strstr(hm->sp,hm->action) - hm->sp) +strlen(hm->action);
+    }
+  if(idx > 1)
+    {
+      sp         = get_valx(hm->hvals1, 1);  // uri + query
+      hm->slen = (strstr(&hm->sp[hm->slen],sp) - hm->sp) +strlen(sp);
+    }
+  if(idx > 2)
+    {
+      hm->vers   = get_valx(hm->hvals1, 2);  // VERS
+      hm->slen = (strstr(&hm->sp[hm->slen],hm->vers) - hm->sp)+strlen(hm->vers);
+    }
+
   if(hm->vers && (strstr(hm->vers,"HTTP")))
     {
       hm->http = 1;
@@ -264,34 +278,39 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
       if(hm->vers)
 	hm->data   = strdup(hm->vers);  // VERS
       if(hm->data)
+	{
 	hm->dlen = strlen(hm->data);
+	hm->slen += hm->dlen;
+	}
       else
 	hm->dlen = 0;
 
-      spx = strstr(hm->sp,"\n");
     }
-  idx = parse_stuff('?', 4 , (char **)hm->hvals2, sp,'?');
-  if(1)printf(" %s parse_stuff 2 idx %d got [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , hm->hvals2[0]
-	      , hm->hvals2[1]
-	      );
-
-  hm->url = get_valx(hm->hvals2, 0);  //url
-  hm->qstring = get_valx(hm->hvals2, 1);  //query
-  sp = hm->qstring;
   if(sp)
     {
-      idx = parse_stuff('&', 8 , (char **)hm->attrs, sp,' ');
-      if(0)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
-	      , __FUNCTION__
-	      , idx
-	      , hm->attrs[0]
-	      , hm->attrs[1]
-	      , hm->attrs[2]
-	      , hm->attrs[3]
-	      );
+      idx = parse_stuff('?', 4 , (char **)hm->hvals2, sp,'?');
+      if(1)printf(" %s parse_stuff 2 idx %d got [%s] [%s]\n"
+		  , __FUNCTION__
+		  , idx
+		  , hm->hvals2[0]
+		  , hm->hvals2[1]
+		  );
+
+      hm->url = get_valx(hm->hvals2, 0);  //url
+      hm->qstring = get_valx(hm->hvals2, 1);  //query
+      sp = hm->qstring;
+      if(sp)
+	{
+	  idx = parse_stuff('&', 8 , (char **)hm->attrs, sp,' ');
+	  if(0)printf(" %s parse_stuff idx %d got [%s] [%s] [%s] [%s]\n"
+		      , __FUNCTION__
+		      , idx
+		      , hm->attrs[0]
+		      , hm->attrs[1]
+		      , hm->attrs[2]
+		      , hm->attrs[3]
+		      );
+	}
     }
   sp = hm->url;
   if(sp)
@@ -315,13 +334,17 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
       //printf("decode content len from [%s]\n",sp);
       hm->dlen = decode_content_length(sp);
     }
+  if(!hm->http)  if(!spx) spx = strstr(hm->sp,"\n");
   if(!spx)spx = strstr(hm->sp,"\r\n\r\n");
   if(!spx) spx = strstr(hm->sp,"\n\r\n\r");
   if(!spx) spx = strstr(hm->sp,"\n\n");
+  if(!spx) spx = strstr(hm->sp,"\n");
+  printf(" %s looking for slen spx =[%s]\n", __FUNCTION__, spx);
   if(spx)
     {
       hm->slen = spx - hm->sp;
       if(hm->http)hm->slen += hm->dlen;
+
     }
   sp = NULL;
   if(hm->dlen && hm->http)
@@ -343,6 +366,14 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
 char *setup_hmsg(struct hmsg *hm, char *insp)
 {
   return setup_hmsg_len(hm, insp, strlen(insp));
+}
+
+struct hmsg*new_hmsg(void)
+{
+  struct hmsg *hm;
+  hm = malloc(sizeof(struct hmsg));
+  init_hmsg(hm);
+  return hm;
 }
 
 int test_hmsg(void)

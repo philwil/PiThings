@@ -882,6 +882,16 @@ struct space *decode_rep_in(struct list **base, char *name, struct iosock *in)
   return NULL;
 }
 
+int run_str_in_hmsg(struct iosock *in)
+{
+  struct hmsg *hm = in->hm;
+  int rc = 0;
+  if(hm->action)
+    rc = run_new_gcmd (hm->action, &g_space_list, hm->sp, in);
+  if(rc >= 0) return 0;
+  return rc;
+}
+
 int run_str_in(struct iosock *in, char *stuff, char *cmd)
 {
   //struct space *space=NULL;
