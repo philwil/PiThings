@@ -226,6 +226,7 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
   int idx=-1;
   char *sp=NULL;
   char *spx=NULL;
+  int s_cnt = 0;
   /*
   sp ="POST /pine1/gpios/gpio1?value=somenewvalue&fum=2345 HTTP/1.1\n"
     "User-Agent: curl/7.26.0\n"
@@ -337,18 +338,26 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
       //printf("decode content len from [%s]\n",sp);
       hm->dlen = decode_content_length(sp);
     }
+  s_cnt  = 1;
   if(!hm->http)  if(!spx) spx = strstr(hm->sp,"\n");
-  if(!spx)spx = strstr(hm->sp,"\r\n\r\n");
-  if(!spx) spx = strstr(hm->sp,"\n\r\n\r");
-  if(!spx) spx = strstr(hm->sp,"\n\n");
+  if(!spx){spx = strstr(hm->sp,"\r\n\r\n"); s_cnt = 4;}
+  if(!spx) {spx = strstr(hm->sp,"\n\r\n\r");s_cnt = 4;}
+  if(!spx) {spx = strstr(hm->sp,"\n\n");s_cnt = 2;}
   if(!spx) spx = strstr(hm->sp,"\n");
-  printf(" %s looking for slen spx =[%s]\n", __FUNCTION__, spx);
+
   if(spx)
     {
       hm->slen = spx - hm->sp;
       if(hm->http)hm->slen += hm->dlen;
+      hm->slen += s_cnt;
 
     }
+  printf(" %s looking for slen spx =[%s] s_cnt %d s/l %d/%d\n"
+	 , __FUNCTION__, spx
+	 , s_cnt
+	 , hm->slen
+	 , len
+	 );
   sp = NULL;
   if(hm->dlen && hm->http)
     sp = find_data(hm->sp);
@@ -361,6 +370,8 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
 
   if(len < hm->slen)
     hm->more = 1;
+  if(len == 0)
+    hm->more = 0;
 
   return sp;
 }

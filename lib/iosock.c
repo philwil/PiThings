@@ -580,6 +580,7 @@ int run_str_http_hmsg(struct iosock *in)
   return rc;
 }
 
+#if 0
 // collect and scan
 // hproto > 0 will trigger just a data scan
 int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
@@ -707,7 +708,7 @@ int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
 
   return 0;
 }
-
+#endif
 
 char *data_replace(char **strp, char *rep, int len)
 {
@@ -746,6 +747,7 @@ char *str_replace(char **strp, char *rep)
 // we return the "more" output
 // the get_space_in will normally use the buffer with hproto = 3
 // I guess we could make it used the stored data
+#if 0
 int handle_input_norm(struct iosock *in)
 {
     int rc=0;
@@ -944,6 +946,7 @@ int handle_input_norm(struct iosock *in)
       }
     return rc;
 }
+#endif
 
 int skip_term(char *sp)
 {

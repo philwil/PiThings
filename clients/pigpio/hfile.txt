@@ -2827,3 +2827,95 @@ ADD pine1/foo
 HELP
 ==================
 QUIT
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+GET /pine1 HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:5432
+Accept: */*
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+SHOW
+==================
+SET pine1 foo
+==================
+SHOW
+==================
+SEE pine1

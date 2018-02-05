@@ -768,34 +768,36 @@ int set_spacexx(struct list **list, char *name, char *value)
 struct space *set_space_in(struct list **root, char *name, struct iosock *in)
 {
   struct space *sp1=NULL;
-  struct hmsg hmsg;
+  struct hmsg *hm;
+  hm = in->hm;
+
   int idx;
   char *spv;
-  init_hmsg(&hmsg);
-  setup_hmsg(&hmsg, name);
-  show_hmsg(&hmsg);
-  idx = find_hmsg_spaces(root, &hmsg);
+  //init_hmsg(&hmsg);
+  //setup_hmsg(&hmsg, name);
+  show_hmsg(hm);
+  idx = find_hmsg_spaces(root, hm);
   if(idx >= 0)
     {
       sp1 = g_spaces[idx];
       str_replace(&sp1->value, NULL);
-      if(hmsg.data)
+      if(hm->data)
 	{
-	  spv=hmsg.data;
-	  hmsg.data = NULL;
+	  spv=hm->data;
+	  hm->data = NULL;
 	}
-      else if(hmsg.vers)
-	{
-	  spv=hmsg.vers;
-	  hmsg.vers = NULL;
-	}
+      //else if(hmsg.vers)
+      //{
+      //  spv=hmsg.vers;
+      //  hmsg.vers = NULL;
+      //}
 
       printf("%s [%s] old val [%s] hmsg.data[%s] hmsg.vers[%s] spv [%s]\n"
 	     , __FUNCTION__
 	     , sp1->name
 	     , sp1->value
-	     , hmsg.data 
-	     , hmsg.vers
+	     , hm->data
+	     , hm->vers
 	     , spv
 	     );
       set_space_value(sp1, spv, name);
@@ -807,12 +809,12 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
     {
       printf("%s [%s]  NOT FOUND\n"
 	     , __FUNCTION__ 
-	     , hmsg.url
+	     , hm->url
 	     );
       if(in)in_snprintf(in,NULL,"?? SET idx %d  not found \n", idx);//sp1->name);
     }
 
-  clean_hmsg(&hmsg);
+  //clean_hmsg(&hmsg);
   return sp1;
 }
 
@@ -831,33 +833,38 @@ int set_space(struct list **list, char *name)
 // char *get_space(struct space *base, char *name)
 struct space *get_html_in(struct list **listp, char *name, struct iosock *in)
 {
-  char *sp_name;
+
+  struct hmsg *hm;
+  hm = in->hm;
+
+  //char *sp_name;
   //  char *vers="HTTP/1.1";
   //char buf[2048];
-  char spv[2][128];
+  //char spv[2][128];
   int rc=0;
-  spv[0][0]=0;
-  spv[1][0]=0;
-  sp_name = spv[1];
-  in->hproto=1;  // trigger an html read
+  //spv[0][0]=0;
+  //spv[1][0]=0;
+  //sp_name = spv[1];
+  //in->hproto=1;  // trigger an html read
 
-  rc = sscanf(sp_name,"%s %s", spv[0], spv[1]);
+  //rc = sscanf(sp_name,"%s %s", spv[0], spv[1]);
   // strdup
-  if(1)printf(" %s hproto %d rc %d looking for [%s] [%s]\n"
+  if(1)printf(" %s http %d rc %d looking for [%s] [%s]\n"
 	      , __FUNCTION__
 	      , rc
-	      , in->hproto
-	      , spv[0]
-	      , spv[1]
+	      , hm->http
+	      , hm->action
+	      , hm->url
 	      );
-  str_replace(&in->hcmd, spv[0]);
+  str_replace(&in->hcmd, hm->action);
   return NULL;
 }
 
+#if 0
 // This is the GET command
 // run in response to the html GET command
 //char *get_space(struct space *base, char *name)
-struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
+struct space *xyget_html_in(struct list **listp, char *name, struct iosock *in)
 {
   //char *sret=NULL;
   struct space *sp1;
@@ -994,6 +1001,8 @@ struct space *xget_html_in(struct list **listp, char *name, struct iosock *in)
 
   return sp1;
 }
+#endif
+
 
 // This is the GET command
 //char *get_space(struct space *base, char *name)
