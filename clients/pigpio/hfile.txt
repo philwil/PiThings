@@ -2742,3 +2742,88 @@ SEE pine2/foo
 ADD pine2/foo
 ==================
 
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+HELP
+==================
+ADD pine1/foo
+==================
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/foo
+==================
+
+==================
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/foo
+==================
+
+==================
+ADD pine1/foo
+==================
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/foo
+==================
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+ADD pine1/foo
+==================
+
+==================
+SHOW
+==================
+ADD pine1/foo
+==================
+
+==================
+
+==================
+HELP
+==================
+QUIT

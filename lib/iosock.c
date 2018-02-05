@@ -1104,7 +1104,7 @@ int handle_input(struct iosock *in)
 	  }
    
       }
-      while(more)
+      while(more>0)
 	{
 	  if(g_debug)
 	    {
