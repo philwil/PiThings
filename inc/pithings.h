@@ -89,7 +89,6 @@ struct space {
   struct list *group;
   int (*onset)(struct space *this, int idx, char *name, char * value);
   int (*onget)(struct space *this, int idx, char *name);
-
 };
 
 struct hmsg {
