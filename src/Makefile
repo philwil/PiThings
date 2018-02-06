@@ -13,6 +13,7 @@ LIBOBJS += ../lib/iobuf.c
 LIBOBJS += ../lib/node.c
 LIBOBJS += ../lib/list.c
 LIBOBJS += ../lib/group.c
+LIBOBJS += ../lib/hvals.c
 
 SRCOBJS = ../src/main.c
 SRCOBJS += ../src/tests.c

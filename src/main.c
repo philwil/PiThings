@@ -48,6 +48,13 @@ char *g_myname = NULL;
 char *g_myaddr = NULL;
 
 /*
+
+  oK major rework time.
+MOst of this is good but we need to pull in the whole html header and data before processing.
+We will not use GET or POST in the main command list 
+GET will become SEE
+GET/POST  will be still in the main command list but will trigger a deffered action.
+ 
   NOTE on port num myname (command line also specifies myname )
  g_port_no
 
@@ -99,10 +106,7 @@ GET name
 
 */
 
-
-
-
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
    int rc = 1;
@@ -112,12 +116,34 @@ int main (int argc, char *argv[])
    struct list *lp2;
    //struct space *sp3;
    char buf[2048];
-   //char *sp;
    //char *vals[64];
    struct iosock ins;
    struct iosock *in = &ins;
 
+#if 0
+   test_hmsg();
+   return 0;
+#endif
 
+#if 0
+   char *sp;
+   char *valx[4];
+   int idx;
+
+   valx[0]=NULL;
+   valx[1]=NULL;
+   valx[2]=NULL;
+   valx[3]=NULL;
+   sp = "/pine1/gpios/gpio1?foo=1&fum=1234";
+   idx = parse_stuff('?', 4 , (char **)valx, sp,'?');
+   if(1)printf(" %s parse_stuff idx %d got [%s] [%s]\n"
+	      , __FUNCTION__
+	       , idx
+	       , valx[0]
+	       , valx[1]
+	       );
+   return 0;
+#endif
    g_myaddr = strdup("127.0.0.1");
    init_g_spaces();
    init_iosocks();
@@ -129,10 +155,10 @@ int main (int argc, char *argv[])
    //test_niob(); //
    //return 0;
 
+
+
+   
    g_list_debug =1;
-   //add_space_in(&g_space_list, "ADD uav1", NULL);
-   //add_space_in(&g_space_list, "ADD uav2", NULL);
-   //add_space_in(&g_space_list, "ADD uav3", NULL);
    add_space_in(&g_space_list, "ADD uav1/motor1", NULL);
    add_space_in(&g_space_list, "ADD uav1/motor2", NULL);
    sp1 = find_space_new(&g_space_list, "ADD uav1");
