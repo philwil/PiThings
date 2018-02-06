@@ -575,7 +575,7 @@ int run_str_http_hmsg(struct iosock *in)
   rc = inbf->outlen - inbf->outptr;
   //rlen = rc;
 
-  rc = run_new_gcmd (hm->action, &g_space_list, hm->sp, in);
+  run_new_gcmd (hm->action, &g_space_list, hm->sp, in);
 
   return rc;
 }
@@ -1023,6 +1023,7 @@ int handle_input_norm_hmsg(struct iosock *in)
 		   , inbf->outlen
 		   );
 	    done = 1;
+	    rc = 0;
 	  }
       }
     return rc;

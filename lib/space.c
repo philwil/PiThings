@@ -825,37 +825,113 @@ int set_space(struct list **list, char *name)
   return 0;
 }
 
+char* get_hmsg_attr(struct hmsg *hm, char *name)
+{
+  int i;
+  //struct attr *attr = NULL;
+  char * spa;
+  for (i = 0 ; i < NUM_ATTRS; i++)
+    {
+      if(hm->attrs[i])
+	{
+	  spa = hm->attrs[i];
+	  if (strstr(spa, name) == spa)
+	    {
+	      break;
+	    }
+	}
+      else
+	{
+	  spa = NULL;
+	  break;
+	}
+    }
+  if(spa) 
+    spa = &spa[strlen(name)];
+  return spa;
+}
+
 
 // This is the GET/POST response
 // We start an HTML acquire till the last blank line pair
 // and any content.
 // then we'll rereun the original command with the header decoded 
 // char *get_space(struct space *base, char *name)
-struct space *get_html_in(struct list **listp, char *name, struct iosock *in)
+struct space *get_html_in(struct list **root, char *name, struct iosock *in)
 {
 
   struct hmsg *hm;
+  //struct attr* attr;
+  char *spa;
+  int rc = 0;
+  int idx;
+  struct space *sp1=NULL;
+  char * sp_child;
+  char buf[2048];
+
+  sp_child="<select name=\"forma\" onchange=\"location = this.value;\">"
+    "<option value=\"gpio1\">gpio1</option>"
+    "<option value=\"gpio2\">gpio2</option>"
+    "<option value=\"gpio3\">gpio3</option>"
+    "</select>";
+
   hm = in->hm;
+  rc=hm->more;
 
-  //char *sp_name;
-  //  char *vers="HTTP/1.1";
-  //char buf[2048];
-  //char spv[2][128];
-  int rc=0;
-  //spv[0][0]=0;
-  //spv[1][0]=0;
-  //sp_name = spv[1];
-  //in->hproto=1;  // trigger an html read
+  idx = find_hmsg_spaces(root, hm);
 
-  //rc = sscanf(sp_name,"%s %s", spv[0], spv[1]);
-  // strdup
-  if(1)printf(" %s http %d rc %d looking for [%s] [%s]\n"
-	      , __FUNCTION__
-	      , rc
-	      , hm->http
-	      , hm->action
-	      , hm->url
+  if(idx >= 0)
+    {
+      sp1 = g_spaces[idx];
+    }
+  if(sp1)
+    {
+      spa = get_hmsg_attr(hm,"value=");
+      if(spa)
+	{
+	  str_replace(&sp1->value, spa);
+	}
+      snprintf(buf, 2048, "%s 200 OK\r\n"
+	       "Content-Type: text/html\r\n\r\n"
+	       "<html><head>"
+	       "</head>\n"
+	       ,hm->vers);
+      write(in->fd, buf, strlen(buf));
+      snprintf(buf, 2048,
+	       "<!DOCTYPE html>"
+	       "<html>"
+	       "<body>"
+	       "<form action=\"%s\">"
+	       "Variable %s"
+	       "<input type=\"text\" name=\"value\" value=\"%s\">"
+	       "<input type=\"submit\" value=\"Change\">"
+	       "%s"
+	       "</form><br><br>" 
+	       "</body>"
+	       "</html>"
+	       , hm->url, sp1->name, sp1->value, sp_child);
+	      //send_html_form(in, spv[1], sp1->name, sp1->value);
+	      write(in->fd, buf, strlen(buf));
+	      close(in->fd);
+      if(1)printf(" %s http %d rc %d looking for [%s] [%s] found [%s]\n"
+		  , __FUNCTION__
+		  , rc
+		  , hm->http
+		  , hm->action
+		  , hm->url
+		  , sp1->name
 	      );
+    }
+  else
+    {
+      if(1)printf(" %s http %d rc %d looking for [%s] [%s] NOT FOUND\n"
+		  , __FUNCTION__
+		  , rc
+		  , hm->http
+		  , hm->action
+		  , hm->url
+	      );
+    }
   str_replace(&in->hcmd, hm->action);
   return NULL;
 }
