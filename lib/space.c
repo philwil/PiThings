@@ -825,6 +825,7 @@ int set_space(struct list **list, char *name)
   return 0;
 }
 
+// TODO use struct attr in hmsg 
 char* get_hmsg_attr(struct hmsg *hm, char *name)
 {
   int i;
@@ -858,15 +859,22 @@ char* get_hmsg_attr(struct hmsg *hm, char *name)
 // char *get_space(struct space *base, char *name)
 struct space *get_html_in(struct list **root, char *name, struct iosock *in)
 {
-
   struct hmsg *hm;
   //struct attr* attr;
   char *spa;
   int rc = 0;
   int idx;
+  //struct space *sppar=NULL;
+  struct space *spr=NULL;
   struct space *sp1=NULL;
-  char * sp_child;
+  char *sp_child;
+  char *sp_root;
   char buf[2048];
+  char sp_buf[2048];
+  char sp_kids[2048];
+  int sp_rlen;
+  struct list *ritem = NULL;
+  struct list *item=g_space_list;
 
   sp_child="<select name=\"forma\" onchange=\"location = this.value;\">"
     "<option value=\"gpio1\">gpio1</option>"
@@ -877,19 +885,74 @@ struct space *get_html_in(struct list **root, char *name, struct iosock *in)
   hm = in->hm;
   rc=hm->more;
 
-  idx = find_hmsg_spaces(root, hm);
+  sp_root=sp_buf;
 
+  sp_rlen = sizeof(sp_buf);
+  snprintf(sp_root, sp_rlen
+	   ,"%s"
+	   ,"<select name=\"root\" onchange=\"location =/this.value;\">"
+	   );
+  sp_root = &sp_buf[strlen(sp_buf)];
+  sp_rlen = sizeof(sp_buf)- strlen(sp_buf);
+  // get root list
+  while(foreach_item(&ritem,&item))
+    {
+      spr = item->data;
+      snprintf(sp_root, sp_rlen
+	       ,"<option value=\"%s\">%s</option>"
+	       , spr->name
+	       , spr->name
+	       );
+      sp_root = &sp_buf[strlen(sp_buf)];
+      sp_rlen = sizeof(sp_buf)- strlen(sp_buf);
+    }
+  snprintf(sp_root, sp_rlen
+	   ,"%s"
+	   ,"</select>"
+	   );
+  
+  idx = find_hmsg_spaces(root, hm);
   if(idx >= 0)
     {
       sp1 = g_spaces[idx];
     }
+
   if(sp1)
     {
+
       spa = get_hmsg_attr(hm,"value=");
       if(spa)
 	{
 	  str_replace(&sp1->value, spa);
 	}
+
+      sp_root=sp_kids;
+      sp_rlen = sizeof(sp_kids);
+      snprintf(sp_root, sp_rlen
+	       ,"%s"
+	       ,"<select name=\"kids\" onchange=\"location =this.value;\">"
+	       );
+      sp_root = &sp_kids[strlen(sp_kids)];
+      sp_rlen = sizeof(sp_kids)- strlen(sp_kids);
+      // get root list
+      item = sp1->child;
+      ritem = NULL;
+      while(foreach_item(&ritem,&item))
+	{
+	  spr = item->data;
+	  snprintf(sp_root, sp_rlen
+	       ,"<option value=\"%s\">%s</option>"
+		   , spr->name
+		   , spr->name
+		   );
+	  sp_root = &sp_kids[strlen(sp_kids)];
+	  sp_rlen = sizeof(sp_kids)- strlen(sp_kids);
+	}
+      snprintf(sp_root, sp_rlen
+	       ,"%s"
+	       ,"</select>"
+	       );
+
       snprintf(buf, 2048, "%s 200 OK\r\n"
 	       "Content-Type: text/html\r\n\r\n"
 	       "<html><head>"
@@ -901,6 +964,8 @@ struct space *get_html_in(struct list **root, char *name, struct iosock *in)
 	       "<html>"
 	       "<body>"
 	       "<form action=\"%s\">"
+	       "Root %s "
+	       "Child %s "
 	       "Variable %s"
 	       "<input type=\"text\" name=\"value\" value=\"%s\">"
 	       "<input type=\"submit\" value=\"Change\">"
@@ -908,7 +973,7 @@ struct space *get_html_in(struct list **root, char *name, struct iosock *in)
 	       "</form><br><br>" 
 	       "</body>"
 	       "</html>"
-	       , hm->url, sp1->name, sp1->value, sp_child);
+	       , hm->url, sp_buf, sp_kids, sp1->name, sp1->value, sp_child);
 	      //send_html_form(in, spv[1], sp1->name, sp1->value);
 	      write(in->fd, buf, strlen(buf));
 	      close(in->fd);
@@ -934,149 +999,6 @@ struct space *get_html_in(struct list **root, char *name, struct iosock *in)
   str_replace(&in->hcmd, hm->action);
   return NULL;
 }
-
-#if 0
-// This is the GET command
-// run in response to the html GET command
-//char *get_space(struct space *base, char *name)
-struct space *xyget_html_in(struct list **listp, char *name, struct iosock *in)
-{
-  //char *sret=NULL;
-  struct space *sp1;
-  //struct list *list;
-  //struct space *base = NULL;
-  //  char *sp;
-  char *sp2=NULL;
-  char *spv=NULL;
-  char *sp_name;
-  //char *vers="HTTP/1.1";
-  char buf[2048];
-  char *sp_child;
-
-  sp_name = in->hsp;
-  sp2 = get_uri(sp_name);
-  spv = get_query(sp_name,"value");
-  if(spv) in->hproto = 2;
-  sp1 = find_space_new(listp, sp2);
-
-  if(1)printf(" %s hproto %d query[%s] value [%s] space [%s]\n"
-	      , __FUNCTION__
-	      , in->hproto
-	      , sp2
-	      , spv ? spv:"no value"
-	      , sp1 ? sp1->name:"not found"
-	      );
-
- 
-  //char *valx[4];
-  //int idx;
-#if 0
-<select name="forma" onchange="location = this.value;">
- <option value="Home.php">Home</option>
- <option value="Contact.php">Contact</option>
- <option value="Sitemap.php">Sitemap</option>
-</select>
-#endif
-  sp_child="<select name=\"forma\" onchange=\"location = this.value;\">"
-    "<option value=\"gpio1\">gpio1</option>"
-    "<option value=\"gpio2\">gpio2</option>"
-    "<option value=\"gpio3\">gpio3</option>"
-    "</select>";
-  
-
-  sp1 = find_space_new(listp, sp2);
-  if(sp1)
-    {
-
-      if(sp1->onget)
-	sp1->onget(sp1, sp1->idx, sp_name);
-      //sret = sp1->value;
-      if(in)
-	{
-	  if(in->hproto == 2)
-	    {
-	      if (in->hdata)
-		{
-		  if(sp1->value) free (sp1->value);
-		  sp1->value = in->hdata;
-		  sp1->vallen = in->hlen;
-		  in->hdata = NULL;
-		}
-	      if(spv)
-		{
-		  if(sp1->value) free (sp1->value);
-		  sp1->value = spv;
-		  sp1->vallen = strlen(spv);
-		  spv = NULL;
-		}
-	    }
-	  if(in->hproto >0)
-	    {
-	      printf(" %s using referer %p [%s]\n", __FUNCTION__, in, in->referer);
-	      printf(" %s using host %p [%s]\n", __FUNCTION__, in, in->host);
-	      printf(" %s using vers %p [%s]\n", __FUNCTION__, in, in->hvers);
-	      snprintf(buf, 2048, "%s 200 OK\r\n"
-		       "Content-Type: text/html\r\n\r\n"
-		       "<html><head>"
-		       "</head>\n"
-		       ,in->hvers);
-	      write(in->fd, buf, strlen(buf));
-	      snprintf(buf, 2048,
-		       "<!DOCTYPE html>"
-		       "<html>"
-		       "<body>"
-		       "<form action=\"%s\">"
-		       "Variable %s"
-		       "<input type=\"text\" name=\"value\" value=\"%s\">"
-		       "<input type=\"submit\" value=\"Change\">"
-		       "%s"
-		       "</form><br><br>" 
-		       "</body>"
-		       "</html>"
-		       , sp2, sp1->name, sp1->value, sp_child);
-	      //send_html_form(in, spv[1], sp1->name, sp1->value);
-	      write(in->fd, buf, strlen(buf));
-	      close(in->fd);
-	      //send_html_head(in, NULL);
-	    }
-	}
-      
-      in->hidx = sp1->idx;
-
-    }
-  else
-    {
-      if(in)
-	{
-	  if (in->hproto > 0)
-	    {
-	      snprintf(buf, 2048, "%s 200 OK\r\n"
-		       "Content-Type: text/html\r\n\r\n"
-		       "<html><head><style>"
-		       "body{font-family: monospace; font-size: 13px;}"
-		       "td {padding: 1.5px 6px;}"
-		       "</style></head><body>\n "
-		       "ERR GET %s not found\n"
-		       "</body></html>\n\n"
-		       ,in->hvers
-		       , sp2);
-	      write(in->fd, buf, strlen(buf));
-	    }
-	  //send_html_head(in, NULL);
-	}
-    }
-
-  if (in->hproto > 0)
-    {
-      printf("%s reset hproto\n", __FUNCTION__);
-      in->hproto=0;
-    }
-  if(spv)free(spv);
-  if(sp2)free(sp2);
-
-  return sp1;
-}
-#endif
 
 
 // This is the GET command
@@ -1129,4 +1051,3 @@ char *get_space(struct list **list, char *name)
   return ret;
 }
 
-//int count = 0;

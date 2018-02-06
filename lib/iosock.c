@@ -27,20 +27,20 @@ extern int g_num_socks;
 extern struct space *g_spaces[];
 extern struct list *g_space_list;
 extern struct list *g_iob_list;
-
+//
 int init_iosocks(void)
 {
   int i;
   struct iosock *in;
   for (i = 0; i< NUM_SOCKS; i++)
   {
-
       in = &g_iosock[i];
       init_iosock(in);
   }
   return i;
 }
 
+//
 int init_iosock(struct iosock *in)
 {
 
@@ -82,16 +82,7 @@ int init_iosock(struct iosock *in)
   return 0;
 }
 
-
-
-//struct iobuf/
-//{
-//struct iobuf *prev;
-//struct iobuf *next;
-//char *outbuf;
-//int outlen;
-//int outptr;
-//};
+//
 int connect_socket(int portno, char *addr)
 {
      int sockfd;
@@ -136,15 +127,13 @@ int connect_socket(int portno, char *addr)
      }
      printf( "connect sock #%d\n", sockfd );
      return sockfd;
-} 
+}
 
+//
 int listen_socket(int portno)
 {
      int sockfd;
-     //char buffer[256];
      struct sockaddr_in serv_addr;
-     //int n;
-     //int data;
      int optval;
      
      printf( "using port #%d\n", portno );
@@ -184,6 +173,7 @@ int listen_socket(int portno)
      return sockfd;
 } 
 
+//
 int add_socket(int sockfd)
 {
   int i;
@@ -200,6 +190,7 @@ int add_socket(int sockfd)
   return sockfd;
 }
 
+//
 int accept_socket_fd(int sockfd)
 {
      int newsock, clilen;
@@ -208,7 +199,9 @@ int accept_socket_fd(int sockfd)
      if (sockfd != STDIN_FILENO)
      {
 	 clilen = sizeof(cli_addr);
-	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr, (socklen_t*) &clilen) ) < 0 )
+	 if ( ( newsock = accept( sockfd
+				  , (struct sockaddr *) &cli_addr
+				  , (socklen_t*) &clilen) ) < 0 )
 	   {
 	     printf("ERROR on accept\n");
 	     return -1;
@@ -222,7 +215,7 @@ int accept_socket_fd(int sockfd)
      return add_socket(newsock);
 }
 
-
+//
 int accept_socket(int sockfd)
 {
      int newsock, clilen;
@@ -231,7 +224,8 @@ int accept_socket(int sockfd)
      if (sockfd != STDIN_FILENO)
      {
 	 clilen = sizeof(cli_addr);
-	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr, (socklen_t*) &clilen) ) < 0 )
+	 if ( ( newsock = accept( sockfd, (struct sockaddr *) &cli_addr
+				  , (socklen_t*) &clilen) ) < 0 )
 	   {
 	     printf("ERROR on accept\n");
 	     return -1;
@@ -245,6 +239,7 @@ int accept_socket(int sockfd)
      return add_socket(newsock);
 }
 
+//
 struct iosock *find_fd(int fsock)
 {
     int i;
@@ -260,6 +255,7 @@ struct iosock *find_fd(int fsock)
     return in;
 }
 
+//
 int close_fds(int fsock)
 {
     int rc = -1;
@@ -269,17 +265,14 @@ int close_fds(int fsock)
 	// TODO drain iobufs	
 	rc = 0;
 	in->fd = -1;
-	//in->inptr = 0;
-	//in->inlen = 0;
-	
 	g_num_socks--;
       }
     return rc;
 }
 
+//
 int get_rsize(struct iosock *in)
 {
-  //int rc=0;
   int rlen = 0;
   struct iobuf *inbf;  // input buffer
 
@@ -288,16 +281,15 @@ int get_rsize(struct iosock *in)
   return rlen;
 }
 
+//
+// TODO use hmsg
 int handle_input_cmd(struct iosock *in)
 {
     int rc=0;
-    //int len=0;
     int n;
     char cmd[64];
     char *sp;
     struct iobuf *inbf;  // input buffer
-    //struct iobuf *oubf;  // input buffer
-    //int rsize;
     int tosend;
     int bytesin;
 
@@ -369,7 +361,7 @@ int handle_input_cmd(struct iosock *in)
     return rc;
 }
 
-
+// TODO use hmsg
 int handle_input_rep(struct iosock *in)
 {
     int rc=0;
@@ -491,6 +483,7 @@ int handle_input_rep(struct iosock *in)
     return len;
 }
 
+//
 void url_decode(char* src, char* dest, int max) {
     char *p = src;
     char code[3] = { 0 };
@@ -580,136 +573,7 @@ int run_str_http_hmsg(struct iosock *in)
   return rc;
 }
 
-#if 0
-// collect and scan
-// hproto > 0 will trigger just a data scan
-int run_str_http(struct iosock *in, char *sp, char *cmd, char *uri, char *vers)
-{
-  //struct space *space=NULL;
-  //struct space *attr=NULL;
-  int rc=0;
-  int rlen;
-  struct iobuf *inbf;  // input buffer
-  //struct space *sp1;
-  
-  inbf = in->inbuf;
-  rc = inbf->outlen - inbf->outptr;
-  rlen = rc;
-  if(1)printf(" >>> %s >>>> rc %d cmd [%s] sp [%s]\n >>>"
-	      " hproto %d hlen %d sp[0] 0X%x sp[1] 0x%x\n"
-	      , __FUNCTION__
-	      , rc
-	      , cmd
-	      , sp
-	      , in->hproto
-	      , in->hlen
-	      , sp[0]
-	      , sp[1]
-	      );
-  
-      
-  if(0)printf(" %s sp0 [%x] in->hidx %d \n"
-	      , __FUNCTION__
-	      , sp[0]
-	      , in->hidx
-	      );
-  if(in->hidx >= 0)
-    {
-      if(0)printf(" %s sp0 [%x] in->hidx %d %p\n"
-		  , __FUNCTION__
-		  , sp[0]
-		  , in->hidx
-		  , g_spaces[in->hidx]
-		  );
-    }
-  if(in->hproto <= 0)
-    {
-      rc = run_new_hcmd (cmd, &g_space_list, sp, in);
-      if(1)printf(" >>> %s >>>> rc %d in->hcmd [%s] sp [%s] \n"
-		  " >>> sp[0] 0x%x sp[1] 0x%x hlen %d \n"
-		  , __FUNCTION__
-		  , rc
-		  , in->hcmd
-		  , sp
-		  , sp[0]
-		  , sp[1]
-		  , in->hlen
-		  );
-    }
-  else
-    {
-      if(rlen >= (in->hlen +2))
-	{
-	  inbf->outptr += (in->hlen +2);
-	  data_replace(&in->hdata,sp+2,in->hlen);
-	  printf("%s TODO copy %d/%d bytes to in->hdata [%s] then run [%s] on [%s]\n"
-		 , __FUNCTION__
-		 , in->hlen
-		 , rlen
-		 , in->hdata
-		 , in->hcmd
-		 , in->hsp
-		 );
-
-	  if(in->hproto == 1)
-	    {
-	      xget_html_in(&g_space_list, in->hsp, in);
-	    }
-	  else if(in->hproto == 2)
-	    {
-	      xget_html_in(&g_space_list, in->hsp, in);
-	    }
-	}
-      
-      // get_
-      //  in->hcmd = NULL;
-      
-      
-    }
-
- #if 0 
-  if((sp[0] == 0xd) || (sp[0] == 0xa))
-    {
-      sp1 = NULL;
-      if(in->hidx >= 0)
-	{
-	  sp1 = g_spaces[in->hidx];
-	}
-      if(sp1)
-	{
-	  printf(" %s start of data from 0x%x 0x%x hlen %d hidx %d name [%s]\n"
-		 , __FUNCTION__
-		 , sp[0]
-		 , sp[1]
-		 , in->hlen
-		 , in->hidx
-		 , (in->hidx >= 0)?g_spaces[in->hidx]->name:"not found"
-		 );
-	  
-	  //if (sp1->value) free(sp1->value);
-	  //sp1->value = malloc(in->hlen+1);
-	  //memcpy(sp1->value,&sp[2],in->hlen);
-	  //sp1->value[in->hlen] = 0;
-	}
-      in->cmdlen = in->hlen;
-      in->cmdbytes = in->hlen;
-      inbf->outptr += (in->hlen +2);
-      // TODO find space referenced and set data
-      //len = inbf->outlen - inbf->outptr;
-
-    }
-  else
-    {
-	{
-	  rc = run_new_gcmd (cmd, &g_space_list, sp, in);
-	}
-    }
-#endif
-
-  return 0;
-}
-#endif
-
+//
 char *data_replace(char **strp, char *rep, int len)
 {
   char *sp=*strp;
@@ -721,6 +585,7 @@ char *data_replace(char **strp, char *rep, int len)
   return sp;
 }
 
+//
 char *str_replace(char **strp, char *rep)
 {
   char *sp=*strp;
@@ -737,217 +602,8 @@ char *str_replace(char **strp, char *rep)
   *strp=sp;
   return sp;
 }
-// scan for double terminators from outptr to outlen 
-// then hands scanned string over to run_space
-// this is turn calls the command handlers.
-// BUT we want to run the html POST or GET command after parsing the 
-// rest of the HTML header string.
-// THe first run of the GET command detects the HTTP header and just extracts 
-// the strings it needs.
-// we return the "more" output
-// the get_space_in will normally use the buffer with hproto = 3
-// I guess we could make it used the stored data
-#if 0
-int handle_input_norm(struct iosock *in)
-{
-    int rc=0;
-    int len;
-    int tlen;
-    int n;
-    char cmd[1024];
-    char uri[1024];
-    char vers[1024];
-    char *sp;
-    char savch;
-    struct iobuf *inbf;  // input buffer
-    int tosend;
-    int snaphcmd = 0;
 
-    inbf = in->inbuf;
-    sp = &inbf->outbuf[inbf->outptr];
-    len = inbf->outlen - inbf->outptr;
-    tlen = find_cmd_term(in, len, 0 /*,in->tlen*/);
-    if(tlen == 1)
-      in->tlen = 1;
-    else
-      in->tlen = 0;
-    //if tlen == 1 we found one terminator
-    // the next char may also be a terminator
-    savch = 0;
-    if(0 &&(tlen > 1))
-      {
-	savch = sp[tlen-1];
-	if((savch == 0x0a) || (savch == 0x0d))
-	  {
-	    sp[tlen-1]=0;
-	  }
-      }
-    if(in->hproto)
-      {
-	printf("%s instate %d hproto %d tlen %d sp [%s] hsp [%s]\n"
-	       , __FUNCTION__
-	       , in->instate
-	       , in->hproto
-	       , tlen
-	       , sp
-	       , in->hsp
-	       );
-      }
-
-    if(g_debug)
-      {
-	printf("%s read len %d tlen %d sp[] 0x%x 0x%x outptr/len %d/%d hproto %d hlen %d\n==>sp [%s] \n"
-	       , __FUNCTION__
-	       , len
-	       , tlen
-	       , sp[tlen-2]
-	       , sp[tlen-1]
-	       , inbf->outptr
-	       , inbf->outlen
-	       , in->hproto
-	       , in->hlen
-	       , sp
-	       );
-
-      }
-    // look for special terminator signal read hlen to run_str_http
-    if( (tlen == 2) && (sp[tlen-2] == 0xd)&& (sp[tlen-1] == 0xa))
-      {
-	//char *str_replace(char **strp, char *rep); in->hdata;
-	printf(">>>%s special terminator found\n", __FUNCTION__);
-	in->hproto = -in->hproto;	
-	rc = 0;	    
-	rc = run_str_http(in, sp, cmd, uri, vers);
-	if(g_debug)
-	  {
-	    printf(" >>>>>%s run_str_http return rc %d\n"
-		   , __FUNCTION__
-		   , rc
-		   );
-	  }
-      }
-
-    if(tlen > 2)
-      {
-	sp = &inbf->outbuf[inbf->outptr];
-	cmd[0]=0;
-	uri[0]=0;
-	vers[0]=0;
-	n = sscanf(sp, "%s %s %s", cmd, uri, vers);   //TODO use better sscanf
-	//if(1)in_snprintf(in, NULL
-	printf(		 " %s message received [%s] ->"
-			 " n %d hproto %d cmd [%s] uri [%s] vers [%s]\n"
-			 , __FUNCTION__
-			 , sp //&in->inbuf[in->inptr]
-			 , n
-			 , in->hproto
-			 , cmd, uri, vers );
-	if(g_debug)
-	  {
-	    printf(" %s oubuf_list #1 %p item %p buf %p\n"
-		   , __FUNCTION__
-		   , in->oubuf_list
-		   , in->ouitem
-		   , in->oubuf
-		   );
-	  }
-	snaphcmd = 0;
-	//in->hproto = 0;  // Default
-	if (strstr(cmd,"GET") && strstr(vers,"HTTP/"))
-	  {
-	    in->hproto = -1;
-	    snaphcmd = 1;
-	  }
-	if (strstr(cmd,"POST") && strstr(vers,"HTTP/"))
-	  {
-	    in->hproto = -2;
-	    snaphcmd = 1;
-	  }
-	if(snaphcmd)		    
-	  {
-	    snaphcmd = 0;
-	    in->hbuf_list = in->inbuf_list;    // save start of the input
-	    in->instate = STATE_IN_HTTP;
-	    str_replace(&in->hvers, vers);
-	    str_replace(&in->huri, uri);
-	    str_replace(&in->hcmd, cmd);
-	    in->hsp = sp;
-	    in->hlen = 0;
-	  }
-	if (in->instate == STATE_IN_HTTP)
-	  {
-	    // this will collect data from header and terminate when all the data is in
-	    rc = run_str_http(in, sp, cmd, uri, vers);
-	    if(g_debug)
-	      {
-		printf(" >>>>>%s run_str_http return rc %d\n"
-		       , __FUNCTION__
-		       , rc
-		       );
-	      }
-	    //run_str_http(in, in->hcmd, in->hcmd, in->huri, in->hvers);
-	  }
-	else
-	  {
-	    if((savch == 0x0a) || (savch == 0x0d))
-	      {
-		sp[tlen-1]=savch;
-		savch = 0;
-	      }
-	    run_str_in(in, sp, cmd);
-
-	  }
-	if((savch == 0x0a) || (savch == 0x0d))
-	  {
-	    sp[tlen-1]=savch;
-	  }
-	if(g_debug)
-	  {
-	    printf(" %s oubuf_list #2 list %p item  %p buf %p\n"
-		   , __FUNCTION__
-		   , in->oubuf_list
-		   , in->ouitem
-		   , in->oubuf
-		   );
-	  }
-	tosend = count_iob_bytes(&in->oubuf_list);
-	if(g_debug)
-	  {
-	    printf(" ... rc %d n %d cmd [%s] tlen %d tosend %d \n"
-		   , rc, n, cmd, tlen, tosend
-		   );
-	  }
-	// TODO consume just the current cmd
-	// flag the fact that we got more
-	
-	inbf->outptr += tlen;
-	if(inbf->outptr < inbf->outlen)
-	  rc  = 1;
-	if(g_debug)
-	  {
-	    printf(" reset buffers tlen = %d ptr/len %d/%d more %d\n"
-		   , tlen
-		   , inbf->outptr
-		   , inbf->outlen
-		   , rc
-		   );
-	  }
-      }
-    if (inbf->outptr == inbf->outlen)
-      {
-	inbf->outptr = 0;
-	inbf->outlen = 0;
-	printf(" %s reset buffers tlen = %d ptr/len %d/%d\n"
-	       , __FUNCTION__
-	       , tlen
-	       , inbf->outptr
-	       , inbf->outlen
-	       );
-      }
-    return rc;
-}
-#endif
-
+//
 int skip_term(char *sp)
 {
   if(*sp)
@@ -958,6 +614,7 @@ int skip_term(char *sp)
   return 0;
 }
 
+// TODO review command length
 int handle_input_norm_hmsg(struct iosock *in)
 {
     int rc=0;
@@ -1062,8 +719,6 @@ int handle_input(struct iosock *in)
   // this is OK
   item = in->inbuf_list; 
   inbf = item->data;
-
-  
   rsize = inbf->outsize-inbf->outlen;  // get remainig size
   printf(" ====>%s rsize %d inbf %p\n", __FUNCTION__, rsize, inbf);//->outlen);
   if(rsize == 0)
@@ -1106,7 +761,6 @@ int handle_input(struct iosock *in)
 	    fwrite(sp, len, 1, xfp);
 	    fclose(xfp);
 	  }
-   
       }
 
       while(more>0)
@@ -1252,7 +906,6 @@ int handle_output(struct iosock *in)
     }
   return rc;
 }
-
 
 // read stdin, listen_sock and all accept_socks
 int poll_sock(int lsock)

@@ -3221,3 +3221,398 @@ Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate
 Connection: keep-alive
 
+==================
+ADD /pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD /pine1/gpios/gpio2/type
+ADD /pine1/gpios/gpio3/type
+SET /pine1/gpios/gpio1/type output
+SET /pine1/gpios/gpio2/type input
+SET /pine1/gpios/gpio3/type serve
+SET /pine1/gpios/gpio1 off
+
+==================
+GET /pine1/gpios/gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio1
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio3 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio2
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio3?root=%2Fpine1&value=ssssss&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio3
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio3?root=%2Fpine1&value=ssssss&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio3 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio2
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio3?root=%2Fpine1&value=ssssss&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio3
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/gpio3?root=%2Fpine1&value=ssssss&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/gpios/gpio3
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine1/ HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+GET /pine1/gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+
+==================
+GET /pine1/gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+
+==================
+GET /pine1/?root=%2Fpine1&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+
+==================
+GET /pine1/?root=%2Fpine1&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+ADD /pine2
+==================
+GET /pine1/?root=%2Fpine1&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine1/?root=%2Fpine1&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine1/?root=%2Fpine2&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/?root=%2Fpine1&value=fff&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine1/?root=%2Fpine2&value=fff&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine1/?root=%2Fpine2&value=fff&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+GET /gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2
+Connection: keep-alive
+
+==================
+ADD /pine3
+==================
+GET /pine2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine2?root=%2Fpine1&value=%28null%29&forma=gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine2&value=%2528null%2529&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&value=%28null%29&forma=gpio2
+Connection: keep-alive
+
+==================
+GET /gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine2&value=%2528null%2529&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&value=%252528null%252529&forma=gpio2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine2&value=%2528null%2529&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&value=%25252528null%25252529&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&value=%252528null%252529&forma=gpio2
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&value=nuts&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&value=%25252528null%25252529&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&value=nuts&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&value=%25252528null%25252529&forma=gpio1
+Connection: keep-alive
+Cache-Control: max-age=0
+
+==================
+GET /pine3 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+ADD /pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD /pine1/gpios/gpio2/type
+ADD /pine1/gpios/gpio3/type
+SET /pine1/gpios/gpio1/type output
+SET /pine1/gpios/gpio2/type input
+SET /pine1/gpios/gpio3/type serve
+SET /pine1/gpios/gpio1 off
+
+==================
+ADD /pine2/kid1
+==================
+ADD /pine2/kid2
+==================
+ADD /pine2/kid3
+==================
+GET /pine HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+GET /pine2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+==================
+GET /kid2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&kids=kid2&value=%28null%29&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2
+Connection: keep-alive
+
+==================
+GET /pine2?root=%2Fpine1&kids=kid1&value=foooo&forma=gpio1 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&kids=kid2&value=%28null%29&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /kid2 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&kids=kid1&value=foooo&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /kid3 HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:5432/pine2?root=%2Fpine1&kids=kid1&value=foooo&forma=gpio1
+Connection: keep-alive
+
+==================
+GET /pine1/gpios/ HTTP/1.1
+Host: 127.0.0.1:5432
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
