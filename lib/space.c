@@ -851,7 +851,6 @@ char* get_hmsg_attr(struct hmsg *hm, char *name)
   return spa;
 }
 
-
 // This is the GET/POST response
 // We start an HTML acquire till the last blank line pair
 // and any content.
