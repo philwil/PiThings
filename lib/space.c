@@ -441,9 +441,15 @@ int show_space_new(struct iosock *in, struct list *list,  char *desc, int len, c
 	printf("    run >> [%s]\n", bdesc);
     }
 
-  // foreach child do the same
+
   slen -= strlen(sp);
   sp += strlen(sp);
+
+  // foreach child do the same
+  // clist = NULL;
+  //while(foreach_item(&clist,&slist))
+  //{
+
   //  sp += strlen(sp);
   slist = clist;
   while (slist)

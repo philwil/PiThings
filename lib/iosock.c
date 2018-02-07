@@ -658,14 +658,15 @@ int handle_input_norm_hmsg(struct iosock *in)
 		inbf->outptr++;
 		sp++;
 	      }
-	    printf(" %s adjust buffers slen %d more %d ptr/len %d/%d rest [%s]\n"
-		   , __FUNCTION__
-		   , hm->slen
-		   , hm->more
-		   , inbf->outptr
-		   , inbf->outlen
-		   , sp
-		   );
+	    if(g_debug)
+	      printf(" %s adjust buffers slen %d more %d ptr/len %d/%d rest [%s]\n"
+		     , __FUNCTION__
+		     , hm->slen
+		     , hm->more
+		     , inbf->outptr
+		     , inbf->outlen
+		     , sp
+		     );
 	    if(hm->more) done = 1;
 	    if(hm->slen == 0) done = 1;
 	  }
@@ -673,12 +674,13 @@ int handle_input_norm_hmsg(struct iosock *in)
 	  {
 	    inbf->outptr = 0;
 	    inbf->outlen = 0;
-	    printf(" %s reset buffers slen = %d ptr/len %d/%d\n"
-		   , __FUNCTION__
-		   , hm->slen
-		   , inbf->outptr
-		   , inbf->outlen
-		   );
+	    if(g_debug)
+	      printf(" %s reset buffers slen = %d ptr/len %d/%d\n"
+		     , __FUNCTION__
+		     , hm->slen
+		     , inbf->outptr
+		     , inbf->outlen
+		     );
 	    done = 1;
 	    rc = 0;
 	  }
