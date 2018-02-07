@@ -41,15 +41,24 @@ struct space *_add_space_in(struct list **root, char *name,
 {
   struct space *space=NULL;
   struct hmsg *hm;
+  struct hmsg hmsg;
   int idx;
-  //init_hmsg(&hmsg);
-  //setup_hmsg(&hmsg, name);
-  hm= in->hm;
+
+  if(in)
+    {
+      hm = in->hm;
+    }
+  else
+    {
+      init_hmsg(&hmsg);
+      setup_hmsg(&hmsg, name);
+      hm = &hmsg;
+    }
   show_hmsg(hm);
   idx = add_hmsg_spaces(root, hm);
   if(idx >= 0)
     space = g_spaces[idx];
-  //clean_hmsg(&hmsg);
+  if(!in)clean_hmsg(hm);
   return space;
 }
 
@@ -695,14 +704,26 @@ int insert_space(struct list **parent, struct space *space)
 struct space *show_space_in(struct list **root, char *name, struct iosock *in)
 {
   struct hmsg * hm;
+  struct hmsg hmsg;
   int idx=-1;
   struct space *sp1=NULL;
   char sbuf[4096];
   struct list **base;
 
+  if(in)
+    {
+      hm = in->hm;
+    }
+  else
+    {
+      init_hmsg(&hmsg);
+      setup_hmsg(&hmsg, name);
+      hm = &hmsg;
+    }
   //init_hmsg(&hmsg);
   //setup_hmsg(&hmsg, name);
-  hm = in->hm;
+
+  //hm = in->hm;
   show_hmsg(hm);
   //idx = find_hmsg_spaces(root, &hmsg);
   if(idx >= 0)
@@ -722,7 +743,7 @@ struct space *show_space_in(struct list **root, char *name, struct iosock *in)
       base = &sp1->child;
   }
   show_spaces_new(in, base, sbuf, 4096, sbuf);
-  //clean_hmsg(&hmsg);
+  if(!in)clean_hmsg(hm);
 
   return NULL;
 }
@@ -769,10 +790,20 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
 {
   struct space *sp1=NULL;
   struct hmsg *hm;
-  hm = in->hm;
-
+  struct hmsg hmsg;
   int idx;
   char *spv;
+
+  if(in)
+    {
+      hm = in->hm;
+    }
+  else
+    {
+      init_hmsg(&hmsg);
+      setup_hmsg(&hmsg, name);
+      hm = &hmsg;
+    }
   //init_hmsg(&hmsg);
   //setup_hmsg(&hmsg, name);
   show_hmsg(hm);
@@ -814,7 +845,7 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
       if(in)in_snprintf(in,NULL,"?? SET idx %d  not found \n", idx);//sp1->name);
     }
 
-  //clean_hmsg(&hmsg);
+  if(!in)clean_hmsg(hm);
   return sp1;
 }
 
@@ -1007,16 +1038,24 @@ struct space *get_space_in(struct list **root, char *name, struct iosock *in)
 {
   struct space *sp1=NULL;
   struct hmsg *hm;
+  struct hmsg hmsg;
   int idx;
-  hm = in->hm;
-  //init_hmsg(&hmsg);
-  //setup_hmsg(&hmsg, name);
+  if(in)
+    {
+      hm = in->hm;
+    }
+  else
+    {
+      init_hmsg(&hmsg);
+      setup_hmsg(&hmsg, name);
+      hm = &hmsg;
+    }
   show_hmsg(hm);
   idx = find_hmsg_spaces(root, hm);
   if(idx >= 0)
     {
       sp1 = g_spaces[idx];
-      if(sp1->onget)
+      if(in && sp1->onget)
 	sp1->onget(sp1, sp1->idx, hm->url);
 
       printf("%s [%s] val [%s] \n"
@@ -1034,18 +1073,18 @@ struct space *get_space_in(struct list **root, char *name, struct iosock *in)
 	     );
       if(in)in_snprintf(in,NULL,"?? SEE [%s] not found \n", hm->url);
     }
-  //clean_hmsg(&hmsg);
+  if(!in)clean_hmsg(hm);
   return sp1;
 }
 
 //rc  = set_space(g_space, "SET uav3/motor2/speed 3500");
-char *get_space(struct list **list, char *name)
+char *get_space(struct list **root, char *name)
 {
   char *ret =  NULL;
   struct space *sp0;
   //TODO
   //struct space *gbase = base;
-  sp0 = get_space_in(list, name, NULL);
+  sp0 = get_space_in(root, name, NULL);
   if(sp0)
     ret = sp0->value;
   return ret;

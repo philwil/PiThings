@@ -210,6 +210,8 @@ int main (int argc, char *argv[])
      }
    //return 0;
    in->fd = 1;
+  test_groups();
+
 #if 0
    printf(" Running test_list\n");
    test_lists();

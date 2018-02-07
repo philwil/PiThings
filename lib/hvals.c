@@ -239,7 +239,7 @@ char *setup_hmsg_len(struct hmsg *hm, char *insp, int len)
   */
   hm->hlen = len;
   hm->slen = 0;
-
+  hm->vers = NULL;
   if (!strchr(insp,'\n'))
     {
       hm->more = 1;
@@ -515,13 +515,14 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
     }
   if(add & (idx >= 0))
     {
-      printf("setting attributes for [%s]\n", sp1->name);
-      for (i = 0; i < NUM_ATTRS; i++)
+      printf("NOT setting attributes for [%s]\n", sp1->name);
+      //for (i = 0; i < NUM_ATTRS; i++)
+      if(0)
 	{
 
 	  struct list *item;
 	  struct attr *attr;
-	  if(!hm->attrs[i]) break;
+	  //if(!hm->attrs[i]) break;
 	  attr = find_space_attr(&sp1->attrs, hm->attrs[i]);
 	  if(!attr)
 	    {
@@ -536,6 +537,7 @@ int do_hmsg_spaces(struct list **root, struct hmsg *hm, int add)
 	}
     }
 
+  printf("return idx %d [%s]\n", idx, sp1 ?sp1->name:"no spi");
   return idx;
 }
 
