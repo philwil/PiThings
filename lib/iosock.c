@@ -859,7 +859,7 @@ int handle_output(struct iosock *in)
       iob->outlen = 0;
       iob->outptr = 0;
       pop_list(&in->oubuf_list, item);
-      push_list(&g_iob_list, item);
+      add_list(&g_iob_list, item);
       goto try_again;
     }
 
@@ -868,7 +868,7 @@ int handle_output(struct iosock *in)
   sp = &iob->outbuf[iob->outptr];
   //len = iob->outlen -iob->outptr;
   //iob = pull_iob(&in->iobuf, &sp, &len);
-  if(g_debug)
+  if(0 && g_debug)
     printf(" %s running the new way item %p iob %p len %d sp [%s]\n"
 	   , __FUNCTION__, item, iob, len, sp);
 

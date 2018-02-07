@@ -792,7 +792,7 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
   struct hmsg *hm;
   struct hmsg hmsg;
   int idx;
-  char *spv;
+  char *spv=NULL;
 
   if(in)
     {
@@ -822,17 +822,32 @@ struct space *set_space_in(struct list **root, char *name, struct iosock *in)
       //  spv=hmsg.vers;
       //  hmsg.vers = NULL;
       //}
-
-      printf("%s [%s] old val [%s] hmsg.data[%s] hmsg.vers[%s] spv [%s]\n"
-	     , __FUNCTION__
-	     , sp1->name
-	     , sp1->value
-	     , hm->data
-	     , hm->vers
-	     , spv
-	     );
-      set_space_value(sp1, spv, name);
-
+      if(sp1)
+	{
+	  printf("%s [%s] old val [%s] \n"
+		 , __FUNCTION__
+		 , sp1->name ? sp1->name : " no name"
+		 , sp1->value ? sp1->value : " not set"
+		 );
+	  printf("%s hm->data[%s] hm->vers[%s]\n"
+		 , __FUNCTION__
+		 , hm->data ? hm->data: "no data"
+		 , hm->vers ? hm->vers : "no vers"
+		 );
+	  printf("%s spv [%s]\n"
+		 , __FUNCTION__
+		 , spv ? spv : "no spv"
+		 );
+	  
+	  set_space_value(sp1, spv, name);
+	}
+      else
+	{
+	  printf("%s [%s] name not found\n"
+		 , __FUNCTION__
+		 , hm->url ? hm->url: " no url"
+		 );
+	}
       //rc = 0;
       if(in)in_snprintf(in,NULL,"OK SET %s to [%s]\n",sp1->name, sp1->value);
     }

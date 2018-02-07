@@ -196,7 +196,7 @@ int main (int argc, char *argv[])
    init_cmds(g_cmds, NUM_CMDS);
    init_cmds(h_cmds, NUM_CMDS);
    set_up_new_cmds();
-   g_list_debug =1;
+   g_list_debug =0;
    g_debug = 1;
    g_debug_term = 0;
    sp1 = NULL;
@@ -210,6 +210,7 @@ int main (int argc, char *argv[])
      }
    //return 0;
    in->fd = 1;
+   g_debug = 0;
   test_groups();
 
 #if 0

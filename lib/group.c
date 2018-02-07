@@ -37,7 +37,8 @@ int add_group_member(char *master, char *member)
     {
       rc = 0;
       item = new_list((void*)gmember);
-      push_list(&gmaster->group, item);
+      add_list(&gmaster->group, item);
+      //push_list(&gmaster->group, item);
     }
   return rc;
 }
@@ -56,7 +57,10 @@ int rem_group_member(char *master, char *member)
       rc = 0;
       item = find_list_item(gmaster->group, (void*)gmember);
       if (item)
-	pop_list(&gmaster->group, item);
+	{
+	  //	  pop_list(&gmaster->group, item);
+	  del_list(&gmaster->group, item);
+	}
     }
   return rc;
 

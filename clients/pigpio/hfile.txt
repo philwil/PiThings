@@ -3704,3 +3704,191 @@ SET /pine1/gpios/gpio1 off
 SHOW
 ==================
 
+==================
+ADD /pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD /pine1/gpios/gpio2/type
+ADD /pine1/gpios/gpio3/type
+SET /pine1/gpios/gpio1/type output
+SET /pine1/gpios/gpio2/type input
+SET /pine1/gpios/gpio3/type serve
+SET /pine1/gpios/gpio1 off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type serve
+SET pine1/gpios/gpio1 off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+
+==================
+SGOW
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+ADD pine1/gpios/gpio1?dir=output&pin=1&value=0
+ADD pine1/gpios/gpio2/type
+ADD pine1/gpios/gpio3/type
+SET pine1/gpios/gpio1/type output
+SET pine1/gpios/gpio2/type input
+SET pine1/gpios/gpio3/type servo
+SET pine1/gpios/gpio1?value=off
+
+==================
+SHOW
+==================
+HELP

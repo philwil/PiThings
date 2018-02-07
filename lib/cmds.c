@@ -1109,7 +1109,7 @@ int in_snprintf(struct iosock *in, struct iobuf *xiob, const char *fmt, ...)
 		   , __FUNCTION__
 		   , iob, iob->outsize);
 	  //item=new_list(iob);
-	  push_list(&in->oubuf_list, item);
+	  add_list(&in->oubuf_list, item);
 
 	}
     }

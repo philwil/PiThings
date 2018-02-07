@@ -71,7 +71,7 @@ int push_clist(struct list **root, struct list *citem, struct list *item)
 	}
       else
 	{
-	  if(g_list_debug)printf(" %s before citem insert item %p citem %p\n"
+	  if(0&&g_list_debug)printf(" %s before citem insert item %p citem %p\n"
 				 , __FUNCTION__
 				 , item , citem); 
 	  //	  item->next = citem;
@@ -130,7 +130,7 @@ struct list *pop_clist(struct list **root, struct list *citem, struct list *item
 	}
       else
 	{
-	  if(g_list_debug)printf("before citem rem item %p citem %p\n", item , citem); 
+	  if(0&&g_list_debug)printf("before citem rem item %p citem %p\n", item , citem); 
 	  nitem->prev = item->prev;
 	  pitem->next = item->next;
 
