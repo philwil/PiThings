@@ -73,6 +73,7 @@ struct space *add_space_in(struct list **root, char *name,
   return _add_space_in(root, name, in);
 }
 
+
 int test_find_parents(void)
 {
   int num=0;
@@ -494,96 +495,35 @@ int show_spaces_new(struct iosock *in, struct list **listp, char *desc, int len,
 // reworking with lists
 struct space *find_space_new(struct list **listp, char *name)
 {
-  struct list *ilist;
-  struct list *slist;
-  struct space *space=NULL;
-  //char *sp = name;
+  struct hmsg * hm;
+  struct hmsg hmsg;
+  //use hmsg
+  struct space *sp1=NULL;
   char *spv = NULL;
-  int i;
-
-  //int rc;
   int idx = 0;
-  int idv = 0;
-  char *valv[64];
-  char *valx[64];
-  // break up the name into a load of names
-  // valv is the broken down list of name elements
-  // uses parse_stuff
-  parse_name(&idx, (char **)valx, &idv, (char **)valv, 64, name);
-  // now find the space name at each step
-  i = 0;
-
-  if(idv == 0)
+  init_hmsg(&hmsg);
+  setup_hmsg(&hmsg, name);
+  hm = &hmsg;
+  show_hmsg(hm);
+  idx = find_hmsg_spaces(listp, &hmsg);
+  if(idx >= 0)
     {
-      spv = name;
-      goto free_out;
+      sp1 = g_spaces[idx];
     }
-  spv = valv[i];
-  slist = *listp;
-  ilist = *listp;
-  while (ilist)
-    {
-      space = (struct space *)ilist->data;
-      spv = valv[i];
-      if(*spv == '/')spv++;
-      if(g_space_debug)
-	printf(" looking for [%s] [%s] found [%s] i %d idx/v %d/%d\n"
-	       , valv[i], spv, space->name
-	       , i
-	       , idx
-	       , idv
-		  );
-      if(strcmp(space->name, spv)==0)  // we found it
-	{
-          if(i < idv) i++;
-	  if(i == idv)
-	    {
-	      goto free_out;
-	    }
-	  // step down to the next child list
-	  slist = space->child;
-	  ilist =  slist;
 
-	}
-      else   // not found , search to end of list 
-	{
-	  if(ilist->next != slist)
-	    {
-              // move to next child
-	      ilist=ilist->next;
-	    }
-	  else
-	    {
-	      ilist = NULL;
-	      space = NULL;
-	    }
-
-	  //	      if(i < idv) i++;
-	  //  if(i == idv)
-	  //	{
-	  //	  free_stuff(idv, valv);
-	  //	  free_stuff(idx, valx);
-	  //	  return NULL;
-	  //	}
-	  //  slist =  base->child;
-	  //  ilist = base->child;
-	  //}
-	}
-    }
- free_out:
   if(g_space_debug)
     {
       // end of name list we are done
-      if(space)
+      if(sp1)
 	printf(" %s we found it seeking [%s] found [%s]\n"
-	       , __FUNCTION__, spv,  space->name);
+	       , __FUNCTION__, spv,  sp1->name);
       else
 	printf(" %s no luck seeking [%s]\n", __FUNCTION__, spv);
     }
-  free_stuff(idv, valv);
-  free_stuff(idx, valx);
-
-  return space;
+  //free_stuff(idv, valv);
+  // free_stuff(idx, valx);
+  clean_hmsg(hm);
+  return sp1;
 }
 
 int add_child(struct space *parent, struct space *child)
